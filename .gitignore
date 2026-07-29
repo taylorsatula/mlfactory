@@ -1,0 +1,37 @@
+# Virtual environments
+.venv
+.venv312
+venv/
+__pycache__/
+*.pyc
+*.pyo
+*.egg-info/
+
+# Run outputs and data (large/binary)
+runs/
+data/
+outputs/
+*.safetensors
+*.bin
+*.pt
+*.pth
+*.ckpt
+
+# Logs
+*.log
+logs/
+
+# Secrets
+*.pem
+*.key
+.env
+token
+
+# Editor/OS
+.vscode/
+.idea/
+.DS_Store
+*.swp
+
+# Migration scratch
+migrations/scratch/

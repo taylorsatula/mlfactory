@@ -1,0 +1,60 @@
+stage: train
+name: qwen35-h100-validation
+experiment: dft
+
+model_name: Qwen/Qwen3.5-4B
+train_file: data/dft/pilot_full/train.jsonl
+test_file: data/dft/pilot_full/test.jsonl
+
+load_in_4bit: true
+lora_r: 64
+lora_alpha: 128
+lora_dropout: 0.0
+lora_target: q_proj,k_proj,v_proj,o_proj,gate_proj,up_proj,down_proj
+
+device: cuda:0
+ref_device: cuda:1
+embed_device: cuda:1
+embed_model: nvidia/llama-embed-nemotron-8b
+
+max_prompt_length: 256
+max_response_length: 256
+
+rollout_temperature: 1.0
+rollout_top_p: 1.0
+rollout_top_k: 0
+
+temperature: 0.8
+top_p: 0.95
+top_k: 50
+
+batch_size: 20
+gradient_accumulation_steps: 2
+ppo_epochs: 2
+num_train_epochs: 1
+max_steps: 20
+
+lr: 1.0e-6
+kl_coef: 0.1
+critic_mode: off
+gamma: 1.0
+lam: 1.0
+ent_coef: 0.0
+
+eval_every: 5
+save_every: 5
+num_eval_samples: 50
+
+mmd_ref_sample_size: 256
+kernel: rq
+mmd_bandwidth: median
+rq_alpha: 1.0
+
+cooldown_interval_hours: 999
+cooldown_minutes: 5
+
+seed: 42
+
+env:
+  HF_HOME: /workspace/.hf_home
+  TRITON_DISABLE_AUTOTUNING: "1"

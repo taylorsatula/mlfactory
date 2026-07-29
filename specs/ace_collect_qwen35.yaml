@@ -1,0 +1,25 @@
+stage: collect
+name: qwen35-4b-baseline
+experiment: ace
+
+model_name: Qwen/Qwen3.5-4B
+provider: llama
+prompts: data/ace/prompts.jsonl
+
+server:
+  model: /home/admin/models/Qwen3.5-4B-UD-Q8_K_XL.gguf
+  port: 3090
+  gpu: 0
+
+max_model_len: 32768
+max_output_tokens: 16000
+request_timeout: 1200
+time_budget_seconds: 900
+seed_offset: 0
+stratified_extras: 3
+
+# For a quick smoke test, uncomment the next line.
+# max_samples: 10
+
+env:
+  HF_HOME: /home/admin/.cache/huggingface
