@@ -4,7 +4,7 @@ experiment: ace
 
 model_name: Qwen/Qwen3.5-4B
 provider: llama
-prompts: data/ace/prompts.jsonl
+prompts: mlfactory/experiments/ace/data/prompts.jsonl
 
 server:
   model: /home/admin/models/Qwen3.5-4B-UD-Q8_K_XL.gguf

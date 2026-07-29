@@ -3,8 +3,8 @@ name: qwen35-h100-validation
 experiment: dft
 
 model_name: Qwen/Qwen3.5-4B
-train_file: data/dft/pilot_full/train.jsonl
-test_file: data/dft/pilot_full/test.jsonl
+train_file: mlfactory/experiments/dft/data/pilot_full/train.jsonl
+test_file: mlfactory/experiments/dft/data/pilot_full/test.jsonl
 
 load_in_4bit: true
 lora_r: 64
