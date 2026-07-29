@@ -100,8 +100,9 @@ class CollectPlugin(StagePlugin):
 
         prompts = Path(self.spec["prompts"])
         out_dir = self.run_dir / "artifacts"
+        python = self.spec.get("python", sys.executable)
         cmd = [
-            sys.executable,
+            python,
             str(self._script_path("collect.py")),
             "--prompts", str(prompts),
             "--out-dir", str(out_dir),

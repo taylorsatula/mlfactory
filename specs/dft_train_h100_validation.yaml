@@ -55,6 +55,9 @@ cooldown_minutes: 5
 
 seed: 42
 
+# Which Python interpreter to use. DFT training needs the CUDA/torch venv.
+python: /home/admin/dft-eval-harness/.venv312/bin/python
+
 env:
   HF_HOME: /workspace/.hf_home
   TRITON_DISABLE_AUTOTUNING: "1"

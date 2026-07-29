@@ -44,9 +44,10 @@ class TrainPlugin(StagePlugin):
         env = self._env()
         s = self.spec
         out_dir = self.run_dir / "artifacts"
+        python = s.get("python", sys.executable)
 
         cmd = [
-            sys.executable,
+            python,
             str(self._script_path("train_dft.py")),
             "--model-name", str(s.get("model_name", "Qwen/Qwen3.5-4B")),
             "--train-file", str(s["train_file"]),
