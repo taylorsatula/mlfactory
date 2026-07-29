@@ -23,7 +23,9 @@ from mlfactory.core.registry import Registry
 from mlfactory.plugins.base import PLUGINS
 
 # Register built-in experiment plugins.
+import mlfactory.experiments.ace.classify_plugin  # noqa: E402,F401
 import mlfactory.experiments.ace.collect_plugin  # noqa: E402,F401
+import mlfactory.experiments.dft.eval_plugin  # noqa: E402,F401
 import mlfactory.experiments.dft.train_plugin  # noqa: E402,F401
 
 
