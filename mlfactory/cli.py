@@ -1,6 +1,7 @@
 """Command-line interface for mlfactory."""
 from __future__ import annotations
 
+import json
 from pathlib import Path
 
 import click
@@ -8,6 +9,8 @@ import click
 from mlfactory.core.manifest import RunManifest
 from mlfactory.core.registry import Registry
 from mlfactory.core.runner import create_run, run_from_spec
+from mlfactory.remote.ssh_runner import SSHConfig
+from mlfactory.remote.vast import VastRunner, load_api_key
 
 
 @click.group()
@@ -129,6 +132,95 @@ def dashboard_cmd(ctx: click.Context, watch_run: str | None, stage: str | None, 
         cmd.extend(["--stage", stage])
     cmd.extend(["--refresh", str(refresh)])
     raise SystemExit(subprocess.call(cmd))
+
+
+# ---------------------------------------------------------------------------
+# remote commands
+# ---------------------------------------------------------------------------
+
+@main.group()
+def remote() -> None:
+    """Remote execution on Vast.ai or generic SSH hosts."""
+    pass
+
+
+@remote.command("run")
+@click.option("--host", required=True, help="Remote SSH host.")
+@click.option("--port", default=22, type=int, help="Remote SSH port.")
+@click.option("--key", "-i", default=None, help="SSH private key.")
+@click.option("--spec", required=True, type=click.Path(exists=True, path_type=Path), help="Spec file to run.")
+@click.option("--run-id", default=None, help="Override run id.")
+@click.option("--workdir", default="/workspace/mlfactory", help="Remote working directory.")
+@click.option("--python", default="python3", help="Remote python interpreter.")
+@click.option("--setup-script", default=None, help="Optional remote setup script to run before execution.")
+def remote_run(
+    host: str,
+    port: int,
+    key: str | None,
+    spec: Path,
+    run_id: str | None,
+    workdir: str,
+    python: str,
+    setup_script: str | None,
+) -> None:
+    """Sync code and run a spec on a remote host."""
+    config = SSHConfig(host=host, port=port, key=key, remote_workdir=workdir, python=python)
+    runner = VastRunner(vast_config=None, ssh_config=config)  # type: ignore[arg-type]
+    runner.sync_code()
+    if setup_script:
+        runner.setup(setup_script=setup_script)
+    rid = runner.run_spec(str(spec), run_id=run_id)
+    click.echo(f"Remote run {rid} completed; outputs pulled to runs/{rid}")
+
+
+@remote.command("provision")
+@click.option("--query", default=None, help="Vast search query (default: H100, 2 GPUs, 300GB disk).")
+@click.option("--api-key", default=None, help="Vast API key (defaults to VAST_API_KEY env var).")
+@click.option("--image", default="nvidia/cuda:12.9.0-devel-ubuntu26.04", help="Container image.")
+@click.option("--disk", default=300.0, type=float, help="Disk size in GB.")
+@click.option("--label", default="mlfactory", help="Instance label.")
+def remote_provision(query: str | None, api_key: str | None, image: str, disk: float, label: str) -> None:
+    """Provision a new Vast.ai instance."""
+    key = api_key or load_api_key()
+    if not key:
+        raise click.ClickException("Vast API key not found. Set VAST_API_KEY or use --api-key.")
+    runner = VastRunner.from_search(query=query, api_key=key, image=image, disk_gb=disk)
+    info = runner.provision(query=query)
+    click.echo(f"Provisioned instance {runner.instance_id} at {runner.config.host}:{runner.config.port}")
+    click.echo(json.dumps(info, indent=2))
+
+
+@remote.command("destroy")
+@click.option("--instance-id", required=True, type=int, help="Vast instance id.")
+@click.option("--api-key", default=None, help="Vast API key.")
+def remote_destroy(instance_id: int, api_key: str | None) -> None:
+    """Destroy a Vast.ai instance."""
+    key = api_key or load_api_key()
+    if not key:
+        raise click.ClickException("Vast API key not found.")
+    runner = VastRunner.from_instance_id(instance_id, api_key=key)
+    runner.destroy()
+    click.echo(f"Destroyed instance {instance_id}")
+
+
+@remote.command("list")
+@click.option("--api-key", default=None, help="Vast API key.")
+def remote_list(api_key: str | None) -> None:
+    """List your Vast.ai instances."""
+    from mlfactory.remote.vast import list_instances
+
+    key = api_key or load_api_key()
+    if not key:
+        raise click.ClickException("Vast API key not found.")
+    instances = list_instances(api_key=key)
+    if not instances:
+        click.echo("No instances found.")
+        return
+    click.echo(f"{'ID':<10} {'Status':<12} {'Host':<30} {'Port':<8} {'Label'}")
+    for inst in instances:
+        ssh = inst.get("ssh_host", "")
+        port = inst.get("ssh_port", "")
+        click.echo(f"{inst.get('id'):<10} {inst.get('actual_status',''):<12} {ssh:<30} {port:<8} {inst.get('label','')}")
 
 
 if __name__ == "__main__":

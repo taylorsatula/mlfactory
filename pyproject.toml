@@ -16,8 +16,8 @@ dependencies = [
 ]
 
 [project.optional-dependencies]
-remote = ["paramiko>=3.0"]
-all = ["paramiko>=3.0"]
+remote = ["vastai>=1.5"]
+all = ["vastai>=1.5"]
 
 [project.scripts]
 mlfactory = "mlfactory.cli:main"
