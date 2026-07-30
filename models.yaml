@@ -1,0 +1,147 @@
+# Model alias registry for mlfactory experiments.
+# Aliases are lowercase "family:size" strings. Each entry maps to a local GGUF
+# and sensible llama-server defaults. Experiments can override any flag.
+
+models:
+  qwen3.5:4b:
+    path: /home/admin/models/Qwen3.5-4B-UD-Q8_K_XL.gguf
+    family: qwen
+    context_size: 32768
+    max_output_tokens: 16000
+    gpu_layers: 999
+    main_gpu: 0
+    split_mode: none
+    flash_attn: true
+    reasoning: true
+    reasoning_format: none
+    reasoning_budget: -1
+    mtp: false
+    batch_size: 2048
+    ubatch_size: 512
+    cache_type_k: q8_0
+    cache_type_v: q8_0
+
+  qwopus3.6:27b:
+    path: /home/admin/models/Qwopus3.6-27B-v2-Q5_K_M.gguf
+    alias: Qwopus3.6-27B
+    family: qwen
+    context_size: 32768
+    max_output_tokens: 16000
+    gpu_layers: 999
+    main_gpu: 0
+    split_mode: none
+    flash_attn: true
+    reasoning: false
+    mtp: true
+    mtp_path: /home/admin/models/mtp/Qwopus3.6-27B-v2-MTP-Q5_K_M.gguf
+    batch_size: 2048
+    ubatch_size: 512
+    cache_type_k: q8_0
+    cache_type_v: q8_0
+
+  gemma4:26b:
+    path: /home/admin/models/gemma-4-26B-A4B-it-UD-Q5_K_XL.gguf
+    family: gemma
+    context_size: 32768
+    max_output_tokens: 8192
+    gpu_layers: 999
+    main_gpu: 0
+    split_mode: none
+    flash_attn: true
+    reasoning: false
+    mtp: false
+    batch_size: 2048
+    ubatch_size: 512
+    cache_type_k: q8_0
+    cache_type_v: q8_0
+
+  glm4.7:flash:
+    path: /home/admin/models/GLM-4.7-Flash-UD-Q5_K_XL.gguf
+    family: glm
+    context_size: 32768
+    max_output_tokens: 8192
+    gpu_layers: 999
+    main_gpu: 0
+    split_mode: none
+    flash_attn: true
+    reasoning: false
+    mtp: false
+    batch_size: 2048
+    ubatch_size: 512
+    cache_type_k: q8_0
+    cache_type_v: q8_0
+
+  gpt-oss:20b:
+    path: /home/admin/models/gpt-oss-20b-Q5_K_M.gguf
+    family: gptoss
+    context_size: 32768
+    max_output_tokens: 8192
+    gpu_layers: 999
+    main_gpu: 0
+    split_mode: none
+    flash_attn: true
+    reasoning: false
+    mtp: false
+    batch_size: 2048
+    ubatch_size: 512
+    cache_type_k: q8_0
+    cache_type_v: q8_0
+
+  nemotron3:30b:
+    path: /home/admin/models/Nemotron-3-Nano-30B-A3B-Q5_K_M.gguf
+    family: nemotron
+    context_size: 32768
+    max_output_tokens: 8192
+    gpu_layers: 999
+    main_gpu: 0
+    split_mode: none
+    flash_attn: true
+    reasoning: false
+    mtp: false
+    batch_size: 2048
+    ubatch_size: 512
+    cache_type_k: q8_0
+    cache_type_v: q8_0
+
+  ornith1:35b:
+    path: /home/admin/models/ornith-1.0-35b-Q5_K_M.gguf
+    family: ornith
+    context_size: 32768
+    max_output_tokens: 8192
+    gpu_layers: 999
+    main_gpu: 0
+    split_mode: none
+    flash_attn: true
+    reasoning: false
+    mtp: false
+    batch_size: 2048
+    ubatch_size: 512
+    cache_type_k: q8_0
+    cache_type_v: q8_0
+
+  laguna:xs:
+    path: /home/admin/models/Laguna-XS-2.1-Q5_K_S.gguf
+    family: laguna
+    context_size: 32768
+    max_output_tokens: 8192
+    gpu_layers: 999
+    main_gpu: 0
+    split_mode: none
+    flash_attn: true
+    reasoning: false
+    mtp: false
+    batch_size: 2048
+    ubatch_size: 512
+    cache_type_k: q8_0
+    cache_type_v: q8_0
+
+# Default server binary and global flags.
+server:
+  binary: /home/admin/llama.cpp/build/bin/llama-server
+  host: 127.0.0.1
+  port_range_start: 3090
+  port_range_end: 3100
+  # Services that must be stopped before starting a model (mutually exclusive).
+  stop_services:
+    - llama-laguna
+    - llama-qwopus
