@@ -1,0 +1,110 @@
+{
+  "experiment": "ace",
+  "description": "ACE trajectory classifier",
+  "refresh": 2.0,
+  "probes": [
+    {
+      "id": "keep_count",
+      "type": "file_line_count",
+      "label": "KEEP",
+      "file": "{run_dir}/artifacts/KEEP.jsonl"
+    },
+    {
+      "id": "reject_count",
+      "type": "file_line_count",
+      "label": "REJECT",
+      "file": "{run_dir}/artifacts/REJECT.jsonl"
+    },
+    {
+      "id": "borderline_count",
+      "type": "file_line_count",
+      "label": "BORDERLINE",
+      "file": "{run_dir}/artifacts/BORDERLINE.jsonl"
+    },
+    {
+      "id": "no_trajectory_count",
+      "type": "file_line_count",
+      "label": "NO_TRAJECTORY",
+      "file": "{run_dir}/artifacts/NO_TRAJECTORY.jsonl"
+    },
+    {
+      "id": "error_count",
+      "type": "file_line_count",
+      "label": "ERROR",
+      "file": "{run_dir}/artifacts/ERROR.jsonl"
+    },
+    {
+      "id": "total_input",
+      "type": "file_line_count",
+      "label": "Input records",
+      "file": "{run_dir}/artifacts/input.jsonl"
+    },
+    {
+      "id": "current",
+      "type": "regex_last_match",
+      "label": "Current",
+      "file": "{run_dir}/logs/classify.log",
+      "regex": "CLASSIFY (\\S+)"
+    },
+    {
+      "id": "errors",
+      "type": "regex_count",
+      "label": "Log errors",
+      "file": "{run_dir}/logs/classify.log",
+      "regex": "-> ERROR",
+      "warn_if_above": 0
+    },
+    {
+      "id": "gpu_status",
+      "type": "gpu_status",
+      "label": "GPUs"
+    },
+    {
+      "id": "disk_usage",
+      "type": "disk_usage",
+      "label": "Disk",
+      "file": "{run_dir}",
+      "warn_if_above": 80,
+      "danger_if_above": 95
+    }
+  ],
+  "progress": {
+    "numerator_probe": "keep_count",
+    "denominator_probe": "total_input",
+    "denominator_label": "records"
+  },
+  "panes": [
+    {
+      "title": "Overview",
+      "type": "overview",
+      "probes": ["keep_count", "reject_count", "borderline_count", "errors", "current"],
+      "ratio": 2
+    },
+    {
+      "title": "Bucket Counts",
+      "type": "bars",
+      "probes": ["keep_count", "reject_count", "borderline_count", "no_trajectory_count", "error_count"],
+      "config": { "max_value": 1600 },
+      "ratio": 2
+    },
+    {
+      "title": "Metrics",
+      "type": "metrics_table",
+      "probes": ["keep_count", "reject_count", "borderline_count", "no_trajectory_count", "error_count", "disk_usage"],
+      "ratio": 1
+    },
+    {
+      "title": "GPU Status",
+      "type": "gpu_table",
+      "probes": ["gpu_status"],
+      "ratio": 2
+    },
+    {
+      "title": "Recent Log",
+      "type": "recent_log",
+      "config": { "file": "{run_dir}/logs/classify.log", "lines": 10 },
+      "size": 12
+    }
+  ],
+  "log_file": "{run_dir}/logs/classify.log"
+}

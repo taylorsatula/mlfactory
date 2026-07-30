@@ -167,6 +167,9 @@ def _status_for_summary(summary: dict[str, Any]) -> str:
     return "completed"
 
 
+FORCE = False
+
+
 def ingest_ace_collect_runs(registry: Registry) -> int:
     count = 0
     outputs_dir = ACE_ROOT / "outputs"
@@ -180,7 +183,7 @@ def ingest_ace_collect_runs(registry: Registry) -> int:
             continue
 
         run_id = f"legacy.ace.collect.{run_dir.name}"
-        if registry.get(run_id):
+        if not FORCE and registry.get(run_id):
             _write_log(f"SKIP {run_id}: already registered")
             continue
 
@@ -202,6 +205,7 @@ def ingest_ace_collect_runs(registry: Registry) -> int:
             started_at=data.get("created_at"),
             completed_at=data.get("created_at"),
             spec={
+                "experiment": "ace",
                 "model_name": data.get("model_name"),
                 "provider": data.get("provider"),
                 "max_model_len": data.get("max_model_len"),
@@ -228,7 +232,7 @@ def ingest_dft_train_runs(registry: Registry) -> int:
         if not out_dir.is_dir():
             continue
         run_id = f"legacy.dft.train.{out_dir.name}"
-        if registry.get(run_id):
+        if not FORCE and registry.get(run_id):
             _write_log(f"SKIP {run_id}: already registered")
             continue
 
@@ -253,7 +257,7 @@ def ingest_dft_train_runs(registry: Registry) -> int:
             stage="train",
             status=_status_for_summary(summary),
             created_at=_now(),
-            spec=summary.get("config", {}),
+            spec={**summary.get("config", {}), "experiment": "dft"},
             git=_make_placeholder_git(),
             source=_make_placeholder_source(out_dir),
             inputs=inputs,
@@ -277,7 +281,7 @@ def ingest_dft_eval_runs(registry: Registry) -> int:
         if not summary_path.exists():
             continue
         run_id = f"legacy.dft.eval.{out_dir.name}"
-        if registry.get(run_id):
+        if not FORCE and registry.get(run_id):
             _write_log(f"SKIP {run_id}: already registered")
             continue
 
@@ -297,7 +301,7 @@ def ingest_dft_eval_runs(registry: Registry) -> int:
             stage="eval",
             status="completed",
             created_at=_now(),
-            spec=summary.get("config", {}),
+            spec={**summary.get("config", {}), "experiment": "dft"},
             git=_make_placeholder_git(),
             source=_make_placeholder_source(out_dir),
             inputs=inputs,
@@ -313,10 +317,18 @@ def ingest_dft_eval_runs(registry: Registry) -> int:
 
 
 def main() -> int:
+    import argparse
+
+    global FORCE
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--force", action="store_true", help="Re-register runs that already exist.")
+    args = parser.parse_args()
+    FORCE = args.force
+
     REGISTRY_PATH.parent.mkdir(parents=True, exist_ok=True)
     registry = Registry(REGISTRY_PATH)
 
-    _write_log("Migration started")
+    _write_log("Migration started (force=%s)" % FORCE)
     counts = {
         "ace_collect": ingest_ace_collect_runs(registry),
         "dft_train": ingest_dft_train_runs(registry),

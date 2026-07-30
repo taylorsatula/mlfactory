@@ -122,7 +122,7 @@ def dashboard_cmd(ctx: click.Context, watch_run: str | None, stage: str | None, 
     import subprocess
     import sys
 
-    cmd = [sys.executable, "-m", "mlfactory.dashboard", "--registry", str(ctx.obj["registry"].db_path)]
+    cmd = [sys.executable, "-m", "mlfactory.core.dashboard", "--registry", str(ctx.obj["registry"].db_path)]
     if watch_run:
         cmd.extend(["--watch-run", watch_run])
     if stage:

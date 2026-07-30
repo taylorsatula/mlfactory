@@ -1,0 +1,111 @@
+{
+  "experiment": "dft",
+  "description": "DFT PPO training monitor",
+  "refresh": 2.0,
+  "probes": [
+    {
+      "id": "last_step",
+      "type": "jsonl_last_record",
+      "label": "Step",
+      "file": "{run_dir}/artifacts/logs/train.jsonl",
+      "path": "step"
+    },
+    {
+      "id": "last_policy_loss",
+      "type": "jsonl_last_record",
+      "label": "Policy Loss",
+      "file": "{run_dir}/artifacts/logs/train.jsonl",
+      "path": "ppo/loss/policy",
+      "precision": 4
+    },
+    {
+      "id": "last_entropy",
+      "type": "jsonl_last_record",
+      "label": "Entropy",
+      "file": "{run_dir}/artifacts/logs/train.jsonl",
+      "path": "entropy",
+      "precision": 3,
+      "warn_if_above": 3.0
+    },
+    {
+      "id": "last_mmd2",
+      "type": "jsonl_last_record",
+      "label": "MMD²",
+      "file": "{run_dir}/artifacts/logs/train.jsonl",
+      "path": "mmd2",
+      "precision": 4
+    },
+    {
+      "id": "gpu_peak_alloc_0",
+      "type": "jsonl_last_record",
+      "label": "GPU 0 alloc GiB",
+      "file": "{run_dir}/artifacts/logs/train.jsonl",
+      "path": "gpu_peak_alloc_gib.0",
+      "warn_if_above": 22
+    },
+    {
+      "id": "gpu_peak_alloc_1",
+      "type": "jsonl_last_record",
+      "label": "GPU 1 alloc GiB",
+      "file": "{run_dir}/artifacts/logs/train.jsonl",
+      "path": "gpu_peak_alloc_gib.1",
+      "warn_if_above": 22
+    },
+    {
+      "id": "planned_steps",
+      "type": "spec_value",
+      "label": "Planned steps",
+      "path": "max_steps"
+    },
+    {
+      "id": "final_adapter_exists",
+      "type": "file_exists",
+      "label": "Final adapter",
+      "file": "{run_dir}/artifacts/final/adapter_model.safetensors"
+    },
+    {
+      "id": "gpu_status",
+      "type": "gpu_status",
+      "label": "GPUs"
+    },
+    {
+      "id": "disk_usage",
+      "type": "disk_usage",
+      "label": "Disk",
+      "file": "{run_dir}",
+      "warn_if_above": 80,
+      "danger_if_above": 95
+    }
+  ],
+  "progress": {
+    "numerator_probe": "last_step",
+    "denominator_probe": "planned_steps"
+  },
+  "panes": [
+    {
+      "title": "Overview",
+      "type": "overview",
+      "probes": ["last_step", "last_policy_loss", "last_entropy", "final_adapter_exists"],
+      "ratio": 2
+    },
+    {
+      "title": "Metrics",
+      "type": "metrics_table",
+      "probes": ["last_step", "last_policy_loss", "last_entropy", "last_mmd2", "gpu_peak_alloc_0", "gpu_peak_alloc_1", "disk_usage"],
+      "ratio": 1
+    },
+    {
+      "title": "GPU Status",
+      "type": "gpu_table",
+      "probes": ["gpu_status"],
+      "ratio": 2
+    },
+    {
+      "title": "Recent Log",
+      "type": "recent_log",
+      "config": { "file": "{run_dir}/logs/train.log", "lines": 10 },
+      "size": 12
+    }
+  ],
+  "log_file": "{run_dir}/logs/train.log"
+}

@@ -1,0 +1,93 @@
+{
+  "experiment": "ace",
+  "description": "ACE baseline trajectory collection",
+  "refresh": 2.0,
+  "probes": [
+    {
+      "id": "completed",
+      "type": "file_line_count",
+      "label": "Completed",
+      "file": "{run_dir}/artifacts/generations.jsonl"
+    },
+    {
+      "id": "planned",
+      "type": "const",
+      "label": "Planned",
+      "params": { "value": 550 }
+    },
+    {
+      "id": "errors",
+      "type": "regex_count",
+      "label": "Errors",
+      "file": "{run_dir}/logs/collect.log",
+      "regex": "ERROR",
+      "warn_if_above": 0
+    },
+    {
+      "id": "retries",
+      "type": "regex_count",
+      "label": "Retries",
+      "file": "{run_dir}/logs/collect.log",
+      "regex": "Retry"
+    },
+    {
+      "id": "current",
+      "type": "regex_last_match",
+      "label": "Current",
+      "file": "{run_dir}/logs/collect.log",
+      "regex": "CLASSIFY (\\S+)"
+    },
+    {
+      "id": "server_health",
+      "type": "http_json",
+      "label": "Server",
+      "url": "http://127.0.0.1:3090/health",
+      "path": "status"
+    },
+    {
+      "id": "gpu_status",
+      "type": "gpu_status",
+      "label": "GPUs"
+    },
+    {
+      "id": "disk_usage",
+      "type": "disk_usage",
+      "label": "Disk",
+      "file": "{run_dir}",
+      "warn_if_above": 80,
+      "danger_if_above": 95
+    }
+  ],
+  "progress": {
+    "numerator_probe": "completed",
+    "denominator_probe": "planned",
+    "denominator_label": "samples"
+  },
+  "panes": [
+    {
+      "title": "Overview",
+      "type": "overview",
+      "probes": ["completed", "errors", "retries", "current", "server_health"],
+      "ratio": 2
+    },
+    {
+      "title": "Metrics",
+      "type": "metrics_table",
+      "probes": ["completed", "errors", "retries", "server_health", "disk_usage"],
+      "ratio": 1
+    },
+    {
+      "title": "GPU Status",
+      "type": "gpu_table",
+      "probes": ["gpu_status"],
+      "ratio": 2
+    },
+    {
+      "title": "Recent Log",
+      "type": "recent_log",
+      "config": { "file": "{run_dir}/logs/collect.log", "lines": 10 },
+      "size": 12
+    }
+  ],
+  "log_file": "{run_dir}/logs/collect.log"
+}
