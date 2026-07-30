@@ -9,6 +9,7 @@ import click
 from mlfactory.core.manifest import RunManifest
 from mlfactory.core.registry import Registry
 from mlfactory.core.runner import create_run, run_from_spec
+from mlfactory.core.secrets import SecretsStore
 from mlfactory.remote.ssh_runner import SSHConfig
 from mlfactory.remote.vast import VastRunner, load_api_key
 
@@ -132,6 +133,88 @@ def dashboard_cmd(ctx: click.Context, watch_run: str | None, stage: str | None, 
         cmd.extend(["--stage", stage])
     cmd.extend(["--refresh", str(refresh)])
     raise SystemExit(subprocess.call(cmd))
+
+
+# ---------------------------------------------------------------------------
+# registry commands
+# ---------------------------------------------------------------------------
+
+@main.group()
+def registry() -> None:
+    """Registry management commands."""
+    pass
+
+
+@registry.command("merge")
+@click.argument("source", type=click.Path(exists=True, path_type=Path))
+@click.option("--strategy", "-s", type=click.Choice(["skip", "replace"]), default="skip")
+@click.pass_context
+def registry_merge(ctx: click.Context, source: Path, strategy: str) -> None:
+    """Merge another SQLite registry into the current one."""
+    reg: Registry = ctx.obj["registry"]
+    counts = reg.merge_from(source, on_conflict=strategy)
+    click.echo(
+        f"Merged registry from {source}: "
+        f"added {counts['runs_added']} runs, "
+        f"replaced {counts['runs_replaced']} runs, "
+        f"skipped {counts['runs_skipped']} runs, "
+        f"{counts['lineage']} lineage edges, "
+        f"{counts['metrics']} metrics."
+    )
+
+
+# ---------------------------------------------------------------------------
+# secrets commands
+# ---------------------------------------------------------------------------
+
+@main.group()
+def secrets() -> None:
+    """Manage stored API keys and credentials."""
+    pass
+
+
+@secrets.command("set")
+@click.argument("key")
+@click.argument("value")
+def secrets_set(key: str, value: str) -> None:
+    """Store a secret value."""
+    store = SecretsStore()
+    store.set(key, value)
+    click.echo(f"Stored secret {key}")
+
+
+@secrets.command("get")
+@click.argument("key")
+def secrets_get(key: str) -> None:
+    """Retrieve a secret value."""
+    store = SecretsStore()
+    value = store.get(key)
+    if value is None:
+        raise click.ClickException(f"secret {key} not found")
+    click.echo(value)
+
+
+@secrets.command("list")
+def secrets_list() -> None:
+    """List stored secret keys (values are not shown)."""
+    store = SecretsStore()
+    keys = sorted(store.list().keys())
+    if not keys:
+        click.echo("No secrets stored.")
+        return
+    for key in keys:
+        click.echo(key)
+
+
+@secrets.command("delete")
+@click.argument("key")
+def secrets_delete(key: str) -> None:
+    """Delete a stored secret."""
+    store = SecretsStore()
+    if store.delete(key):
+        click.echo(f"Deleted secret {key}")
+    else:
+        raise click.ClickException(f"secret {key} not found")
 
 
 # ---------------------------------------------------------------------------

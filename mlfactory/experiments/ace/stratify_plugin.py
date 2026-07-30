@@ -5,9 +5,32 @@ import os
 import subprocess
 import sys
 from pathlib import Path
+from typing import Any
 
 from mlfactory.core.manifest import FileRecord, sha256_file
 from mlfactory.plugins.base import PLUGINS, StagePlugin
+
+
+def _expand(value: Any) -> Any:
+    """Expand ${VAR} or ${VAR:default} references in string values.
+
+    Already-resolved values (no ${...} placeholders) are returned unchanged so
+    that secret values containing '$' are not accidentally mutated.
+    """
+    if not isinstance(value, str):
+        return value
+
+    import re
+
+    if "${" not in value:
+        return value
+
+    def repl(match: re.Match[str]) -> str:
+        var = match.group(1)
+        default = match.group(2)
+        return os.environ.get(var, default if default is not None else "")
+
+    return re.sub(r"\$\{([^}:]+)(?::([^}]*))?\}", repl, value)
 
 
 class StratifyPlugin(StagePlugin):
@@ -15,7 +38,6 @@ class StratifyPlugin(StagePlugin):
 
     def __init__(self, manifest):
         super().__init__(manifest)
-        self.run_dir = Path(self.manifest.source.path).parent
         self.spec = manifest.spec
 
     def _script_path(self, name: str) -> Path:
@@ -41,7 +63,7 @@ class StratifyPlugin(StagePlugin):
             "--run-dir", str(self.run_dir),
             "--input", str(Path(s["input"]).resolve()),
             "--base-url", str(s.get("base_url", "https://openrouter.ai/api/v1")),
-            "--api-key", str(s.get("api_key", "none")),
+            "--api-key", str(_expand(s.get("api_key", "none"))),
             "--model", str(s.get("model", "qwen/qwen3.6-27b")),
             "--temperature", str(s.get("temperature", 0.2)),
             "--max-tokens", str(s.get("max_tokens", 4096)),
@@ -56,6 +78,8 @@ class StratifyPlugin(StagePlugin):
             cmd.extend(["--extra-instructions", str(s["extra_instructions"])])
         if s.get("extra_body"):
             cmd.extend(["--extra-body", str(s["extra_body"])])
+        if s.get("offset"):
+            cmd.extend(["--offset", str(s["offset"])])
         if s.get("max_records"):
             cmd.extend(["--max-records", str(s["max_records"])])
         if s.get("no_json_mode"):

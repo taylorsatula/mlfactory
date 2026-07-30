@@ -32,15 +32,14 @@ def load_markdown(path: str | Path) -> str:
 
 
 def render_markdown(path: str | Path, **kwargs: Any) -> str:
-    """Load a markdown prompt and inject placeholders via ``str.format``.
+    """Load a markdown prompt and inject placeholders.
 
-    Missing placeholders are left unchanged so the prompt can still contain
-    literal braces that are not meant as templates.
+    Only replaces ``{key}`` occurrences for the supplied ``kwargs``; all other
+    braces (e.g. JSON examples, ``{{PROBLEM}}``) are left untouched. This is
+    safer than ``str.format`` for prompts that contain literal JSON or escaped
+    braces.
     """
     text = load_markdown(path)
-    try:
-        return text.format(**kwargs)
-    except KeyError as exc:
-        raise PromptTemplateError(f"missing prompt placeholder: {exc}") from exc
-    except ValueError as exc:
-        raise PromptTemplateError(f"invalid prompt template syntax: {exc}") from exc
+    for key, value in kwargs.items():
+        text = text.replace(f"{{{key}}}", str(value))
+    return text

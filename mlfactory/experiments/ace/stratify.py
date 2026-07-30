@@ -326,6 +326,7 @@ def main() -> None:
     ap.add_argument("--max-tokens", type=int, default=4096)
     ap.add_argument("--extra-body", default="")
     ap.add_argument("--no-json-mode", action="store_true")
+    ap.add_argument("--offset", type=int, default=0, help="Number of records to skip from the start of the input.")
     ap.add_argument("--max-records", type=int)
     ap.add_argument("--max-workers", type=int, default=1)
     ap.add_argument("--retries", type=int, default=3)
@@ -347,6 +348,8 @@ def main() -> None:
     template = render_markdown(prompt_path, extra_instructions=args.extra_instructions)
 
     records = load_jsonl(args.input)
+    if args.offset:
+        records = records[args.offset:]
     if args.max_records is not None:
         records = records[:args.max_records]
 

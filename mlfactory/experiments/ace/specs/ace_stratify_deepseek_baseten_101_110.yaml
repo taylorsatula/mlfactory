@@ -1,11 +1,13 @@
 stage: stratify
-name: qwen36-27b-stratifier
+name: deepseek-v4-baseten-101-110
 experiment: ace
 
-# Input is typically the KEEP.jsonl bucket from an ACE classify run.
-input: mlfactory/experiments/ace/data/KEEP.jsonl
+# Slice records 101-110 (0-indexed offset 100, length 10) from KEEP bucket.
+input: /home/admin/ace-baseline-trajectories/outputs/full_run_buckets/KEEP.jsonl
+offset: 100
+max_records: 10
 
-model: qwen/qwen3.6-27b
+model: deepseek/deepseek-v4-pro
 base_url: https://openrouter.ai/api/v1
 api_key: "${secrets.ACE_STRATIFIER_API_KEY}"
 temperature: 0.2
@@ -15,10 +17,13 @@ max_tokens: 4096
 prompt: mlfactory/experiments/ace/prompts/stratify_system_prompt.md
 extra_instructions: ""
 
+# Route through Baseten provider on OpenRouter.
+extra_body: '{"provider": {"order": ["Baseten"]}}'
+
 retries: 3
 backoff: 2.0
-max_workers: 1
-loop_delay: 0.3
+max_workers: 10
+loop_delay: 0.0
 
 env:
   HF_HOME: /home/admin/.cache/huggingface

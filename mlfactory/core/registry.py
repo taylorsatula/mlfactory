@@ -75,34 +75,8 @@ class Registry:
     # run CRUD
     # ------------------------------------------------------------------
     def register(self, manifest: RunManifest) -> None:
-        import hashlib
-
-        manifest_json = manifest.model_dump_json()
-        manifest_sha256 = hashlib.sha256(manifest_json.encode("utf-8")).hexdigest()
         with self._connect() as conn:
-            conn.execute(
-                """
-                INSERT INTO runs (run_id, stage, status, created_at, started_at, completed_at, manifest_json, manifest_sha256)
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?)
-                ON CONFLICT(run_id) DO UPDATE SET
-                    stage=excluded.stage,
-                    status=excluded.status,
-                    started_at=excluded.started_at,
-                    completed_at=excluded.completed_at,
-                    manifest_json=excluded.manifest_json,
-                    manifest_sha256=excluded.manifest_sha256
-                """,
-                (
-                    manifest.run_id,
-                    manifest.stage,
-                    manifest.status,
-                    manifest.created_at,
-                    manifest.started_at,
-                    manifest.completed_at,
-                    manifest_json,
-                    manifest_sha256,
-                ),
-            )
+            self._insert_run_row(conn, manifest)
             conn.commit()
 
     def get(self, run_id: str) -> RunManifest | None:
@@ -227,6 +201,140 @@ class Registry:
             if r["value"] is not None:
                 out.append((r["step"], r["value"]))
         return out
+
+    # ------------------------------------------------------------------
+    # merge
+    # ------------------------------------------------------------------
+    def merge_from(
+        self,
+        source_db_path: str | Path,
+        on_conflict: str = "skip",
+    ) -> dict[str, int]:
+        """Merge runs, lineage, and metrics from another registry database.
+
+        Args:
+            source_db_path: path to the source SQLite registry.
+            on_conflict: ``skip`` keeps existing runs; ``replace`` overwrites
+                them and replaces their lineage/metrics.
+
+        Returns:
+            A dict with counts for ``runs_added``, ``runs_replaced``,
+            ``runs_skipped``, ``lineage``, and ``metrics``.
+        """
+        source_db_path = Path(source_db_path)
+        if not source_db_path.exists():
+            raise FileNotFoundError(f"source registry not found: {source_db_path}")
+        if source_db_path.resolve() == self.db_path.resolve():
+            raise ValueError("cannot merge a registry into itself")
+        if on_conflict not in {"skip", "replace"}:
+            raise ValueError(f"on_conflict must be 'skip' or 'replace', got {on_conflict!r}")
+
+        counts = {"runs_added": 0, "runs_replaced": 0, "runs_skipped": 0, "lineage": 0, "metrics": 0}
+
+        # Read everything from the source registry into memory.
+        source = Registry(source_db_path)
+        source_runs = source.find(limit=10_000_000)
+        source_lineage: list[tuple[str, str, str]] = []
+        source_metrics: list[dict] = []
+
+        with source._connect() as src_conn:
+            for parent_id, child_id, relation in src_conn.execute(
+                "SELECT parent_run_id, child_run_id, relation FROM run_lineage"
+            ).fetchall():
+                source_lineage.append((parent_id, child_id, relation))
+            for row in src_conn.execute("SELECT run_id, step, timestamp, key, value, json_value FROM metrics").fetchall():
+                source_metrics.append(dict(row))
+
+        # Determine which runs are new vs existing in the target registry.
+        existing_run_ids = {r.run_id for r in self.find(limit=10_000_000)}
+        runs_to_add: list[RunManifest] = []
+        runs_to_replace: list[RunManifest] = []
+        for manifest in source_runs:
+            if manifest.run_id in existing_run_ids:
+                if on_conflict == "replace":
+                    runs_to_replace.append(manifest)
+                else:
+                    counts["runs_skipped"] += 1
+            else:
+                runs_to_add.append(manifest)
+
+        imported_run_ids = {m.run_id for m in runs_to_add + runs_to_replace}
+
+        with self._connect() as conn:
+            # Insert new runs.
+            for manifest in runs_to_add:
+                self._insert_run_row(conn, manifest)
+            counts["runs_added"] = len(runs_to_add)
+
+            # Replace existing runs and clear their old lineage/metrics.
+            for manifest in runs_to_replace:
+                run_id = manifest.run_id
+                conn.execute("DELETE FROM run_lineage WHERE parent_run_id = ? OR child_run_id = ?", (run_id, run_id))
+                conn.execute("DELETE FROM metrics WHERE run_id = ?", (run_id,))
+                self._insert_run_row(conn, manifest)
+            counts["runs_replaced"] = len(runs_to_replace)
+
+            # Copy lineage for imported runs (both ends must be imported).
+            for parent_id, child_id, relation in source_lineage:
+                if parent_id in imported_run_ids and child_id in imported_run_ids:
+                    try:
+                        conn.execute(
+                            "INSERT INTO run_lineage (parent_run_id, child_run_id, relation) VALUES (?, ?, ?)",
+                            (parent_id, child_id, relation),
+                        )
+                        counts["lineage"] += 1
+                    except sqlite3.IntegrityError:
+                        pass
+
+            # Copy metrics for imported runs.
+            for metric in source_metrics:
+                if metric["run_id"] in imported_run_ids:
+                    conn.execute(
+                        "INSERT INTO metrics (run_id, step, timestamp, key, value, json_value) VALUES (?, ?, ?, ?, ?, ?)",
+                        (
+                            metric["run_id"],
+                            metric["step"],
+                            metric["timestamp"],
+                            metric["key"],
+                            metric["value"],
+                            metric["json_value"],
+                        ),
+                    )
+                    counts["metrics"] += 1
+
+            conn.commit()
+
+        return counts
+
+    @staticmethod
+    def _insert_run_row(conn: sqlite3.Connection, manifest: RunManifest) -> None:
+        import hashlib
+
+        manifest_json = manifest.model_dump_json()
+        manifest_sha256 = hashlib.sha256(manifest_json.encode("utf-8")).hexdigest()
+        conn.execute(
+            """
+            INSERT INTO runs (run_id, stage, status, created_at, started_at, completed_at, manifest_json, manifest_sha256)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+            ON CONFLICT(run_id) DO UPDATE SET
+                stage=excluded.stage,
+                status=excluded.status,
+                started_at=excluded.started_at,
+                completed_at=excluded.completed_at,
+                manifest_json=excluded.manifest_json,
+                manifest_sha256=excluded.manifest_sha256
+            """,
+            (
+                manifest.run_id,
+                manifest.stage,
+                manifest.status,
+                manifest.created_at,
+                manifest.started_at,
+                manifest.completed_at,
+                manifest_json,
+                manifest_sha256,
+            ),
+        )
 
     # ------------------------------------------------------------------
     # migration helpers

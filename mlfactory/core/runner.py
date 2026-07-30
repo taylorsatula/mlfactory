@@ -20,6 +20,7 @@ from mlfactory.core.manifest import (
     sha256_file,
 )
 from mlfactory.core.registry import Registry
+from mlfactory.core.secrets import SecretsStore, expand_secrets
 from mlfactory.plugins.base import PLUGINS
 
 # Register built-in experiment plugins.
@@ -150,12 +151,19 @@ def run_from_spec(
     for parent in manifest.parent_runs:
         registry.link_runs(parent, manifest.run_id, "input")
 
+    # Resolve ${secrets.KEY} references for execution, but keep the manifest
+    # written with the original placeholders so credentials are not archived.
+    original_spec = manifest.spec
+    resolved_spec = expand_secrets(original_spec)
+    manifest.spec = resolved_spec
+
     plugin_cls = PLUGINS.get(manifest.stage)
     plugin = plugin_cls(manifest)
 
     try:
         plugin.run()
     finally:
+        manifest.spec = original_spec
         manifest.write(Path(manifest.source.path).parent / "manifest.json")
         registry.register(manifest)
 

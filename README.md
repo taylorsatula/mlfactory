@@ -237,6 +237,15 @@ runner.pull_registry(".mlfactory/registry-remote.db")
 runner.stop()
 ```
 
+After pulling a remote registry, merge it into your local one:
+
+```bash
+mlfactory registry merge .mlfactory/registry-remote.db
+
+# Replace existing runs with the remote versions instead of skipping them.
+mlfactory registry merge .mlfactory/registry-remote.db --strategy replace
+```
+
 ---
 
 ## Writing a spec
@@ -351,14 +360,12 @@ Implemented:
 - [x] Vast.ai remote runner: provision, run spec, pull outputs/registry, stop/destroy
 - [x] Non-destructive legacy-run migration
 - [x] Smoke tests for manifest and registry
+- [x] `MetricsLogger` streaming to `dashboard.jsonl` and the registry metrics table
+- [x] Registry merge utility (`mlfactory registry merge`)
 
 Still tightening:
 
-- [ ] Telemetry streaming into `dashboard.jsonl` during runs
-- [ ] More stage-specific dashboard panes
-- [ ] Vast.ai-specific provisioning helpers (templates, spot/preemptible handling)
 - [ ] Regression tests for plugin execution paths
-- [ ] Remote registry merge utility
 
 ---
 

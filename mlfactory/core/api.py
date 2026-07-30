@@ -70,17 +70,16 @@ class APIClient:
         if response_format is not None:
             payload["response_format"] = response_format
 
-        body_extras: dict[str, Any] = {}
+        # Merge extra_body fields at the top level, matching OpenAI client behavior.
         if top_k is not None:
-            body_extras["top_k"] = top_k
+            payload["top_k"] = top_k
         if extra_body:
-            body_extras.update(extra_body)
-        if body_extras:
-            payload["extra_body"] = body_extras
+            payload.update(extra_body)
 
         url = f"{self.config.base_url.rstrip('/')}/chat/completions"
         last_exc: Exception | None = None
-        for attempt in range(self.config.max_retries):
+        # max_retries is retries *after* the first attempt, so always try once.
+        for attempt in range(self.config.max_retries + 1):
             try:
                 resp = self._session.post(
                     url,
