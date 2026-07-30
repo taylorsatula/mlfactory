@@ -1,16 +1,14 @@
-"""Factory plugin that wraps the legacy ACE collect.py / llama-server flow.
+"""Factory plugin that wraps the native ACE collect.py.
 
-The plugin uses the reusable ``model()`` resource manager to start a disposable
-llama-server for the duration of the run, then runs ``collect.py`` against it.
+Starts a disposable llama-server via the reusable ``model()`` resource manager
+and runs ``collect.py`` against it.
 """
 from __future__ import annotations
 
 import os
-import shutil
 import subprocess
 import sys
 from pathlib import Path
-from typing import Any
 
 from mlfactory.core.manifest import FileRecord, sha256_file
 from mlfactory.core.model_server import model
@@ -22,66 +20,59 @@ class CollectPlugin(StagePlugin):
 
     def __init__(self, manifest):
         super().__init__(manifest)
-        self.run_dir = Path(self.manifest.source.path).parent if self.manifest.source else Path("runs") / self.manifest.run_id
+        self.run_dir = Path(self.manifest.source.path).parent
         self.spec = manifest.spec
-
-    def _env(self, base_url: str) -> dict[str, str]:
-        env = dict(os.environ)
-        env.update(self.spec.get("env", {}))
-        env.setdefault("PYTHONUNBUFFERED", "1")
-        env["ACE_BASE_URL"] = base_url
-        env["ACE_MODEL_NAME"] = self.spec.get("model_name", "Qwen/Qwen3.5-4B")
-        env["ACE_PROVIDER"] = self.spec.get("provider", "llama")
-        env["ACE_MAX_MODEL_LEN"] = str(self.spec.get("max_model_len", 32768))
-        env["ACE_MAX_OUTPUT_TOKENS"] = str(self.spec.get("max_output_tokens", 16000))
-        env["ACE_REQUEST_TIMEOUT"] = str(self.spec.get("request_timeout", 1200))
-        env["ACE_TIME_BUDGET_SECONDS"] = str(self.spec.get("time_budget_seconds", 900))
-        env["ACE_SEED_OFFSET"] = str(self.spec.get("seed_offset", 0))
-        env["ACE_STRATIFIED_EXTRAS"] = str(self.spec.get("stratified_extras", 3))
-        return env
 
     def _script_path(self, name: str) -> Path:
         return Path(__file__).parent / name
+
+    def _env(self) -> dict[str, str]:
+        env = dict(os.environ)
+        env.update(self.spec.get("env", {}))
+        env.setdefault("PYTHONUNBUFFERED", "1")
+        return env
 
     def prepare(self) -> None:
         (self.run_dir / "artifacts").mkdir(parents=True, exist_ok=True)
         (self.run_dir / "logs").mkdir(parents=True, exist_ok=True)
 
     def execute(self) -> None:
-        model_alias = self.spec.get("model", "qwen3.5:4b")
-        gpu = self.spec.get("gpu", 0)
-        python = self.spec.get("python", sys.executable)
+        s = self.spec
+        python = s.get("python", sys.executable)
+        model_alias = s.get("model", "qwen3.5:4b")
+        gpu = s.get("gpu", 0)
 
         with model(model_alias, gpu=gpu) as srv:
-            env = self._env(srv.base_url)
-            out_dir = self.run_dir / "artifacts"
-            prompts = Path(self.spec["prompts"])
-
             cmd = [
                 python,
                 str(self._script_path("collect.py")),
-                "--prompts", str(prompts),
-                "--out-dir", str(out_dir),
+                "--run-dir", str(self.run_dir),
+                "--prompts", str(s["prompts"]),
+                "--base-url", srv.base_url,
+                "--model-name", str(s.get("model_name", "Qwen/Qwen3.5-4B")),
+                "--provider", str(s.get("provider", "llama")),
+                "--max-model-len", str(s.get("max_model_len", 32768)),
+                "--max-output-tokens", str(s.get("max_output_tokens", 16000)),
+                "--request-timeout", str(s.get("request_timeout", 1200)),
+                "--time-budget-seconds", str(s.get("time_budget_seconds", 900)),
+                "--seed-offset", str(s.get("seed_offset", 0)),
+                "--stratified-extras", str(s.get("stratified_extras", 3)),
             ]
-            if self.spec.get("max_samples"):
-                cmd.extend(["--max-samples", str(self.spec["max_samples"])])
+            if s.get("max_samples"):
+                cmd.extend(["--max-samples", str(s["max_samples"])])
 
             log = self.run_dir / "logs" / "collect.log"
-            with open(log, "w") as lf:
-                proc = subprocess.Popen(
-                    cmd,
-                    env=env,
-                    stdout=lf,
-                    stderr=subprocess.STDOUT,
-                )
+            err = self.run_dir / "logs" / "collect.err"
+            with open(log, "w") as lf, open(err, "w") as ef:
+                proc = subprocess.Popen(cmd, env=self._env(), stdout=lf, stderr=ef)
                 rc = proc.wait()
             if rc != 0:
                 raise RuntimeError(f"collect.py exited with code {rc}")
 
     def finalize(self) -> None:
-        out_dir = self.run_dir / "artifacts"
-        for name in ["generations.jsonl", "manifest.json"]:
-            p = out_dir / name
+        artifacts_dir = self.run_dir / "artifacts"
+        for name in ["generations.jsonl"]:
+            p = artifacts_dir / name
             if p.exists():
                 self.manifest.artifacts.append(
                     FileRecord(
@@ -92,9 +83,8 @@ class CollectPlugin(StagePlugin):
                     )
                 )
         self.manifest.summary = {
-            "provider": self.spec.get("provider"),
-            "model_name": self.spec.get("model_name"),
             "model_alias": self.spec.get("model"),
+            "model_name": self.spec.get("model_name"),
             "prompts": str(Path(self.spec["prompts"]).resolve()),
         }
         self.manifest.write(self.run_dir / "manifest.json")

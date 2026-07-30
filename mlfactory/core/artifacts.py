@@ -16,7 +16,7 @@ from mlfactory.core.manifest import FileRecord, RunManifest, sha256_file
 def _write_json_atomic(path: Path, data: Any) -> None:
     tmp = path.with_suffix(path.suffix + ".tmp")
     with tmp.open("w", encoding="utf-8") as f:
-        json.dump(data, f, indent=2, ensure_ascii=False)
+        json.dump(data, f, indent=2, ensure_ascii=False, default=str)
         f.flush()
     tmp.replace(path)
 

@@ -28,7 +28,9 @@ from openai import OpenAI
 from transformers import AutoTokenizer
 
 from mlfactory.core.api import APIConfig, Judge, run_judge_pairwise
+from mlfactory.core.artifacts import save_summary
 from mlfactory.core.embeddings import Embedder
+from mlfactory.core.metrics import MetricsLogger
 
 
 # ---------------------------------------------------------------------------
@@ -258,6 +260,7 @@ def self_bleu(texts: list[str], n: int = 4) -> float:
 
 def main() -> int:
     p = argparse.ArgumentParser(description="DFT Phase-0 eval harness")
+    p.add_argument("--run-dir", type=Path, default=None, help="mlfactory run directory")
     p.add_argument("--test-file", required=True, help="JSONL with prompt, reference fields")
     p.add_argument("--gen-url", default="http://localhost:3090/v1", help="OpenAI-compatible generation endpoint")
     p.add_argument("--gen-model", default="Qwopus3.6-27b", help="model id for generation")
@@ -285,8 +288,14 @@ def main() -> int:
     np.random.seed(args.seed)
     torch.manual_seed(args.seed)
 
-    out_dir = Path(args.out_dir)
+    if args.run_dir:
+        run_dir = Path(args.run_dir)
+        out_dir = run_dir / "artifacts"
+    else:
+        out_dir = Path(args.out_dir)
     out_dir.mkdir(parents=True, exist_ok=True)
+
+    metrics = MetricsLogger(run_dir if args.run_dir else out_dir, echo=True)
 
     rows = load_jsonl(args.test_file)
     if args.n:
@@ -394,8 +403,7 @@ def main() -> int:
         "config": vars(args),
         "results": results,
     }
-    with open(out_dir / "summary.json", "w", encoding="utf-8") as f:
-        json.dump(summary, f, indent=2)
+    save_summary(str(run_dir if args.run_dir else out_dir), summary)
 
     log(f"results written to {out_dir}")
     return 0

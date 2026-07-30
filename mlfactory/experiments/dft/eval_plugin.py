@@ -47,8 +47,8 @@ class EvalPlugin(StagePlugin):
         cmd = [
             python,
             str(self._script_path("eval.py")),
+            "--run-dir", str(self.run_dir),
             "--test-file", str(s["test_file"]),
-            "--out-dir", str(out_dir),
             "--gen-model", str(s.get("gen_model", "Qwopus3.6-27b")),
             "--tokenizer", str(s.get("tokenizer", "qwen/Qwen3.6-27B")),
             "--embed-model", str(s.get("embed_model", "nvidia/llama-embed-nemotron-8b")),

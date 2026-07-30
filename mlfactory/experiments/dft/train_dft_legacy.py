@@ -33,9 +33,7 @@ from transformers import AutoModelForCausalLM, AutoTokenizer, BitsAndBytesConfig
 os.environ.setdefault("TRL_EXPERIMENTAL_SILENCE", "1")
 from trl.experimental.ppo.modeling_value_head import AutoModelForCausalLMWithValueHead
 
-from mlfactory.core.artifacts import save_checkpoint, save_config, save_summary
 from mlfactory.core.embeddings import embedder as get_embedder
-from mlfactory.core.env import training_env
 from mlfactory.core.metrics import MetricsLogger
 
 # Re-use cheap diagnostics from eval.py (no network side effects on import).
@@ -104,8 +102,7 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
     p.add_argument("--model-name", default=None, help="base HF model (default tries Qwen3.6-4B then Qwen2.5-7B)")
     p.add_argument("--train-file", required=True, help="JSONL with prompt, reference fields")
     p.add_argument("--test-file", required=True, help="JSONL with prompt, reference fields")
-    p.add_argument("--run-dir", type=Path, required=True, help="mlfactory run directory")
-    p.add_argument("--out-dir", default=None, help="legacy alias; ignored when --run-dir is given")
+    p.add_argument("--out-dir", default="./out_train", help="where to save adapters and logs")
 
     # embedding reward model
     p.add_argument("--embed-model", default="BAAI/bge-large-en-v1.5", help="sentence-transformers embedder")
@@ -865,15 +862,14 @@ def main(argv: list[str] | None = None) -> int:
     if args.batch_size < 2 or args.num_eval_samples == 1:
         raise ValueError("training and unbiased MMD evaluation require at least two samples")
 
-    run_dir = Path(args.run_dir)
-    out_dir = run_dir / "artifacts"
-    logs_dir = run_dir / "logs"
+    out_dir = Path(args.out_dir)
     out_dir.mkdir(parents=True, exist_ok=True)
-    logs_dir.mkdir(parents=True, exist_ok=True)
+    (out_dir / "logs").mkdir(parents=True, exist_ok=True)
 
     log(f"model={args.model_name}  train={args.train_file}  test={args.test_file}")
 
-    save_config(str(run_dir), vars(args), name="train_config.json")
+    with open(out_dir / "train_config.json", "w", encoding="utf-8") as f:
+        json.dump(vars(args), f, indent=2, default=str)
 
     train_rows = load_jsonl(args.train_file)
     test_rows_all = load_jsonl(args.test_file)
@@ -1091,15 +1087,21 @@ def main(argv: list[str] | None = None) -> int:
                     "baseline_response_tokens": baseline_response_tokens, "baseline_entropy": baseline_entropy,
                     "observed_response_tokens": mean_tokens, "observed_entropy": entropy,
                     "reference_kl_k3_per_token": stats["rollout/ref_kl_k3_per_token"]}
-                save_checkpoint(str(run_dir), global_step, policy, tokenizer, label=f"guard-checkpoint-{global_step}")
+                guard_dir = out_dir / f"guard-checkpoint-{global_step}"
+                guard_dir.mkdir(parents=True, exist_ok=True)
+                policy.save_pretrained(guard_dir)
+                tokenizer.save_pretrained(guard_dir)
                 with open(out_dir / "guard_report.json", "w", encoding="utf-8") as f:
                     json.dump(guard_report, f, indent=2)
                 log(f"guard triggered; checkpoint saved to {guard_dir}: {guard_report}")
                 break
 
             if global_step % args.save_every == 0:
-                ckpt_path = save_checkpoint(str(run_dir), global_step, policy, tokenizer)
-                log(f"saved checkpoint {ckpt_path}")
+                ckpt_dir = out_dir / f"checkpoint-{global_step}"
+                ckpt_dir.mkdir(parents=True, exist_ok=True)
+                policy.save_pretrained(ckpt_dir)
+                tokenizer.save_pretrained(ckpt_dir)
+                log(f"saved checkpoint {ckpt_dir}")
 
             if global_step % args.eval_every == 0:
                 log("running eval")
@@ -1115,11 +1117,15 @@ def main(argv: list[str] | None = None) -> int:
 
     if guard_triggered:
         if guard_report is not None and not (out_dir / "guard_report.json").exists():
-            save_checkpoint(str(run_dir), global_step, policy, tokenizer, label=f"guard-checkpoint-{global_step}")
+            guard_dir = out_dir / f"guard-checkpoint-{global_step}"
+            guard_dir.mkdir(parents=True, exist_ok=True)
+            policy.save_pretrained(guard_dir)
+            tokenizer.save_pretrained(guard_dir)
             with open(out_dir / "guard_report.json", "w", encoding="utf-8") as f:
                 json.dump(guard_report, f, indent=2)
         summary["guard"] = guard_report
-        save_summary(str(run_dir), summary)
+        with open(out_dir / "summary.json", "w", encoding="utf-8") as f:
+            json.dump(summary, f, indent=2, default=str)
         log("training terminated cleanly by guard; no final adapter was written")
         return 0
 
@@ -1133,9 +1139,13 @@ def main(argv: list[str] | None = None) -> int:
         json.dump(eval_out, f, indent=2)
     log(json.dumps(eval_out))
 
-    save_checkpoint(str(run_dir), None, policy, tokenizer, label="final")
-    save_summary(str(run_dir), summary)
-    log(f"training complete; final adapter saved to {out_dir / 'final'}")
+    final_dir = out_dir / "final"
+    final_dir.mkdir(parents=True, exist_ok=True)
+    policy.save_pretrained(final_dir)
+    tokenizer.save_pretrained(final_dir)
+    with open(out_dir / "summary.json", "w", encoding="utf-8") as f:
+        json.dump(summary, f, indent=2, default=str)
+    log(f"training complete; final adapter saved to {final_dir}")
     return 0
 
 

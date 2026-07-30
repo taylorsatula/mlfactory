@@ -1,4 +1,4 @@
-"""Factory plugin that wraps the legacy DFT train_dft.py.
+"""Factory plugin that wraps the native DFT train_dft.py.
 
 The plugin translates the mlfactory spec into train_dft.py CLI arguments and
 records the resulting checkpoints / summary / logs as artifacts.
@@ -9,24 +9,23 @@ import os
 import subprocess
 import sys
 from pathlib import Path
-from typing import Any
 
+from mlfactory.core.artifacts import save_summary
 from mlfactory.core.env import DEFAULT_TRAINING_ENV
-from mlfactory.core.manifest import FileRecord, sha256_file
+from mlfactory.core.manifest import FileRecord, RunManifest, sha256_file
 from mlfactory.plugins.base import PLUGINS, StagePlugin
 
 
 class TrainPlugin(StagePlugin):
     stage = "train"
 
-    def __init__(self, manifest):
+    def __init__(self, manifest: RunManifest):
         super().__init__(manifest)
         self.run_dir = Path(self.manifest.source.path).parent
         self.spec = manifest.spec
 
     def _env(self) -> dict[str, str]:
         env = dict(os.environ)
-        # Apply standard training env defaults first.
         for key, value in DEFAULT_TRAINING_ENV.items():
             env.setdefault(key, value)
         env.update(self.spec.get("env", {}))
@@ -42,16 +41,15 @@ class TrainPlugin(StagePlugin):
     def execute(self) -> None:
         env = self._env()
         s = self.spec
-        out_dir = self.run_dir / "artifacts"
         python = s.get("python", sys.executable)
 
         cmd = [
             python,
             str(self._script_path("train_dft.py")),
+            "--run-dir", str(self.run_dir),
             "--model-name", str(s.get("model_name", "Qwen/Qwen3.5-4B")),
             "--train-file", str(s["train_file"]),
             "--test-file", str(s["test_file"]),
-            "--out-dir", str(out_dir),
             "--embed-model", str(s.get("embed_model", "nvidia/llama-embed-nemotron-8b")),
             "--embed-device", str(s.get("embed_device", "cuda:1")),
             "--device", str(s.get("device", "cuda:0")),
@@ -97,12 +95,7 @@ class TrainPlugin(StagePlugin):
         log = self.run_dir / "logs" / "train.log"
         err = self.run_dir / "logs" / "train.err"
         with open(log, "w") as lf, open(err, "w") as ef:
-            proc = subprocess.Popen(
-                cmd,
-                env=env,
-                stdout=lf,
-                stderr=ef,
-            )
+            proc = subprocess.Popen(cmd, env=env, stdout=lf, stderr=ef)
             rc = proc.wait()
         if rc != 0:
             raise RuntimeError(f"train_dft.py exited with code {rc}")
@@ -110,7 +103,7 @@ class TrainPlugin(StagePlugin):
     def finalize(self) -> None:
         out_dir = self.run_dir / "artifacts"
         # Hash all checkpoint / final / summary files.
-        for pattern in ["summary.json", "train_config.json", "final/**/*", "checkpoint-*/**/*", "logs/*"]:
+        for pattern in ["summary.json", "train_config.json", "final/**/*", "checkpoint-*/**/*", "guard-checkpoint-*/**/*", "*.json"]:
             for p in out_dir.glob(pattern):
                 if p.is_file():
                     self.manifest.artifacts.append(

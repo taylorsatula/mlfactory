@@ -11,6 +11,10 @@ api_key: "${ACE_CLASSIFIER_API_KEY:none}"
 temperature: 0.6
 max_tokens: 65536
 
+# Markdown system prompt; supports {extra_instructions} placeholder.
+system_prompt: mlfactory/experiments/ace/prompts/classifier_system_prompt.md
+extra_instructions: ""
+
 site_url: https://localhost
 app_name: ace-baseline-classifier
 resume: true
