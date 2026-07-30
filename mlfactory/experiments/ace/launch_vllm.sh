@@ -1,9 +1,11 @@
 #!/bin/bash
 set -euo pipefail
-cd /home/admin/ace-baseline-trajectories
-source .venv/bin/activate
-export HF_HOME=/home/admin/.cache/huggingface
-export HF_TOKEN="$(cat /home/admin/.cache/huggingface/token)"
+cd "$(dirname "$0")"
+source /home/admin/ace-baseline-trajectories/.venv/bin/activate
+export HF_HOME="${HF_HOME:-/home/admin/.cache/huggingface}"
+if [ -z "${HF_TOKEN:-}" ] && [ -f "${HF_HOME}/token" ]; then
+  export HF_TOKEN="$(cat "${HF_HOME}/token")"
+fi
 export VLLM_WORKER_MULTIPROC_METHOD=spawn
 export CUDA_DEVICE_ORDER=PCI_BUS_ID
 exec vllm serve Qwen/Qwen3.5-4B \

@@ -19,8 +19,12 @@ stop_svc() {
     local svc="$1"
     if systemctl is-active --quiet "$svc" 2>/dev/null; then
         echo ">> Stopping $svc ..."
-        echo '4231' | sudo -S systemctl stop "$svc" || true
-        echo '4231' | sudo -S systemctl disable "$svc" || true
+        # This requires passwordless sudo or manual pre-stop. Do not hardcode credentials.
+        sudo -n systemctl stop "$svc" || {
+            echo "ERROR: could not stop $svc. Stop it manually or configure passwordless sudo." >&2
+            exit 1
+        }
+        sudo -n systemctl disable "$svc" || true
         for i in $(seq 1 24); do
             systemctl is-active --quiet "$svc" 2>/dev/null || break
             sleep 5

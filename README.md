@@ -16,20 +16,18 @@ package holds the reusable harness.
 ## Quick start
 
 ```bash
-# Use the same virtual environment that already has pydantic/rich/click.
-source /home/admin/ace-baseline-trajectories/.venv/bin/activate
-
+# mlfactory is installed into the ACE venv and exposed on PATH via ~/.local/bin/mlfactory.
 # List ingested legacy runs.
-python -m mlfactory.cli ls
+mlfactory ls
 
 # Create a run directory from a spec without executing.
-python -m mlfactory.cli init mlfactory/experiments/ace/specs/ace_collect_qwen35.yaml
+mlfactory init mlfactory/experiments/ace/specs/ace_collect_qwen35.yaml
 
 # Execute a run.
-python -m mlfactory.cli run mlfactory/experiments/ace/specs/ace_collect_qwen35.yaml
+mlfactory run mlfactory/experiments/ace/specs/ace_collect_qwen35.yaml
 
 # Watch the registry.
-python -m mlfactory.cli dashboard
+mlfactory dashboard
 ```
 
 ## Layout
