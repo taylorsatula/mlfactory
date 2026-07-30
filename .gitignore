@@ -34,5 +34,6 @@ token
 .DS_Store
 *.swp
 
-# Migration scratch
+# Migration scratch (derived archives; keep only intentionally)
 migrations/scratch/
+
