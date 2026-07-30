@@ -16,7 +16,6 @@ import hashlib
 import json
 import shutil
 import sys
-import tarfile
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
@@ -130,30 +129,9 @@ def _make_placeholder_git() -> GitInfo:
     return GitInfo(commit=None, dirty=True, branch=None, tag=None, remote_url=None)
 
 
-SOURCE_KEEPS: set[str] = {
-    "out_baseline_qwopus",
-}
-
-
-def _make_placeholder_source(run_dir: Path) -> SourceArchive | None:
-    """Record the legacy output directory as the source artifact only for keepers.
-
-    Most legacy runs are large and their original directories remain intact, so
-    we do not tarball them by default. This avoids bloating the repo with
-    derived copies of scratch/smoke outputs.
-    """
-    if run_dir.name not in SOURCE_KEEPS:
-        return None
-    tarball = Path("migrations/scratch") / f"{run_dir.name}.tar.gz"
-    tarball.parent.mkdir(parents=True, exist_ok=True)
-    if not tarball.exists():
-        with tarfile.open(tarball, "w:gz") as tf:
-            tf.add(run_dir, arcname=run_dir.name)
-    return SourceArchive(
-        path=str(tarball.resolve()),
-        sha256=_sha256_file(tarball),
-        archive_type="tar.gz",
-    )
+def _make_placeholder_source(run_dir: Path) -> None:
+    """Legacy runs keep their original directories; do not create derived archives."""
+    return None
 
 
 def _env_and_hardware_from_ace_manifest(data: dict[str, Any]) -> tuple[EnvironmentInfo, HardwareInfo]:
