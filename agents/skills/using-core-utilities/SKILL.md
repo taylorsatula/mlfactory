@@ -1,9 +1,9 @@
 ---
-name: using-mlfactory-core-utilities
+name: using-core-utilities
 description: Use when writing experiment code that needs model inference, API judging, embeddings, metrics, environment guards, or checkpoint saving.
 ---
 
-# Using mlfactory core utilities
+# Using core utilities
 
 ## Overview
 

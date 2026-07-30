@@ -1,9 +1,9 @@
 ---
-name: monitoring-mlfactory-dashboard
+name: monitoring-dashboard
 description: Use when watching a live run, building a dashboard config for a new experiment, or deciding which probes and panes to expose.
 ---
 
-# Monitoring with the mlfactory dashboard
+# Monitoring with the dashboard
 
 ## Overview
 

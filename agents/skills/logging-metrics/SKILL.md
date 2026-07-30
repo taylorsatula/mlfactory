@@ -1,9 +1,9 @@
 ---
-name: logging-mlfactory-metrics
+name: logging-metrics
 description: Use when an experiment produces per-step or per-event measurements that should appear in the live dashboard and persist in the registry.
 ---
 
-# Logging mlfactory metrics
+# Logging metrics
 
 ## Overview
 

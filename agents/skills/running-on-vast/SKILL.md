@@ -1,9 +1,9 @@
 ---
-name: running-mlfactory-on-vast
+name: running-on-vast
 description: Use when offloading heavy compute to a Vast.ai instance, or when a local run needs more GPUs/VRAM than the host has.
 ---
 
-# Running mlfactory on Vast.ai
+# Running on Vast.ai
 
 ## Overview
 

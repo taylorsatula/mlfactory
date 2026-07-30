@@ -1,9 +1,9 @@
 ---
-name: using-mlfactory-model-server
+name: using-model-server
 description: Use when an experiment needs a disposable llama-server for local inference, or when you see code launching llama-server by hand.
 ---
 
-# Using the mlfactory model server
+# Using the model server
 
 ## Overview
 

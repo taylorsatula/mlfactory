@@ -1,9 +1,9 @@
 ---
-name: operating-mlfactory-locally
-description: Use when running or debugging mlfactory experiments on the local host (192.168.1.9) with the CLI.
+name: operating-locally
+description: Use when running or debugging experiments on the local host (192.168.1.9) via the Python API or CLI.
 ---
 
-# Operating mlfactory locally
+# Operating locally
 
 ## Overview
 

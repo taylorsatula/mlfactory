@@ -1,9 +1,9 @@
 ---
-name: writing-mlfactory-plugins
+name: writing-plugins
 description: Use when adding a new experiment stage, porting a legacy script into the factory, or writing a plugin for collect/classify/train/eval.
 ---
 
-# Writing mlfactory plugins
+# Writing plugins
 
 ## Overview
 

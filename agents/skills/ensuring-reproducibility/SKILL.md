@@ -1,9 +1,9 @@
 ---
-name: ensuring-mlfactory-reproducibility
+name: ensuring-reproducibility
 description: Use when declaring a run complete, comparing runs, sharing results, or migrating legacy data into the factory without losing provenance.
 ---
 
-# Ensuring mlfactory reproducibility
+# Ensuring reproducibility
 
 ## Overview
 

@@ -1,9 +1,9 @@
 ---
-name: building-an-mlfactory-experiment
+name: building-an-experiment
 description: Use when an agent is asked to add a new experiment domain, port a standalone training/evaluation script, or wire a new stage into the factory from scratch.
 ---
 
-# Building an mlfactory experiment
+# Building an experiment
 
 ## Overview
 
