@@ -68,7 +68,7 @@ mlfactory/experiments/      # experiment domains
     setup_h100.sh
 
 runs/                       # per-run output directories (gitignored)
-data/                       # registry.db (gitignored)
+.mlfactory/                 # registry.db and other factory state (gitignored)
 migrations/                 # non-destructive legacy-run ingestion
 tests/                      # smoke tests
 ```
@@ -110,8 +110,8 @@ See `mlfactory/experiments/ace/specs/ace_collect_qwen35.yaml` and
 python migrations/ingest_existing_runs.py
 ```
 
-This populates `data/registry.db` with manifests derived from existing output
-directories in `ace-baseline-trajectories/` and `dft-eval-harness/`.
+This populates `.mlfactory/registry.db` with manifests derived from existing
+output directories in `ace-baseline-trajectories/` and `dft-eval-harness/`.
 
 ## Remote execution (SSH / Vast.ai)
 

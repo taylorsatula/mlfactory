@@ -11,7 +11,7 @@ from mlfactory.core.runner import create_run, run_from_spec
 
 
 @click.group()
-@click.option("--registry", "-r", default="data/registry.db", help="Path to SQLite registry.")
+@click.option("--registry", "-r", default=".mlfactory/registry.db", help="Path to SQLite registry.")
 @click.pass_context
 def main(ctx: click.Context, registry: str) -> None:
     ctx.ensure_object(dict)

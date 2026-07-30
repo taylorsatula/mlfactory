@@ -10,6 +10,7 @@ __pycache__/
 # Run outputs and data (large/binary)
 runs/
 data/
+.mlfactory/
 outputs/
 *.safetensors
 *.bin

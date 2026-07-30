@@ -37,7 +37,7 @@ from mlfactory.core.registry import Registry
 
 ACE_ROOT = Path("/home/admin/ace-baseline-trajectories")
 DFT_ROOT = Path("/home/admin/dft-eval-harness")
-REGISTRY_PATH = Path("data/registry.db")
+REGISTRY_PATH = Path(".mlfactory/registry.db")
 MIGRATION_LOG = Path("migrations/ingest_existing_runs.log")
 
 

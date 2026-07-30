@@ -200,7 +200,7 @@ def main() -> None:
     import argparse
 
     parser = argparse.ArgumentParser(description="mlfactory read-only dashboard")
-    parser.add_argument("--registry", "-r", default="data/registry.db")
+    parser.add_argument("--registry", "-r", default=".mlfactory/registry.db")
     parser.add_argument("--stage", default=None)
     parser.add_argument("--watch-run", default=None)
     parser.add_argument("--limit", type=int, default=12)
