@@ -1,0 +1,19 @@
+stage: classify
+name: qwen36-27b-classifier
+experiment: ace
+
+# Path to the generations.jsonl produced by an ACE collect run.
+input: mlfactory/experiments/ace/data/generations.jsonl
+
+model: qwen/qwen3.6-27b
+base_url: https://openrouter.ai/api/v1
+api_key: "${ACE_CLASSIFIER_API_KEY:none}"
+temperature: 0.6
+max_tokens: 65536
+
+site_url: https://localhost
+app_name: ace-baseline-classifier
+resume: true
+
+env:
+  HF_HOME: /home/admin/.cache/huggingface

@@ -1,0 +1,36 @@
+stage: eval
+name: qwopus-baseline
+experiment: dft
+
+# Test set with prompt/reference pairs.
+test_file: mlfactory/experiments/dft/data/pilot_full/test.jsonl
+
+# Either start a local model server by alias...
+model: qwopus3.6:27b
+gpu: 0
+
+# ...or point at an already-running endpoint and comment out `model`.
+# gen_url: http://localhost:3090/v1
+gen_model: Qwopus3.6-27B
+
+tokenizer: qwen/Qwen3.6-27B
+embed_model: nvidia/llama-embed-nemotron-8b
+embed_device: cuda:1
+
+judge_url: https://openrouter.ai/api/v1
+judge_model: qwen/qwen3.6-27b
+judge_criterion: overall quality
+judge_samples: 50
+
+temps: "0.7,1.0"
+top_p: 1.0
+top_k: 0
+repeat_penalty: 1.0
+presence_penalty: 0.0
+frequency_penalty: 0.0
+max_tokens: 512
+strip_think: true
+seed: 42
+
+env:
+  HF_HOME: /home/admin/.cache/huggingface

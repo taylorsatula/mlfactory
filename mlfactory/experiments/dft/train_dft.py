@@ -37,7 +37,7 @@ from mlfactory.core.embeddings import embedder as get_embedder
 from mlfactory.core.metrics import MetricsLogger
 
 # Re-use cheap diagnostics from eval.py (no network side effects on import).
-from eval import (
+from mlfactory.experiments.dft.eval import (
     TokenDistribution,
     load_jsonl,
     non_english_char_rate,
@@ -245,28 +245,6 @@ def load_policy_and_ref(
 # ---------------------------------------------------------------------------
 # embedding + MMD witness rewards
 # ---------------------------------------------------------------------------
-
-class Embedder:
-    def __init__(self, model_name: str, device: str):
-        log(f"loading embedder {model_name}")
-        self.model = SentenceTransformer(
-            model_name,
-            device=device,
-            trust_remote_code=True,
-            model_kwargs={"torch_dtype": torch.float16},
-        )
-        self.dim = self.model.get_embedding_dimension()
-        log(f"embedder dim={self.dim}")
-
-    def encode(self, texts: list[str], batch_size: int = 32) -> np.ndarray:
-        return self.model.encode(
-            texts,
-            batch_size=batch_size,
-            convert_to_numpy=True,
-            normalize_embeddings=True,
-            show_progress_bar=False,
-        )
-
 
 def _median_heuristic(X: np.ndarray, Y: np.ndarray, subsample: int = 2000) -> float:
     if X.shape[0] + Y.shape[0] < 2:

@@ -24,6 +24,7 @@ from typing import Iterable
 
 import numpy as np
 import torch
+from openai import OpenAI
 from transformers import AutoTokenizer
 
 from mlfactory.core.api import APIConfig, Judge, run_judge_pairwise
