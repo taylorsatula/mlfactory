@@ -25,6 +25,9 @@ from mlfactory.plugins.base import PLUGINS
 # Register built-in experiment plugins.
 import mlfactory.experiments.ace.classify_plugin  # noqa: E402,F401
 import mlfactory.experiments.ace.collect_plugin  # noqa: E402,F401
+import mlfactory.experiments.ace.generate_prompts_plugin  # noqa: E402,F401
+import mlfactory.experiments.ace.stratify_plugin  # noqa: E402,F401
+import mlfactory.experiments.dft.build_pilot_plugin  # noqa: E402,F401
 import mlfactory.experiments.dft.eval_plugin  # noqa: E402,F401
 import mlfactory.experiments.dft.train_plugin  # noqa: E402,F401
 

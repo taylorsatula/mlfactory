@@ -21,15 +21,8 @@ from typing import Any
 
 import sympy as sp
 
-from mlfactory.core.metrics import MetricsLogger
-from mlfactory.core.prompts import render_markdown
-
 VERSION = "2026-07-27-v1"
-DEFAULT_PROMPT_PATH = Path(__file__).parent / "prompts" / "generation_system_prompt.md"
-
-
-def system_prompt(extra_instructions: str = "") -> str:
-    return render_markdown(DEFAULT_PROMPT_PATH, extra_instructions=extra_instructions)
+SYSTEM_PROMPT = "You are a helpful assistant. Solve the user's problem. Show your reasoning and then give a final answer."
 
 
 def uid(prefix: str, idx: int) -> str:
@@ -1018,11 +1011,9 @@ CATEGORY_GENERATORS = {
 }
 
 
-def generate_corpus(total_target: int = 400, extra_instructions: str = "") -> list[dict]:
+def generate_corpus(total_target: int = 400) -> list[dict]:
     records: list[dict] = []
     base_seed = 20260727
-    prompt_text = system_prompt(extra_instructions=extra_instructions)
-    prompt_hash = sha256(prompt_text)
     # First pass: generate per-category quotas, then pad if needed.
     for cat, (gens, quota) in CATEGORY_GENERATORS.items():
         rng = random.Random(base_seed + hash(cat) % 2**31)
@@ -1033,11 +1024,11 @@ def generate_corpus(total_target: int = 400, extra_instructions: str = "") -> li
             item["construction_method"] = "programmatic"
             item["generator_version"] = VERSION
             item["provenance"] = "original_generator"
-            item["system_prompt"] = prompt_text
+            item["system_prompt"] = SYSTEM_PROMPT
             item["sampling_profile"] = "coding" if cat in ("code_generation", "code_debugging") else "general"
             item["difficulty_rationale"] = difficulty_rationale(item["difficulty"], cat, item.get("subcategory", ""))
             item["prompt_hash"] = sha256(item["prompt_text"])
-            item["system_prompt_hash"] = prompt_hash
+            item["system_prompt_hash"] = sha256(SYSTEM_PROMPT)
             # verifier reference depends on type; will point to the verifier artifact
             if item["verifier"]["type"] == "python_tests":
                 item["verifier_reference"] = f"verifiers/{item['prompt_id']}_tests.py"
@@ -1054,20 +1045,13 @@ def generate_corpus(total_target: int = 400, extra_instructions: str = "") -> li
 
 def main() -> None:
     parser = argparse.ArgumentParser()
-    parser.add_argument("--run-dir", type=Path, required=True)
-    parser.add_argument("--out-dir", default=None, help="legacy alias; ignored when --run-dir is given")
+    parser.add_argument("--out-dir", default=".")
     parser.add_argument("--target", type=int, default=400)
-    parser.add_argument("--extra-instructions", default="", help="Injectable content inserted into the system prompt")
     args = parser.parse_args()
-    run_dir = Path(args.run_dir)
-    out_dir = run_dir / "artifacts"
+    out_dir = Path(args.out_dir)
     out_dir.mkdir(parents=True, exist_ok=True)
-    logs_dir = run_dir / "logs"
-    logs_dir.mkdir(parents=True, exist_ok=True)
 
-    metrics = MetricsLogger(run_dir, echo=True)
-
-    records = generate_corpus(args.target, extra_instructions=args.extra_instructions)
+    records = generate_corpus(args.target)
     prompts_path = out_dir / "prompts.jsonl"
     write_jsonl_atomic(prompts_path, records)
 

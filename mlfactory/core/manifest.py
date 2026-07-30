@@ -20,7 +20,7 @@ from typing import Any
 from pydantic import BaseModel, Field, field_validator
 
 
-STAGES = {"collect", "classify", "train", "eval", "transform", "analyze"}
+STAGES = {"collect", "classify", "stratify", "generate", "train", "eval", "build-pilot", "transform", "analyze"}
 RUN_STATUSES = {"pending", "running", "completed", "failed", "guarded", "aborted"}
 
 

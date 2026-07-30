@@ -22,6 +22,10 @@ judge_model: qwen/qwen3.6-27b
 judge_criterion: overall quality
 judge_samples: 50
 
+# Markdown system prompt; supports {extra_instructions} placeholder.
+system_prompt: mlfactory/experiments/dft/prompts/eval_system_prompt.md
+extra_instructions: ""
+
 temps: "0.7,1.0"
 top_p: 1.0
 top_k: 0

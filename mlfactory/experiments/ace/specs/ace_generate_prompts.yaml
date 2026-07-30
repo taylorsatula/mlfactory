@@ -1,0 +1,12 @@
+stage: generate
+name: baseline-prompt-corpus
+experiment: ace
+
+# Number of prompts to generate.
+target: 400
+
+# Markdown system prompt; supports {extra_instructions} placeholder.
+extra_instructions: ""
+
+env:
+  HF_HOME: /home/admin/.cache/huggingface

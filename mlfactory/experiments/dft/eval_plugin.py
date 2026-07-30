@@ -69,6 +69,8 @@ class EvalPlugin(StagePlugin):
             cmd.extend(["--n", str(s["n"])])
         if s.get("system_prompt"):
             cmd.extend(["--system-prompt", str(s["system_prompt"])])
+        if s.get("extra_instructions"):
+            cmd.extend(["--extra-instructions", str(s["extra_instructions"])])
         if s.get("judge_url"):
             cmd.extend(["--judge-url", str(s["judge_url"])])
         if s.get("judge_model"):

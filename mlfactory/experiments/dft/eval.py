@@ -31,6 +31,9 @@ from mlfactory.core.api import APIConfig, Judge, run_judge_pairwise
 from mlfactory.core.artifacts import save_summary
 from mlfactory.core.embeddings import Embedder
 from mlfactory.core.metrics import MetricsLogger
+from mlfactory.core.prompts import render_markdown
+
+DEFAULT_PROMPT_PATH = Path(__file__).parent / "prompts" / "eval_system_prompt.md"
 
 
 # ---------------------------------------------------------------------------
@@ -269,7 +272,8 @@ def main() -> int:
     p.add_argument("--embed-device", default="cuda:0", help="device for embedder")
     p.add_argument("--judge-url", default=None, help="OpenAI-compatible judge endpoint (defaults to gen-url)")
     p.add_argument("--judge-model", default=None, help="judge model id (defaults to gen-model)")
-    p.add_argument("--system-prompt", default="You write the final requested text directly. Do not include reasoning, <think> tags, or meta-commentary.", help="system prompt for chat-completions generation mode")
+    p.add_argument("--system-prompt", type=Path, default=None, help="Path to markdown system prompt (default: prompts/eval_system_prompt.md)")
+    p.add_argument("--extra-instructions", default="", help="Injectable content inserted into the system prompt")
     p.add_argument("--temps", default="0.7,1.0", help="comma-separated temperatures to sweep")
     p.add_argument("--top-p", default=1.0, type=float)
     p.add_argument("--top-k", default=0, type=int, help="0 disables top-k (matches article's full-vocab sampling); >0 enables")
@@ -318,7 +322,10 @@ def main() -> int:
             )
         )
 
-    generator = Generator(args.gen_url, args.gen_model, system_prompt=args.system_prompt)
+    prompt_path = Path(args.system_prompt) if args.system_prompt else DEFAULT_PROMPT_PATH
+    system_prompt = render_markdown(prompt_path, extra_instructions=args.extra_instructions)
+
+    generator = Generator(args.gen_url, args.gen_model, system_prompt=system_prompt)
 
     ref_embeddings = embedder.encode(refs)
     # fixed bandwidth from full reference set

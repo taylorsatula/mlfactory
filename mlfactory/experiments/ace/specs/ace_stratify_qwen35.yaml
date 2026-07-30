@@ -1,0 +1,24 @@
+stage: stratify
+name: qwen36-27b-stratifier
+experiment: ace
+
+# Input is typically the KEEP.jsonl bucket from an ACE classify run.
+input: mlfactory/experiments/ace/data/KEEP.jsonl
+
+model: qwen/qwen3.6-27b
+base_url: https://openrouter.ai/api/v1
+api_key: "${ACE_STRATIFIER_API_KEY:none}"
+temperature: 0.2
+max_tokens: 4096
+
+# Markdown prompt template; supports {extra_instructions} and {{PROBLEM}}/{{TRAJECTORY}}.
+prompt: mlfactory/experiments/ace/prompts/stratify_system_prompt.md
+extra_instructions: ""
+
+retries: 3
+backoff: 2.0
+max_workers: 1
+loop_delay: 0.3
+
+env:
+  HF_HOME: /home/admin/.cache/huggingface

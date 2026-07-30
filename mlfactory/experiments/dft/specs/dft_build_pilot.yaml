@@ -1,0 +1,18 @@
+stage: build-pilot
+name: qwopus-pilot
+experiment: dft
+
+# Pilot sizes. Use a small dry_run for smoke testing.
+train_size: 10000
+test_size: 500
+dry_run: 0
+
+fineweb_sample: CC-MAIN-2024-10
+tokenizer: qwen/Qwen3.6-27B
+seed: 42
+
+# Markdown prompts; each supports {extra_instructions}.
+extra_instructions: ""
+
+env:
+  HF_HOME: /home/admin/.cache/huggingface
