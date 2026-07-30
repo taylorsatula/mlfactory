@@ -11,6 +11,7 @@ import sys
 from pathlib import Path
 from typing import Any
 
+from mlfactory.core.env import DEFAULT_TRAINING_ENV
 from mlfactory.core.manifest import FileRecord, sha256_file
 from mlfactory.plugins.base import PLUGINS, StagePlugin
 
@@ -25,12 +26,10 @@ class TrainPlugin(StagePlugin):
 
     def _env(self) -> dict[str, str]:
         env = dict(os.environ)
+        # Apply standard training env defaults first.
+        for key, value in DEFAULT_TRAINING_ENV.items():
+            env.setdefault(key, value)
         env.update(self.spec.get("env", {}))
-        env.setdefault("PYTHONUNBUFFERED", "1")
-        # Standard DFT environment defaults.
-        env.setdefault("PYTORCH_ALLOC_CONF", "expandable_segments:True,roundup_power2_divisions:[32:256,64:128,256:64,>:32]")
-        env.setdefault("PYTORCH_CUDA_ALLOC_CONF", env["PYTORCH_ALLOC_CONF"])
-        env.setdefault("TRITON_DISABLE_AUTOTUNING", "1")
         return env
 
     def _script_path(self, name: str) -> Path:

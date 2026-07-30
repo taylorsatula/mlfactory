@@ -27,12 +27,14 @@ import numpy as np
 import torch
 import torch.nn.functional as F
 from peft import LoraConfig, TaskType
-from sentence_transformers import SentenceTransformer
 from transformers import AutoModelForCausalLM, AutoTokenizer, BitsAndBytesConfig
 
 # Silence the experimental import warning.
 os.environ.setdefault("TRL_EXPERIMENTAL_SILENCE", "1")
 from trl.experimental.ppo.modeling_value_head import AutoModelForCausalLMWithValueHead
+
+from mlfactory.core.embeddings import embedder as get_embedder
+from mlfactory.core.metrics import MetricsLogger
 
 # Re-use cheap diagnostics from eval.py (no network side effects on import).
 from eval import (
@@ -913,8 +915,10 @@ def main(argv: list[str] | None = None) -> int:
         ref_device=args.ref_device,
     )
 
-    embedder = Embedder(args.embed_model, device=args.embed_device)
+    embedder = get_embedder(args.embed_model, device=args.embed_device)
     token_dist = TokenDistribution(args.model_name)
+
+    metrics = MetricsLogger(out_dir, echo=True)
 
     mini_batch_size = max(1, args.batch_size // args.gradient_accumulation_steps)
     if args.batch_size % args.gradient_accumulation_steps != 0:
@@ -1078,6 +1082,7 @@ def main(argv: list[str] | None = None) -> int:
                 ],
             }
             summary["train_steps"].append(train_step_log)
+            metrics.step(global_step, **train_step_log)
             with open(log_file, "a", encoding="utf-8") as f:
                 f.write(json.dumps(train_step_log) + "\n")
             log(json.dumps(train_step_log))

@@ -20,7 +20,7 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
 
-from openai import APIError, OpenAI
+from mlfactory.core.api import APIClient, APIConfig, extract_json
 
 
 # ---------------------------------------------------------------------------
@@ -750,7 +750,7 @@ def normalize_verdict(verdict: dict) -> dict:
 
 
 def classify_record(
-    client: OpenAI,
+    client: APIClient,
     record: dict,
     system_prompt: str,
     temperature: float,
@@ -765,15 +765,15 @@ def classify_record(
         {"role": "user", "content": user_content},
     ]
 
-    def log_debug(attempt_no: int, raw_text: str | None, exc: Exception) -> None:
+    def log_debug(exc: Exception, raw_text: str | None = None) -> None:
         if not DEBUG_DIR:
             return
         DEBUG_DIR.mkdir(parents=True, exist_ok=True)
         sid = record.get("sample_id", "unknown")
-        path = DEBUG_DIR / f"{sid}_attempt{attempt_no + 1}.json"
+        path = DEBUG_DIR / f"{sid}_attempt1.json"
         payload = {
             "sample_id": sid,
-            "attempt": attempt_no + 1,
+            "attempt": 1,
             "timestamp": now_iso(),
             "raw_content": raw_text,
             "error": {"type": type(exc).__name__, "message": str(exc)},
@@ -783,34 +783,21 @@ def classify_record(
         except Exception:
             pass
 
-    last_exception: Exception | None = None
-    text: str | None = None
-    for attempt in range(MAX_RETRIES):
-        try:
-            kwargs: dict[str, Any] = {
-                "model": MODEL_NAME,
-                "messages": messages,
-                "temperature": temperature,
-                "max_tokens": max_tokens,
-                "timeout": REQUEST_TIMEOUT,
-            }
-            if use_json_mode:
-                kwargs["response_format"] = {"type": "json_object"}
-            if extra_body:
-                kwargs["extra_body"] = extra_body
-            response = client.chat.completions.create(**kwargs)
-            text = response.choices[0].message.content
-            verdict = parse_json_response(text)
-            verdict = normalize_verdict(verdict)
-            return verdict
-        except Exception as e:
-            last_exception = e
-            log_debug(attempt, text, e)
-            wait = BACKOFF_BASE * (2 ** attempt)
-            print(f"  Retry {attempt + 1}/{MAX_RETRIES} for {record.get('sample_id')}: {e} (sleep {wait}s)", file=sys.stderr)
-            time.sleep(wait)
-
-    raise last_exception or APIError("All retries failed")
+    try:
+        response_format = {"type": "json_object"} if use_json_mode else None
+        text = client.chat_completion(
+            messages=messages,
+            temperature=temperature,
+            max_tokens=max_tokens,
+            response_format=response_format,
+            extra_body=extra_body,
+        )
+        verdict = extract_json(text)
+        return normalize_verdict(verdict)
+    except Exception as e:
+        log_debug(e)
+        print(f"  ERROR for {record.get('sample_id')}: {e}", file=sys.stderr)
+        raise
 
 
 def bucket_path(bucket_dir: Path, label: str) -> Path:
@@ -858,15 +845,17 @@ def main() -> None:
                 already_done.add(rec.get("sample_id", ""))
         print(f"Resuming: {len(already_done)} sample_ids already in buckets.")
 
-    default_headers = {
-        "HTTP-Referer": args.site_url,
-        "X-Title": args.app_name,
-    }
-    client = OpenAI(
-        base_url=args.base_url,
-        api_key=args.api_key,
-        max_retries=0,
-        default_headers=default_headers,
+    client = APIClient(
+        APIConfig(
+            base_url=args.base_url,
+            api_key=args.api_key,
+            model=args.model,
+            timeout=REQUEST_TIMEOUT,
+            max_retries=MAX_RETRIES,
+            backoff_base=BACKOFF_BASE,
+            site_url=args.site_url,
+            app_name=args.app_name,
+        )
     )
 
     counts = Counter()

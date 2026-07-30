@@ -24,9 +24,10 @@ from typing import Iterable
 
 import numpy as np
 import torch
-from openai import OpenAI
-from sentence_transformers import SentenceTransformer
 from transformers import AutoTokenizer
+
+from mlfactory.core.api import APIConfig, Judge, run_judge_pairwise
+from mlfactory.core.embeddings import Embedder
 
 
 # ---------------------------------------------------------------------------
@@ -116,28 +117,6 @@ class Generator:
 # ---------------------------------------------------------------------------
 # embedding + MMD
 # ---------------------------------------------------------------------------
-
-class Embedder:
-    def __init__(self, model_name: str, device: str = "cuda"):
-        log(f"loading embedder {model_name}")
-        self.model = SentenceTransformer(
-            model_name,
-            device=device,
-            trust_remote_code=True,
-            model_kwargs={"torch_dtype": torch.float16},
-        )
-        self.dim = self.model.get_embedding_dimension()
-        log(f"embedder dim={self.dim}")
-
-    def encode(self, texts: list[str], batch_size: int = 32) -> np.ndarray:
-        return self.model.encode(
-            texts,
-            batch_size=batch_size,
-            convert_to_numpy=True,
-            normalize_embeddings=True,
-            show_progress_bar=False,
-        )
-
 
 def median_heuristic(X: np.ndarray, Y: np.ndarray) -> float:
     """Median pairwise distance between two embedding sets."""
@@ -273,58 +252,6 @@ def self_bleu(texts: list[str], n: int = 4) -> float:
 
 
 # ---------------------------------------------------------------------------
-# judge model quality (JMQ)
-# ---------------------------------------------------------------------------
-
-class Judge:
-    def __init__(self, base_url: str, model: str, api_key: str = "dummy"):
-        self.client = OpenAI(base_url=base_url, api_key=api_key, timeout=300)
-        self.model = model
-
-    def _compare(self, prompt: str, a: str, b: str, criterion: str) -> str:
-        system = "You compare two candidate responses and return only A or B."
-        user = (
-            f"Criterion: {criterion}\n\n=== PROMPT ===\n{prompt}\n\n"
-            f"=== CANDIDATE A ===\n{a}\n\n=== CANDIDATE B ===\n{b}\n\n"
-            "Which is better? Return only A or B."
-        )
-        try:
-            resp = self.client.chat.completions.create(
-                model=self.model,
-                messages=[{"role": "system", "content": system}, {"role": "user", "content": user}],
-                max_tokens=4,
-                temperature=0.0,
-            )
-            txt = resp.choices[0].message.content.strip().upper()
-            if "A" in txt and "B" not in txt:
-                return "A"
-            if "B" in txt and "A" not in txt:
-                return "B"
-            return "TIE"
-        except Exception as e:
-            log(f"judge call failed: {e}")
-            return "TIE"
-
-    def jmq(self, prompts: list[str], hyps: list[str], refs: list[str], criterion: str = "overall quality") -> float:
-        """JMQ = 2 * win_rate of hyps; 1.0 = perfect match."""
-        wins = 0
-        ties = 0
-        total = len(prompts)
-        for p, h, r in zip(prompts, hyps, refs):
-            # randomize A/B order
-            order = np.random.rand() > 0.5
-            a, b = (h, r) if order else (r, h)
-            choice = self._compare(p, a, b, criterion)
-            if choice == "TIE":
-                ties += 1
-            elif (order and choice == "A") or (not order and choice == "B"):
-                wins += 1
-        # ties count as half-wins
-        win_rate = (wins + ties * 0.5) / total
-        return 2.0 * win_rate
-
-
-# ---------------------------------------------------------------------------
 # main
 # ---------------------------------------------------------------------------
 
@@ -373,7 +300,13 @@ def main() -> int:
     token_dist = TokenDistribution(args.tokenizer)
     judge = None
     if args.judge_url or args.gen_url:
-        judge = Judge(args.judge_url or args.gen_url, args.judge_model or args.gen_model)
+        judge = Judge(
+            APIConfig(
+                base_url=args.judge_url or args.gen_url,
+                model=args.judge_model or args.gen_model,
+                timeout=300,
+            )
+        )
 
     generator = Generator(args.gen_url, args.gen_model, system_prompt=args.system_prompt)
 
@@ -424,7 +357,15 @@ def main() -> int:
         if judge:
             jn = min(args.judge_samples, len(prompts))
             log(f"judging {jn} pairs at T={temp}")
-            jmq = judge.jmq(prompts[:jn], hyps[:jn], refs[:jn], criterion=args.judge_criterion)
+            result = run_judge_pairwise(
+                judge,
+                prompts[:jn],
+                hyps[:jn],
+                refs[:jn],
+                criterion=args.judge_criterion,
+                seed=args.seed,
+            )
+            jmq = result.jmq
 
         res = {
             "temperature": temp,

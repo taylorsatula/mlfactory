@@ -2,14 +2,11 @@ stage: collect
 name: qwen35-4b-baseline
 experiment: ace
 
+model: qwen3.5:4b
 model_name: Qwen/Qwen3.5-4B
 provider: llama
 prompts: mlfactory/experiments/ace/data/prompts.jsonl
-
-server:
-  model: /home/admin/models/Qwen3.5-4B-UD-Q8_K_XL.gguf
-  port: 3090
-  gpu: 0
+gpu: 0
 
 max_model_len: 32768
 max_output_tokens: 16000
