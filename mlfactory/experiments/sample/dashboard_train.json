@@ -1,0 +1,50 @@
+{
+  "experiment": "sample",
+  "description": "Sample experiment — supervised fine-tuning",
+  "refresh": 2.0,
+  "probes": [
+    {
+      "id": "last_loss",
+      "type": "jsonl_last_record",
+      "label": "Loss",
+      "file": "{run_dir}/dashboard.jsonl",
+      "path": "loss",
+      "precision": 5
+    },
+    {
+      "id": "last_accuracy",
+      "type": "jsonl_last_record",
+      "label": "Train accuracy",
+      "file": "{run_dir}/dashboard.jsonl",
+      "path": "train_accuracy",
+      "precision": 4
+    },
+    {
+      "id": "checkpoint",
+      "type": "file_exists",
+      "label": "Final checkpoint",
+      "file": "{run_dir}/artifacts/checkpoint-final/config.json"
+    },
+    {
+      "id": "summary",
+      "type": "file_exists",
+      "label": "Summary",
+      "file": "{run_dir}/artifacts/summary.json"
+    }
+  ],
+  "panes": [
+    {
+      "title": "Training",
+      "type": "overview",
+      "probes": ["last_loss", "last_accuracy", "checkpoint", "summary"],
+      "ratio": 2
+    },
+    {
+      "title": "Recent Log",
+      "type": "recent_log",
+      "config": {"file": "{run_dir}/dashboard.jsonl", "lines": 10},
+      "ratio": 1
+    }
+  ],
+  "log_file": "{run_dir}/dashboard.jsonl"
+}

@@ -31,6 +31,10 @@ import mlfactory.experiments.ace.stratify_plugin  # noqa: E402,F401
 import mlfactory.experiments.dft.build_pilot_plugin  # noqa: E402,F401
 import mlfactory.experiments.dft.eval_plugin  # noqa: E402,F401
 import mlfactory.experiments.dft.train_plugin  # noqa: E402,F401
+import mlfactory.experiments.sample.classify_plugin  # noqa: E402,F401
+import mlfactory.experiments.sample.eval_plugin  # noqa: E402,F401
+import mlfactory.experiments.sample.train_plugin  # noqa: E402,F401
+import mlfactory.experiments.sample.transform_plugin  # noqa: E402,F401
 
 
 def _load_spec(path: Path) -> dict[str, Any]:
@@ -111,6 +115,10 @@ def create_run(
     inputs = _resolve_inputs(spec, run_dir)
     _link_inputs_to_run_dir(inputs, run_dir)
 
+    if parent_runs is None:
+        input_run = spec.get("input_run")
+        parent_runs = [str(input_run)] if input_run else []
+
     manifest = RunManifest(
         run_id=run_id,
         stage=stage,
@@ -121,7 +129,7 @@ def create_run(
         inputs=inputs,
         env=env,
         hardware=hw,
-        parent_runs=parent_runs or [],
+        parent_runs=parent_runs,
     )
     manifest.write(run_dir / "manifest.json")
     return manifest

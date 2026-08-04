@@ -318,10 +318,11 @@ mlfactory dashboard --watch-run <run_id> --refresh 2.0
 python -m pip install -e .
 ```
 
-Optional remote dependencies:
+Optional remote and causal-LM fine-tuning dependencies:
 
 ```bash
 python -m pip install -e ".[remote]"
+python -m pip install -e ".[train]"  # PyTorch + Transformers + PEFT
 ```
 
 ### Run tests
@@ -330,7 +331,7 @@ python -m pip install -e ".[remote]"
 python -m pytest tests/
 ```
 
-Current smoke tests cover manifest round-trip, registry CRUD, and lineage.
+Current smoke tests cover manifest/registry behavior plus gradient-based fine-tuning, checkpoint reload, prediction, and causal-LM example formatting.
 
 ### Local environment assumptions
 
@@ -357,6 +358,9 @@ Implemented:
 - [x] Disposable `llama-server` model resource and alias registry
 - [x] ACE collect, classify, stratify, and generate-prompts plugins
 - [x] DFT train, eval, and build-pilot plugins
+- [x] Sample transform, classify, train, and eval plugins
+- [x] Dependency-free NumPy training smoke backend with reloadable checkpoints
+- [x] Optional Hugging Face full-model and LoRA causal-LM fine-tuning backend
 - [x] Vast.ai remote runner: provision, run spec, pull outputs/registry, stop/destroy
 - [x] Non-destructive legacy-run migration
 - [x] Smoke tests for manifest and registry
@@ -365,7 +369,7 @@ Implemented:
 
 Still tightening:
 
-- [ ] Regression tests for plugin execution paths
+- [ ] Additional regression tests for remote/plugin execution paths
 
 ---
 

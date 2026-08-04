@@ -1,0 +1,40 @@
+# Sample experiment — Stage 3: eval
+# Evaluates classification quality via LLM-as-judge.
+#
+# Demonstrates:
+#   - APIClient for LLM-as-judge evaluation
+#   - Judge.compare() for pairwise A/B comparison
+#   - Guard logic: marks run "guarded" if accuracy < quality_threshold
+#
+# Input: a classify run's classifications.jsonl (via input_run or input_file).
+
+stage: eval
+name: sample-classify-eval
+experiment: sample
+
+# --- Input resolution (pick one) ---
+
+# Option A: reference a parent classify run by run_id.
+# input_run: <classify-run-id>
+
+# Option B: explicit file path.
+# input_file: runs/<run_id>/artifacts/classifications.jsonl
+
+# --- Judge model (any OpenAI-compatible endpoint) ---
+judge_base_url: https://openrouter.ai/api/v1
+judge_api_key: ${secrets.OPENROUTER_API_KEY}
+judge_model: qwen/qwen3.6-27b
+
+# --- Evaluation parameters ---
+max_tokens: 256
+timeout: 120
+max_retries: 3
+
+# Quality gate: if accuracy drops below this, the run is marked "guarded".
+quality_threshold: 0.7
+
+# Enable pairwise comparisons via Judge.compare() (optional, adds API calls).
+pairwise: false
+
+# Optional: limit samples for smoke testing.
+# max_samples: 5

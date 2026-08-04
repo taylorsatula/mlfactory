@@ -1,0 +1,149 @@
+{
+  "experiment": "ace",
+  "description": "ACE trajectory stratification",
+  "refresh": 5.0,
+  "probes": [
+    {
+      "id": "annotations",
+      "type": "regex_count",
+      "label": "Valid responses",
+      "file": "{run_dir}/logs/stratify.log",
+      "regex": "OK \\("
+    },
+    {
+      "id": "errors",
+      "type": "regex_count",
+      "label": "Request/validation errors",
+      "file": "{run_dir}/logs/stratify.log",
+      "regex": "ERROR:",
+      "warn_if_above": 0
+    },
+    {
+      "id": "retries",
+      "type": "regex_count",
+      "label": "Retry events",
+      "file": "{run_dir}/logs/stratify.err",
+      "regex": "retry ",
+      "warn_if_above": 0
+    },
+    {
+      "id": "current",
+      "type": "regex_last_match",
+      "label": "Current",
+      "file": "{run_dir}/logs/stratify.log",
+      "regex": "TAG (\\S+)"
+    },
+    {
+      "id": "input_records",
+      "type": "shell_command",
+      "label": "Input records",
+      "command": "python3 -c 'import json; from pathlib import Path; p=Path(\"{input}\"); print(sum(1 for line in p.open() if line.strip()))'",
+      "parser": "int"
+    },
+    {
+      "id": "unique_input_ids",
+      "type": "shell_command",
+      "label": "Unique input IDs",
+      "command": "python3 -c 'import json; from pathlib import Path; p=Path(\"{input}\"); print(len({json.loads(line)[\"sample_id\"] for line in p.open() if line.strip()}))'",
+      "parser": "int"
+    },
+    {
+      "id": "duplicate_input_records",
+      "type": "shell_command",
+      "label": "Duplicate input records",
+      "command": "python3 -c 'import json; from pathlib import Path; p=Path(\"{input}\"); ids=[json.loads(line)[\"sample_id\"] for line in p.open() if line.strip()]; print(len(ids)-len(set(ids)))'",
+      "parser": "int",
+      "warn_if_above": 0
+    },
+    {
+      "id": "persisted_annotations",
+      "type": "shell_command",
+      "label": "Persisted annotations",
+      "command": "python3 -c 'import sqlite3; print(sqlite3.connect(\"{run_dir}/artifacts/stratification.sqlite3\").execute(\"SELECT COUNT(*) FROM annotations\").fetchone()[0])'",
+      "parser": "int"
+    },
+    {
+      "id": "db_errors",
+      "type": "shell_command",
+      "label": "Persisted DB errors",
+      "command": "python3 -c 'import sqlite3; print(sqlite3.connect(\"{run_dir}/artifacts/stratification.sqlite3\").execute(\"SELECT COUNT(*) FROM errors\").fetchone()[0])'",
+      "parser": "int",
+      "warn_if_above": 0
+    },
+    {
+      "id": "process_alive",
+      "type": "process_alive",
+      "label": "Runner",
+      "pid_file": "{run_dir}/pid.txt"
+    },
+    {
+      "id": "api_model",
+      "type": "spec_value",
+      "label": "API model",
+      "path": "model"
+    },
+    {
+      "id": "api_endpoint",
+      "type": "spec_value",
+      "label": "API endpoint",
+      "path": "base_url"
+    },
+    {
+      "id": "workers",
+      "type": "spec_value",
+      "label": "Workers",
+      "path": "max_workers"
+    },
+    {
+      "id": "gpu_status",
+      "type": "gpu_status",
+      "label": "GPUs"
+    },
+    {
+      "id": "disk_usage",
+      "type": "disk_usage",
+      "label": "Disk",
+      "file": "{run_dir}",
+      "warn_if_above": 80,
+      "danger_if_above": 95
+    }
+  ],
+  "progress": {
+    "numerator_probe": "annotations",
+    "denominator_probe": "input_records",
+    "denominator_label": "records"
+  },
+  "panes": [
+    {
+      "title": "Overview",
+      "type": "overview",
+      "probes": ["annotations", "errors", "current", "process_alive"],
+      "ratio": 2
+    },
+    {
+      "title": "Request Health",
+      "type": "metrics_table",
+      "probes": ["annotations", "errors", "retries", "persisted_annotations", "db_errors", "input_records", "unique_input_ids", "duplicate_input_records"],
+      "ratio": 1
+    },
+    {
+      "title": "GPU Status",
+      "type": "gpu_table",
+      "probes": ["gpu_status"],
+      "ratio": 2
+    },
+    {
+      "title": "Recent Log",
+      "type": "recent_log",
+      "config": { "file": "{run_dir}/logs/stratify.log", "lines": 12 },
+      "size": 12
+    },
+    {
+      "title": "Retry/Error Log",
+      "type": "recent_log",
+      "config": { "file": "{run_dir}/logs/stratify.err", "lines": 8 },
+      "size": 8
+    }
+  ],
+  "log_file": "{run_dir}/logs/stratify.log"
+}

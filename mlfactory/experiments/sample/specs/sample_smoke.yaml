@@ -1,0 +1,10 @@
+# Sample experiment — Full pipeline smoke test
+# Runs all 3 stages with minimal data. No GPU or API keys required for stage 1.
+# Stages 2 and 3 need an LLM endpoint (see sample_classify.yaml for options).
+
+# Stage 1: transform (no external deps)
+stage: transform
+name: smoke-test
+experiment: sample
+chunk_size: 150
+num_paragraphs: 2

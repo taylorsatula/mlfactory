@@ -1,0 +1,9 @@
+# Sample experiment — Stage 1 (smoke test)
+# Smaller corpus for quick validation.
+
+stage: transform
+name: sample-text-analysis-smoke
+experiment: sample
+
+chunk_size: 100
+num_paragraphs: 3

@@ -291,6 +291,13 @@ def _run_probe(probe: Probe, run_dir: Path | None, manifest: RunManifest | None)
             cmd = probe.command or probe.params.get("command")
             if not cmd:
                 return ProbeResult(value=None, display="no command", style="dim")
+            cmd = str(cmd)
+            if run_dir is not None:
+                cmd = cmd.replace("{run_dir}", str(run_dir))
+            if manifest is not None:
+                input_path = manifest.spec.get("input")
+                if input_path:
+                    cmd = cmd.replace("{input}", str(Path(input_path).resolve()))
             try:
                 out = subprocess.check_output(cmd, shell=True, text=True, stderr=subprocess.DEVNULL).strip()
                 if probe.parser == "json":

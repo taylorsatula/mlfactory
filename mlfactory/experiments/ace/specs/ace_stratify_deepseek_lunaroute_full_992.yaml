@@ -1,0 +1,24 @@
+stage: stratify
+name: deepseek-v4-lunaroute-full-992-w12
+experiment: ace
+
+# Full KEEP bucket from the ACE classify run (992 records).
+input: mlfactory/experiments/ace/classifier_outputs/KEEP.jsonl
+
+model: deepseek-v4-flash-ballast
+base_url: https://gw.lunaroute.com/v1
+api_key: "${secrets.LUNAROUTE_API_KEY}"
+temperature: 0.2
+max_tokens: 4096
+
+# Markdown prompt template; supports {extra_instructions} and {{PROBLEM}}/{{TRAJECTORY}}.
+prompt: mlfactory/experiments/ace/prompts/stratify_system_prompt.md
+extra_instructions: ""
+
+retries: 3
+backoff: 2.0
+max_workers: 12
+loop_delay: 0.0
+
+env:
+  HF_HOME: /home/admin/.cache/huggingface

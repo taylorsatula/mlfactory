@@ -1,0 +1,72 @@
+{
+  "experiment": "sample",
+  "description": "Sample experiment — Stage 3: eval (quality evaluation via LLM-as-judge)",
+  "refresh": 2.0,
+  "probes": [
+    {
+      "id": "evaluated",
+      "type": "file_line_count",
+      "label": "Evaluated",
+      "file": "{run_dir}/artifacts/quality_scores.jsonl"
+    },
+    {
+      "id": "last_score",
+      "type": "jsonl_last_record",
+      "label": "Score (last)",
+      "file": "{run_dir}/dashboard.jsonl",
+      "path": "score",
+      "precision": 4,
+      "warn_if_below": 0.5
+    },
+    {
+      "id": "last_correct",
+      "type": "jsonl_last_record",
+      "label": "Correct (last)",
+      "file": "{run_dir}/dashboard.jsonl",
+      "path": "correct"
+    },
+    {
+      "id": "guard_triggered",
+      "type": "regex_count",
+      "label": "Guard triggered",
+      "file": "{run_dir}/dashboard.jsonl",
+      "regex": "guard_triggered",
+      "warn_if_above": 0
+    },
+    {
+      "id": "report_exists",
+      "type": "file_exists",
+      "label": "Eval report",
+      "file": "{run_dir}/artifacts/summary.json"
+    },
+    {
+      "id": "disk_usage",
+      "type": "disk_usage",
+      "label": "Disk",
+      "file": "{run_dir}",
+      "warn_if_above": 80,
+      "danger_if_above": 95
+    }
+  ],
+  "panes": [
+    {
+      "title": "Overview",
+      "type": "overview",
+      "probes": ["evaluated", "last_score", "last_correct", "guard_triggered", "report_exists"],
+      "ratio": 2
+    },
+    {
+      "title": "Metrics",
+      "type": "metrics_table",
+      "probes": ["evaluated", "last_score", "last_correct", "guard_triggered", "disk_usage"],
+      "ratio": 1
+    },
+    {
+      "title": "Recent Log",
+      "type": "recent_log",
+      "config": { "file": "{run_dir}/dashboard.jsonl", "lines": 8 },
+      "size": 10
+    }
+  ],
+  "log_file": "{run_dir}/dashboard.jsonl"
+}

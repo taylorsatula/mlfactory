@@ -1,0 +1,24 @@
+stage: stratify
+name: deepseek-v4-lunaroute-keep-rerun-927-w12
+experiment: ace
+
+# Second KEEP pass: one request per unique sample_id; source KEEP has 992 lines,
+# including 65 duplicate sample_ids.
+input: mlfactory/experiments/ace/classifier_outputs/KEEP_deduped_927.jsonl
+
+model: deepseek-v4-flash-ballast
+base_url: https://gw.lunaroute.com/v1
+api_key: "${secrets.LUNAROUTE_API_KEY}"
+temperature: 0.2
+max_tokens: 4096
+
+prompt: mlfactory/experiments/ace/prompts/stratify_system_prompt.md
+extra_instructions: ""
+
+retries: 3
+backoff: 2.0
+max_workers: 12
+loop_delay: 0.0
+
+env:
+  HF_HOME: /home/admin/.cache/huggingface

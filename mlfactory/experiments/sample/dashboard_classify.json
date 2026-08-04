@@ -1,0 +1,65 @@
+{
+  "experiment": "sample",
+  "description": "Sample experiment — Stage 2: classify (topic classification via LLM)",
+  "refresh": 2.0,
+  "probes": [
+    {
+      "id": "classified",
+      "type": "file_line_count",
+      "label": "Classified",
+      "file": "{run_dir}/artifacts/classifications.jsonl"
+    },
+    {
+      "id": "last_confidence",
+      "type": "jsonl_last_record",
+      "label": "Confidence (last)",
+      "file": "{run_dir}/dashboard.jsonl",
+      "path": "confidence",
+      "precision": 4,
+      "warn_if_below": 0.5
+    },
+    {
+      "id": "error_count",
+      "type": "regex_count",
+      "label": "Errors",
+      "file": "{run_dir}/dashboard.jsonl",
+      "regex": "classify_error",
+      "warn_if_above": 0
+    },
+    {
+      "id": "summary_exists",
+      "type": "file_exists",
+      "label": "Summary artifact",
+      "file": "{run_dir}/artifacts/summary.json"
+    },
+    {
+      "id": "disk_usage",
+      "type": "disk_usage",
+      "label": "Disk",
+      "file": "{run_dir}",
+      "warn_if_above": 80,
+      "danger_if_above": 95
+    }
+  ],
+  "panes": [
+    {
+      "title": "Overview",
+      "type": "overview",
+      "probes": ["classified", "last_confidence", "error_count", "summary_exists"],
+      "ratio": 2
+    },
+    {
+      "title": "Metrics",
+      "type": "metrics_table",
+      "probes": ["classified", "last_confidence", "error_count", "disk_usage"],
+      "ratio": 1
+    },
+    {
+      "title": "Recent Log",
+      "type": "recent_log",
+      "config": { "file": "{run_dir}/dashboard.jsonl", "lines": 8 },
+      "size": 10
+    }
+  ],
+  "log_file": "{run_dir}/dashboard.jsonl"
+}

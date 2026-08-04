@@ -1,0 +1,26 @@
+stage: stratify
+name: qwen36-27b-stratifier-pilot-1-10
+experiment: ace
+
+# Pilot slice: first 10 records of the KEEP bucket.
+input: mlfactory/experiments/ace/classifier_outputs/KEEP.jsonl
+offset: 0
+max_records: 10
+
+model: qwen/qwen3.6-27b
+base_url: https://openrouter.ai/api/v1
+api_key: "${secrets.ACE_STRATIFIER_API_KEY}"
+temperature: 0.2
+max_tokens: 4096
+
+# Markdown prompt template; supports {extra_instructions} and {{PROBLEM}}/{{TRAJECTORY}}.
+prompt: mlfactory/experiments/ace/prompts/stratify_system_prompt.md
+extra_instructions: ""
+
+retries: 3
+backoff: 2.0
+max_workers: 1
+loop_delay: 0.3
+
+env:
+  HF_HOME: /home/admin/.cache/huggingface

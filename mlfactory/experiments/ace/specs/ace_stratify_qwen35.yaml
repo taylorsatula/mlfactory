@@ -3,7 +3,7 @@ name: qwen36-27b-stratifier
 experiment: ace
 
 # Input is typically the KEEP.jsonl bucket from an ACE classify run.
-input: mlfactory/experiments/ace/data/KEEP.jsonl
+input: mlfactory/experiments/ace/classifier_outputs/KEEP.jsonl
 
 model: qwen/qwen3.6-27b
 base_url: https://openrouter.ai/api/v1

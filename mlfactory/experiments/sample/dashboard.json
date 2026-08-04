@@ -1,0 +1,70 @@
+{
+  "experiment": "sample",
+  "description": "Sample experiment — Stage 1: transform (text chunking + statistics)",
+  "refresh": 2.0,
+  "probes": [
+    {
+      "id": "chunks_count",
+      "type": "file_line_count",
+      "label": "Chunks",
+      "file": "{run_dir}/artifacts/chunks.jsonl"
+    },
+    {
+      "id": "last_word_count",
+      "type": "jsonl_last_record",
+      "label": "Words (last chunk)",
+      "file": "{run_dir}/dashboard.jsonl",
+      "path": "word_count"
+    },
+    {
+      "id": "last_unique_words",
+      "type": "jsonl_last_record",
+      "label": "Unique words (last chunk)",
+      "file": "{run_dir}/dashboard.jsonl",
+      "path": "unique_words"
+    },
+    {
+      "id": "last_vocab_richness",
+      "type": "jsonl_last_record",
+      "label": "Vocab richness (last chunk)",
+      "file": "{run_dir}/dashboard.jsonl",
+      "path": "vocabulary_richness",
+      "precision": 4
+    },
+    {
+      "id": "summary_exists",
+      "type": "file_exists",
+      "label": "Summary artifact",
+      "file": "{run_dir}/artifacts/summary.json"
+    },
+    {
+      "id": "disk_usage",
+      "type": "disk_usage",
+      "label": "Disk",
+      "file": "{run_dir}",
+      "warn_if_above": 80,
+      "danger_if_above": 95
+    }
+  ],
+  "panes": [
+    {
+      "title": "Overview",
+      "type": "overview",
+      "probes": ["chunks_count", "last_word_count", "last_unique_words", "last_vocab_richness", "summary_exists"],
+      "ratio": 2
+    },
+    {
+      "title": "Metrics",
+      "type": "metrics_table",
+      "probes": ["chunks_count", "last_word_count", "last_unique_words", "disk_usage"],
+      "ratio": 1
+    },
+    {
+      "title": "Recent Log",
+      "type": "recent_log",
+      "config": { "file": "{run_dir}/dashboard.jsonl", "lines": 8 },
+      "size": 10
+    }
+  ],
+  "log_file": "{run_dir}/dashboard.jsonl"
+}

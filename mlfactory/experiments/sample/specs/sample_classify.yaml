@@ -1,0 +1,57 @@
+# Sample experiment — Stage 2: classify
+# Classifies text chunks by topic via LLM inference.
+#
+# Two modes:
+#   1. Local model server (needs llama-server + GGUF on this host):
+#        model: qwen3.5:4b
+#        gpu: 0
+#
+#   2. External endpoint (works with OpenRouter, remote llama-server, etc.):
+#        base_url: https://openrouter.ai/api/v1
+#        api_key: ${secrets.OPENROUTER_API_KEY}
+#        model_name: qwen/qwen3.6-27b
+#
+# Input: a transform run's chunks.jsonl (via input_run or input_file).
+
+stage: classify
+name: sample-topic-classify
+experiment: sample
+
+# --- Input resolution (pick one) ---
+
+# Option A: reference a parent transform run by run_id.
+# The plugin looks up runs/<run_id>/artifacts/chunks.jsonl via the registry.
+# input_run: 20260804-195023.transform.sample-text-analysis
+
+# Option B: explicit file path.
+# input_file: runs/<run_id>/artifacts/chunks.jsonl
+
+# --- Inference backend (pick one) ---
+
+# Option A: local model server (disposable llama-server via model() context mgr).
+# model: qwen3.5:4b
+# gpu: 0
+
+# Option B: external OpenAI-compatible endpoint.
+# base_url: https://openrouter.ai/api/v1
+# api_key: ${secrets.OPENROUTER_API_KEY}
+# model_name: qwen/qwen3.6-27b
+
+# --- Classification parameters ---
+temperature: 0.2
+max_tokens: 256
+timeout: 120
+
+# Optional: limit chunks for smoke testing.
+# max_chunks: 5
+
+# Custom topic list (defaults to the built-in VALID_TOPICS).
+# topics:
+#   - machine_learning
+#   - nlp
+#   - infrastructure
+#   - data_engineering
+#   - research_methods
+
+env:
+  HF_HOME: /home/admin/.cache/huggingface

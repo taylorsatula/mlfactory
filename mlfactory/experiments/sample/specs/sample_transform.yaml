@@ -1,0 +1,14 @@
+# Sample experiment — Stage 1: transform
+# Chunks text and computes per-chunk statistics.
+# No external dependencies — runs on any machine with Python 3.10+.
+
+stage: transform
+name: sample-text-analysis
+experiment: sample
+
+# Text chunking parameters.
+chunk_size: 200
+num_paragraphs: 8
+
+# Optional: provide an input text file instead of generating sample data.
+# input_text: mlfactory/experiments/sample/data/sample_input.txt

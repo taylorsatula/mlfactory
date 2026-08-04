@@ -1,0 +1,42 @@
+# Sample experiment — supervised fine-tuning stage.
+# Consumes classifications.jsonl produced by the classify stage.
+
+stage: train
+name: sample-topic-finetune
+experiment: sample
+
+# Pick one input source:
+# input_run: <classify-run-id>
+# input_file: runs/<classify-run-id>/artifacts/classifications.jsonl
+
+# Dependency-free smoke backend. This performs real gradient updates on a
+# multinomial text classifier and writes a reloadable checkpoint.
+backend: numpy_softmax
+training:
+  epochs: 100
+  learning_rate: 0.5
+  l2: 0.001
+  min_frequency: 1
+  seed: 42
+
+# Keep all eight smoke records, including records labeled "error". For a real
+# dataset, remove failed classifier outputs with: exclude_labels: [error]
+exclude_labels: []
+
+# Production causal-LM/LoRA example (requires `pip install -e '.[train]'`):
+# backend: transformers_causal_lm
+# training:
+#   base_model: Qwen/Qwen2.5-0.5B-Instruct
+#   method: lora                 # or: full
+#   epochs: 1
+#   learning_rate: 0.0002
+#   batch_size: 1
+#   gradient_accumulation_steps: 4
+#   max_length: 512
+#   max_steps: 10
+#   device: auto
+#   dtype: bfloat16
+#   lora_r: 8
+#   lora_alpha: 16
+#   lora_dropout: 0.0
+#   target_modules: [q_proj, k_proj, v_proj, o_proj]
