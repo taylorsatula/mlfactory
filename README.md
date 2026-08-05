@@ -110,6 +110,36 @@ with model("qwen3.5:4b", gpu=0) as srv:
     response = client.chat.completions.create(...)
 ```
 
+### Reusable trajectory validation
+
+`mlfactory.core.validation` provides a reusable self-play fixture for existing
+experiments and evaluators. It is not a registered experiment stage. Callers
+supply scenarios, models, and criteria; callers retain ownership of manifests
+and artifacts.
+
+```python
+from mlfactory.core.validation import (
+    BatchJudge, CorpusOverseer, ValidationCriteria, validate_self_play,
+)
+
+criteria = ValidationCriteria.from_file("criteria.yaml")
+report = validate_self_play(
+    scenarios=scenarios,
+    subject=subject,
+    simulator=user_simulator,
+    criteria=criteria,
+    judge=BatchJudge(judge_client, criteria),
+    overseer=CorpusOverseer(overseer_client, criteria),
+)
+assert report.summary["batch_count"] > 0
+```
+
+The fixture supports replay and fresh self-play, deterministic checks, batch
+judging, corpus-level oversight, calibration fixtures, baseline deltas, and
+structured faux-human plans. A simulator plan can select a model, engagement
+length, per-turn instructions, targeted pain points, and an explicit stop
+sequence; a runner-side cap remains as a safety backstop.
+
 ---
 
 ## Project layout
@@ -128,6 +158,12 @@ mlfactory/                      # reusable harness
     dashboard_config.py         # Probe/pane schema
     api.py                      # OpenAI-compatible client + judge utilities
     metrics.py                  # MetricsLogger
+    validation/                 # Reusable self-play/batch-overseer fixture
+      schemas.py                # Scenarios, trajectories, criteria, reports
+      self_play.py              # Subject/simulator trajectory runner
+      judge.py                  # Batch-level LLM judge
+      overseer.py               # Corpus-level regression overseer
+      pipeline.py               # Replay/self-play validation API
     env.py                      # Training/inference env guards
     embeddings.py               # Embedding helpers
     artifacts.py                # Checkpoint/summary helpers
