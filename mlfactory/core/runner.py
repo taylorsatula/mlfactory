@@ -35,6 +35,12 @@ import mlfactory.experiments.sample.classify_plugin  # noqa: E402,F401
 import mlfactory.experiments.sample.eval_plugin  # noqa: E402,F401
 import mlfactory.experiments.sample.train_plugin  # noqa: E402,F401
 import mlfactory.experiments.sample.transform_plugin  # noqa: E402,F401
+import mlfactory.experiments.voice.review_plugin  # noqa: E402,F401
+import mlfactory.experiments.voice.train_plugin  # noqa: E402,F401
+import mlfactory.experiments.voice.synthetic_train_plugin  # noqa: E402,F401
+import mlfactory.experiments.voice.robust_train_plugin  # noqa: E402,F401
+import mlfactory.experiments.voice.dpo_train_plugin  # noqa: E402,F401
+import mlfactory.experiments.causal_graph.causal_graph_plugin  # noqa: E402,F401
 
 
 def _load_spec(path: Path) -> dict[str, Any]:
