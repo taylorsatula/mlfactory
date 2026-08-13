@@ -319,7 +319,7 @@ See `mlfactory/experiments/ace/specs/` and `mlfactory/experiments/dft/specs/` fo
 The dashboard is read-only and experiment-configurable. Each domain may provide a `dashboard.json` (or `dashboard.yaml`) that declares probes and panes. Built-in probe types include:
 
 - `file_line_count`, `regex_count`, `regex_last_match`
-- `jsonl_last_record`
+- `jsonl_last_record`, `jsonl_metric_last`
 - `process_alive`
 - `http_status`, `http_json`
 - `gpu_status`
@@ -327,10 +327,18 @@ The dashboard is read-only and experiment-configurable. Each domain may provide 
 - `shell_command`
 - `spec_value`
 
-Pane types include `overview`, `metrics_table`, `bars`, `recent_log`, `gpu_table`, `run_info`, `lineage`, and `text`.
+Pane types include `overview`, `metrics_table`, `bars`, `recent_log`, `gpu_table`, `run_info`, `lineage`, `training_chart`, `runs_table`, and `text`. `training_chart` renders scalar JSONL/registry metrics as compact ASCII line plots; `runs_table` summarizes recent runs with step, loss, validation loss, and model columns.
 
 ```bash
 mlfactory dashboard --watch-run <run_id> --refresh 2.0
+```
+
+For the voice QLoRA run, the stage-specific dashboard includes loss, validation
+loss, gradient norm, memory, GPU telemetry, checkpoints, and recent-run history:
+
+```bash
+cd /home/admin/mlfactory
+mlfactory dashboard --watch-run voice-qwen35-9b-qlora-long-20260804T2340Z
 ```
 
 ---

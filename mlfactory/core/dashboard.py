@@ -8,6 +8,7 @@ remains read-only and reusable.
 from __future__ import annotations
 
 import json
+import math
 import os
 import re
 import shutil
@@ -86,6 +87,80 @@ def _get_pid(probe: Probe, run_dir: Path | None) -> int | None:
         except Exception:
             return None
     return None
+
+
+def _load_metric_history(path: Path, keys: list[str], max_points: int = 120) -> dict[str, list[tuple[int, float]]]:
+    """Read scalar metric history from a run's append-only JSONL dashboard.
+
+    MetricsLogger writes both one record per metric and a combined row per
+    step.  This reader accepts both forms and de-duplicates them by step, so
+    charts remain correct without requiring a registry connection.
+    """
+    wanted = set(keys)
+    by_key: dict[str, dict[int, float]] = {key: {} for key in wanted}
+    if not path.exists() or not wanted:
+        return {key: [] for key in keys}
+    try:
+        with path.open("r", encoding="utf-8", errors="ignore") as stream:
+            for line in stream:
+                try:
+                    record = json.loads(line)
+                except (json.JSONDecodeError, TypeError):
+                    continue
+                if not isinstance(record, dict):
+                    continue
+                raw_step = record.get("step")
+                try:
+                    step_float = float(raw_step)
+                    if not math.isfinite(step_float):
+                        continue
+                    step = int(step_float)
+                except (TypeError, ValueError):
+                    continue
+
+                candidates: list[tuple[str, Any]] = []
+                record_key = record.get("key")
+                if record_key in wanted:
+                    candidates.append((str(record_key), record.get("value")))
+                for key in wanted:
+                    if key in record:
+                        candidates.append((key, record.get(key)))
+                for key, raw_value in candidates:
+                    try:
+                        value = float(raw_value)
+                        if math.isfinite(value):
+                            by_key[key][step] = value
+                    except (TypeError, ValueError):
+                        continue
+    except OSError:
+        return {key: [] for key in keys}
+
+    limit = max(1, int(max_points))
+    return {
+        key: sorted(points.items())[-limit:]
+        for key, points in by_key.items()
+    }
+
+
+def _metric_history_for_run(
+    registry: Registry,
+    manifest: RunManifest | None,
+    run_dir: Path | None,
+    keys: list[str],
+    max_points: int = 120,
+) -> dict[str, list[tuple[int, float]]]:
+    """Load file-backed history, falling back to registry metrics when present."""
+    history = _load_metric_history(run_dir / "dashboard.jsonl", keys, max_points) if run_dir else {key: [] for key in keys}
+    if manifest is not None:
+        for key in keys:
+            if history.get(key):
+                continue
+            try:
+                series = registry.metric_series(manifest.run_id, key)
+                history[key] = [(int(step), float(value)) for step, value in series if step is not None][-max_points:]
+            except (KeyError, TypeError, ValueError):
+                history[key] = []
+    return history
 
 
 def _style_for_numeric(result: ProbeResult, probe: Probe) -> str:
@@ -193,6 +268,19 @@ def _run_probe(probe: Probe, run_dir: Path | None, manifest: RunManifest | None)
                 return r
             except Exception as e:
                 return ProbeResult(value=None, display=f"error: {e}", style="red")
+
+        if probe.type == "jsonl_metric_last":
+            key = str(probe.params.get("key") or probe.path or probe.id)
+            path = _resolve_path(probe.file, run_dir)
+            history = _load_metric_history(path, [key], max_points=1) if path else {key: []}
+            points = history.get(key, [])
+            if not points:
+                return ProbeResult(value=None, display="n/a", style="dim")
+            value = points[-1][1]
+            display = f"{value:.{probe.precision}g}"
+            result = ProbeResult(value=value, display=display)
+            result.style = _style_for_numeric(result, probe)
+            return result
 
         if probe.type == "process_alive":
             pid = _get_pid(probe, run_dir)
@@ -342,7 +430,12 @@ def _ascii_bar(value: float, width: int = 30, max_val: float = 100.0) -> str:
     return "█" * filled + "░" * (width - filled)
 
 
-def _render_overview(config: ExperimentDashboardConfig, results: dict[str, ProbeResult], manifest: RunManifest | None) -> Panel:
+def _render_overview(
+    config: ExperimentDashboardConfig,
+    results: dict[str, ProbeResult],
+    manifest: RunManifest | None,
+    pane: Pane | None = None,
+) -> Panel:
     text = Text()
     if manifest is None:
         text.append("No run selected\n", style="bold yellow")
@@ -372,7 +465,10 @@ def _render_overview(config: ExperimentDashboardConfig, results: dict[str, Probe
         text.append(f"\nProgress: {num:.0f}/{den:.0f} ({pct:.1f}%)\n")
         text.append(f"[{bar}]\n")
 
+    selected_probe_ids = set(pane.probes) if pane and pane.probes else None
     for probe in config.probes:
+        if selected_probe_ids is not None and probe.id not in selected_probe_ids:
+            continue
         if probe.id in (config.progress.numerator_probe if config.progress else None,
                         config.progress.denominator_probe if config.progress else None):
             continue
@@ -420,6 +516,175 @@ def _render_bars(config: ExperimentDashboardConfig, results: dict[str, ProbeResu
         bar = _ascii_bar(val, width=25, max_val=max_val)
         table.add_row(label, bar, f"{val:.{probe.precision}f} {probe.unit}".strip())
     return Panel(table, title=pane.title, border_style="magenta")
+
+
+def _smooth_metric(points: list[tuple[int, float]], window: int) -> list[tuple[int, float]]:
+    """Return a trailing moving average while preserving the original x-axis."""
+    window = max(1, int(window))
+    if window == 1 or len(points) < 2:
+        return points
+    smoothed: list[tuple[int, float]] = []
+    for index, (step, _value) in enumerate(points):
+        values = [value for _, value in points[max(0, index - window + 1): index + 1]]
+        smoothed.append((step, sum(values) / len(values)))
+    return smoothed
+
+
+def _ascii_sparkline(points: list[tuple[int, float]], width: int = 64) -> str:
+    """Render a scalar series as a one-line ASCII sparkline."""
+    if not points:
+        return "(no data)"
+    width = max(12, width)
+    values = [value for _, value in points]
+    if len(values) > width:
+        stride = (len(values) - 1) / (width - 1)
+        values = [values[round(index * stride)] for index in range(width)]
+    low = min(values)
+    high = max(values)
+    if math.isclose(low, high):
+        return "-" * len(values)
+    chars = " .:-=+*#%@"
+    return "".join(chars[max(0, min(len(chars) - 1, round((value - low) / (high - low) * (len(chars) - 1))))] for value in values)
+
+
+def _plot_metric(points: list[tuple[int, float]], width: int, height: int, marker: str = "*") -> list[str]:
+    """Render one scalar series as a compact ASCII line plot."""
+    if not points:
+        return ["(no data)"]
+    width = max(12, width)
+    height = max(2, height)
+    values = [value for _, value in points]
+    low = min(values)
+    high = max(values)
+    if math.isclose(low, high):
+        pad = max(abs(low) * 0.05, 0.5)
+        low -= pad
+        high += pad
+    grid = [[" " for _ in range(width)] for _ in range(height)]
+    first_step = points[0][0]
+    last_step = points[-1][0]
+    step_span = max(1, last_step - first_step)
+
+    coords: list[tuple[int, int]] = []
+    for step, value in points:
+        x = round((step - first_step) / step_span * (width - 1))
+        y = round((high - value) / (high - low) * (height - 1))
+        coords.append((max(0, min(width - 1, x)), max(0, min(height - 1, y))))
+
+    # Dotted interpolation keeps the descent direction visible between sparse
+    # validation points without pretending that the samples are continuous.
+    for (x0, y0), (x1, y1) in zip(coords, coords[1:]):
+        count = max(abs(x1 - x0), abs(y1 - y0), 1)
+        for i in range(count + 1):
+            x = round(x0 + (x1 - x0) * i / count)
+            y = round(y0 + (y1 - y0) * i / count)
+            if grid[y][x] == " ":
+                grid[y][x] = "."
+    marker = (marker or "*")[0]
+    for x, y in coords:
+        grid[y][x] = marker
+
+    lines = []
+    for index, row in enumerate(grid):
+        axis_value = high - (high - low) * index / max(1, height - 1)
+        lines.append(f"{axis_value:>8.3g} |" + "".join(row))
+    lines.append("         +" + "-" * width)
+    lines.append(f"          {first_step:<{max(1, width // 2)}}{last_step}")
+    return lines
+
+
+def _render_training_chart(
+    pane: Pane,
+    run_dir: Path | None,
+    registry: Registry,
+    manifest: RunManifest | None,
+) -> Panel:
+    chart_config = pane.config
+    raw_series = chart_config.get("series") or [
+        {"key": "loss", "label": "loss"},
+        {"key": "validation_loss", "label": "val_loss"},
+        {"key": "grad_norm", "label": "grad_norm"},
+    ]
+    series = [item for item in raw_series if isinstance(item, dict) and item.get("key")]
+    keys = [str(item["key"]) for item in series]
+    history = _metric_history_for_run(
+        registry,
+        manifest,
+        run_dir,
+        keys,
+        max_points=int(chart_config.get("max_points", 120)),
+    )
+    width = max(20, min(int(chart_config.get("width", 64)), 120))
+    height = max(2, min(int(chart_config.get("height", 4)), 12))
+    compact = bool(chart_config.get("compact", False))
+    lines: list[str] = []
+    if not manifest:
+        lines.append("No run selected")
+    elif not any(history.values()):
+        lines.append("No scalar training history yet")
+    else:
+        for item in series:
+            key = str(item["key"])
+            label = str(item.get("label") or key)
+            points = history.get(key, [])
+            if not compact:
+                lines.append(f"{label}:")
+            if not points:
+                lines.append(f"  {label}: (no data)")
+                continue
+            if compact:
+                smooth_window = int(item.get("smooth_window", chart_config.get("smooth_window", 1)))
+                spark = _ascii_sparkline(_smooth_metric(points, smooth_window), width)
+                latest = points[-1][1]
+                lines.append(f"  {label:<18} {spark}  latest={latest:.5g}")
+            else:
+                plot = _plot_metric(points, width, height, str(item.get("marker", "*")))
+                lines.extend("  " + line for line in plot)
+            if not compact:
+                first = points[0][1]
+                latest = points[-1][1]
+                delta = latest - first
+                trend = "down" if delta < -1e-9 else "up" if delta > 1e-9 else "flat"
+                lines.append(f"  latest={latest:.5g}  delta={delta:+.5g}  trend={trend}")
+    return Panel("\n".join(lines), title=pane.title, border_style="magenta")
+
+
+def _render_runs_table(
+    pane: Pane,
+    registry: Registry,
+    manifest: RunManifest | None,
+) -> Panel:
+    stage = pane.config.get("stage") or (manifest.stage if manifest else None)
+    limit = max(1, min(int(pane.config.get("limit", 8)), 50))
+    runs = registry.find(stage=stage, limit=limit)
+    table = Table(show_header=True, header_style="bold")
+    table.add_column("Run")
+    table.add_column("Status")
+    table.add_column("Step", justify="right")
+    table.add_column("Loss", justify="right")
+    table.add_column("Val loss", justify="right")
+    table.add_column("Model")
+    if not runs:
+        table.add_row("(no runs)", "", "", "", "", "")
+    for run in runs:
+        run_dir = Path(run.source.path).parent if run.source else None
+        history = _metric_history_for_run(registry, run, run_dir, ["loss", "validation_loss"], max_points=1)
+        loss = history["loss"][-1][1] if history["loss"] else None
+        validation = history["validation_loss"][-1][1] if history["validation_loss"] else None
+        steps = [points[-1][0] for points in history.values() if points]
+        status_style = {"completed": "green", "running": "blue", "failed": "red", "pending": "yellow"}.get(run.status, "")
+        model = run.spec.get("base_model") or run.spec.get("model_name") or ""
+        model = str(model).rstrip("/").split("/")[-1]
+        table.add_row(
+            run.run_id[:32],
+            Text(run.status, style=status_style),
+            str(max(steps) if steps else "-"),
+            f"{loss:.5g}" if loss is not None else "-",
+            f"{validation:.5g}" if validation is not None else "-",
+            model[:28],
+        )
+    title = pane.title + (f" ({stage})" if stage else "")
+    return Panel(table, title=title, border_style="cyan")
 
 
 def _render_recent_log(pane: Pane, run_dir: Path | None, config: ExperimentDashboardConfig) -> Panel:
@@ -523,6 +788,9 @@ def _load_experiment_config(manifest: RunManifest | None) -> ExperimentDashboard
             Path(f"mlfactory/experiments/{experiment}/dashboard_{stage}.yaml"),
             Path(f"mlfactory/experiments/{experiment}/dashboard_{stage}.yml"),
         ])
+    if experiment == "voice":
+        # The synthetic adapter reuses the same scalar training telemetry.
+        candidates.append(Path("mlfactory/experiments/voice/dashboard_voice-train.json"))
     candidates.extend([
         Path(f"mlfactory/experiments/{experiment}/dashboard.json"),
         Path(f"mlfactory/experiments/{experiment}/dashboard.yaml"),
@@ -574,11 +842,23 @@ def build_layout(
     if not panes:
         panes = [Pane(title="No panes", type="text", probes=[])]
 
-    # Group panes into rows of up to 3.
+    # Group ordinary panes into rows of up to three, but give charts and run
+    # history the full terminal width so their ASCII plots stay legible.
     rows: list[list[Pane]] = []
-    row_size = 3
-    for i in range(0, len(panes), row_size):
-        rows.append(panes[i : i + row_size])
+    pending: list[Pane] = []
+    for pane in panes:
+        if pane.type in {"training_chart", "runs_table"}:
+            if pending:
+                rows.append(pending)
+                pending = []
+            rows.append([pane])
+            continue
+        pending.append(pane)
+        if len(pending) == 3:
+            rows.append(pending)
+            pending = []
+    if pending:
+        rows.append(pending)
 
     body.split_column(*[Layout(name=f"row_{i}") for i in range(len(rows))])
     for i, row_panes in enumerate(rows):
@@ -602,7 +882,7 @@ def _render_pane(
     run_dir: Path | None,
 ) -> Panel:
     if pane.type == "overview":
-        return _render_overview(config, results, manifest)
+        return _render_overview(config, results, manifest, pane)
     if pane.type == "metrics_table":
         return _render_metrics_table(config, results, pane)
     if pane.type == "bars":
@@ -615,6 +895,10 @@ def _render_pane(
         return _render_run_info(manifest, results)
     if pane.type == "lineage":
         return _render_lineage(registry, manifest)
+    if pane.type == "training_chart":
+        return _render_training_chart(pane, run_dir, registry, manifest)
+    if pane.type == "runs_table":
+        return _render_runs_table(pane, registry, manifest)
     if pane.type == "text":
         return _render_text(results, pane, config)
     return Panel(f"unknown pane type {pane.type}", title=pane.title, border_style="red")

@@ -28,6 +28,7 @@ ProbeType = Literal[
     "disk_usage",
     "file_exists",
     "shell_command",
+    "jsonl_metric_last",
 ]
 
 PaneType = Literal[
@@ -39,6 +40,8 @@ PaneType = Literal[
     "run_info",
     "lineage",
     "text",
+    "training_chart",
+    "runs_table",
 ]
 
 

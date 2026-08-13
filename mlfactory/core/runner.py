@@ -168,6 +168,12 @@ def run_from_spec(
     plugin_cls = PLUGINS.get(manifest.stage)
     plugin = plugin_cls(manifest)
 
+    # Publish the running state before the long plugin body starts so the
+    # read-only dashboard does not show a healthy training job as "pending".
+    manifest.status = "running"
+    manifest.started_at = datetime.now(timezone.utc).isoformat()
+    manifest.write(Path(manifest.source.path).parent / "manifest.json")
+    registry.register(manifest)
     try:
         plugin.run()
     finally:
