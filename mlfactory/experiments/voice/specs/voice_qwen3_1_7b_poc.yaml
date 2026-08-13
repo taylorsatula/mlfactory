@@ -1,0 +1,39 @@
+stage: voice-train
+name: voice-qwen3-1.7b-lora-poc
+experiment: voice
+
+# All of these paths are local. Raw SMS threads are read in memory and are not
+# copied into the run artifacts or sent to a remote machine.
+base_model: /home/admin/models/hf/Qwen3-1.7B
+threads: mlfactory/experiments/voice/data/threads
+python: /home/admin/dft-eval-harness/.venv312/bin/python
+device: cuda:0
+
+seed: 42
+test_fraction: 0.2
+history_messages: 8
+max_train_examples: 300
+max_test_examples: 60
+max_length: 384
+max_target_tokens: 128
+batch_size: 1
+gradient_accumulation_steps: 4
+max_steps: 80
+eval_every: 20
+eval_examples: 24
+learning_rate: 0.0002
+weight_decay: 0.0
+max_grad_norm: 1.0
+
+method: lora
+lora_r: 8
+lora_alpha: 16
+lora_dropout: 0.05
+target_modules: q_proj,k_proj,v_proj,o_proj
+generation_tokens: 96
+
+env:
+  HF_HOME: /home/admin/.cache/huggingface
+  HF_HUB_OFFLINE: "1"
+  CUDA_VISIBLE_DEVICES: "0"
+  PYTHONUNBUFFERED: "1"

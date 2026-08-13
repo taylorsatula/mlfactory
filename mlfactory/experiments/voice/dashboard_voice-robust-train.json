@@ -1,0 +1,28 @@
+{
+  "experiment": "voice",
+  "description": "Grounded voice adapter training",
+  "refresh": 2.0,
+  "probes": [
+    {"id":"current_step","type":"regex_last_match","label":"Optimizer step","file":"{run_dir}/dashboard.jsonl","regex":"\\\"step\\\": ([0-9]+)"},
+    {"id":"total_steps","type":"spec_value","label":"Configured steps","path":"max_steps"},
+    {"id":"train_records","type":"file_line_count","label":"Synthetic train records","file":"{run_dir}/artifacts/synthetic_data/train.jsonl"},
+    {"id":"eval_records","type":"file_line_count","label":"Synthetic eval records","file":"{run_dir}/artifacts/synthetic_data/eval.jsonl"},
+    {"id":"replay_records","type":"file_line_count","label":"Replay records","file":"{run_dir}/artifacts/synthetic_data/replay.jsonl"},
+    {"id":"last_loss","type":"jsonl_metric_last","label":"Train loss","file":"{run_dir}/dashboard.jsonl","params":{"key":"loss"},"precision":4},
+    {"id":"last_validation_loss","type":"jsonl_metric_last","label":"Validation loss","file":"{run_dir}/dashboard.jsonl","params":{"key":"validation_loss"},"precision":4},
+    {"id":"last_grad_norm","type":"jsonl_metric_last","label":"Gradient norm","file":"{run_dir}/dashboard.jsonl","params":{"key":"grad_norm"},"precision":4},
+    {"id":"last_lr","type":"jsonl_metric_last","label":"Learning rate","file":"{run_dir}/dashboard.jsonl","params":{"key":"lr"},"precision":2},
+    {"id":"last_memory","type":"jsonl_metric_last","label":"Allocated memory","file":"{run_dir}/dashboard.jsonl","params":{"key":"memory_allocated_gib"},"unit":"GiB","precision":2},
+    {"id":"checkpoints","type":"regex_count","label":"Checkpoints","file":"{run_dir}/dashboard.jsonl","regex":"\\\"event\\\": \\\"checkpoint_saved\\\""},
+    {"id":"gpu_status","type":"gpu_status","label":"GPU status"}
+  ],
+  "progress":{"numerator_probe":"current_step","denominator_probe":"total_steps","denominator_label":"optimizer steps","show_eta":false},
+  "panes":[
+    {"title":"Training overview","type":"overview","probes":["current_step","total_steps","train_records","eval_records","replay_records","last_loss","last_validation_loss","checkpoints"]},
+    {"title":"Loss and resource curves","type":"training_chart","config":{"file":"{run_dir}/dashboard.jsonl","width":72,"height":5,"compact":true,"smooth_window":12,"max_points":160,"series":[{"key":"loss","label":"train loss","marker":"L"},{"key":"validation_loss","label":"validation loss","marker":"V","smooth_window":1},{"key":"grad_norm","label":"gradient norm","marker":"G"},{"key":"memory_allocated_gib","label":"allocated GiB","marker":"M"}]}},
+    {"title":"Latest metrics","type":"metrics_table","probes":["last_loss","last_validation_loss","last_grad_norm","last_lr","last_memory"]},
+    {"title":"GPU telemetry","type":"gpu_table","probes":["gpu_status"]},
+    {"title":"Recent training log","type":"recent_log","config":{"file":"{run_dir}/logs/train.log","lines":14}}
+  ],
+  "log_file":"{run_dir}/logs/train.log"
+}

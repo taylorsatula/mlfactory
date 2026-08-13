@@ -1,0 +1,128 @@
+[
+  {
+    "case_id": "clean_voice_preservation",
+    "messages": [
+      {"role": "customer", "text": "Thank you for getting that handled!"},
+      {"role": "taylor", "text": "Your welcome! Glad we could get it took care of"}
+    ],
+    "expect": {"actions": ["KEEP", "KEEP"], "required_substitution_sources": [], "forbidden_substitution_sources": []}
+  },
+  {
+    "case_id": "phone_and_email",
+    "messages": [
+      {"role": "customer", "text": "Call me at (256) 555-0199 or email jane@example.com"},
+      {"role": "taylor", "text": "Got it, thank you!"}
+    ],
+    "expect": {
+      "actions": ["PSEUDONYMIZE", "KEEP"],
+      "required_substitution_sources": ["(256) 555-0199", "jane@example.com"],
+      "forbidden_substitution_sources": []
+    }
+  },
+  {
+    "case_id": "address_and_gate_code",
+    "messages": [
+      {"role": "customer", "text": "The address is 123 Main Street, Huntsville AL and the gate code is 8842."},
+      {"role": "taylor", "text": "Thank you ma’am"}
+    ],
+    "expect": {
+      "actions": ["PSEUDONYMIZE", "KEEP"],
+      "required_substitution_sources": ["123 Main Street, Huntsville AL", "8842"],
+      "forbidden_substitution_sources": []
+    }
+  },
+  {
+    "case_id": "ordinary_promise_is_kept",
+    "messages": [
+      {"role": "customer", "text": "Can you check whether the payment went through?"},
+      {"role": "taylor", "text": "I’ll check on it and let you know"}
+    ],
+    "expect": {"actions": ["KEEP", "KEEP"], "required_substitution_sources": [], "forbidden_substitution_sources": []}
+  },
+  {
+    "case_id": "schedule_and_price_are_kept",
+    "messages": [
+      {"role": "customer", "text": "Could you come tomorrow around 10? How much will it be?"},
+      {"role": "taylor", "text": "Yes ma’am! I’ll be there at 10 and it’ll be $185"}
+    ],
+    "expect": {"actions": ["KEEP", "KEEP"], "required_substitution_sources": [], "forbidden_substitution_sources": ["10", "$185"]}
+  },
+  {
+    "case_id": "private_payment_link_gets_dummy_value",
+    "messages": [
+      {"role": "customer", "text": "Can you send the payment link?"},
+      {"role": "taylor", "text": "Yes ma’am https://pay.example.com/i/secret-token-84392"}
+    ],
+    "expect": {
+      "actions": ["KEEP", "PSEUDONYMIZE"],
+      "required_substitution_sources": ["https://pay.example.com/i/secret-token-84392"],
+      "forbidden_substitution_sources": []
+    }
+  },
+  {
+    "case_id": "customer_names_stay_realistic",
+    "messages": [
+      {"role": "taylor", "text": "Hey Rebecca! This is Taylor with the cleaning company"},
+      {"role": "customer", "text": "Hey! Thanks for reaching out"}
+    ],
+    "expect": {"actions": ["KEEP", "KEEP"], "required_substitution_sources": [], "forbidden_substitution_sources": ["Rebecca", "Taylor"]}
+  },
+  {
+    "case_id": "payment_handle_but_pseudonym_name_stays",
+    "messages": [
+      {"role": "taylor", "text": "Venmo: @sr71blackbird\nName: Bazonga Ferrari\n\nI use a pseudonym"},
+      {"role": "customer", "text": "What's the last four numbers of the cell phone associated with this account?"},
+      {"role": "taylor", "text": "5007"},
+      {"role": "customer", "text": "Money sent"}
+    ],
+    "expect": {
+      "actions": ["PSEUDONYMIZE", "KEEP", "PSEUDONYMIZE", "KEEP"],
+      "required_substitution_sources": ["@sr71blackbird", "5007"],
+      "forbidden_substitution_sources": ["Bazonga Ferrari"]
+    }
+  },
+  {
+    "case_id": "public_business_url_is_kept",
+    "messages": [
+      {"role": "taylor", "text": "You can request a quote here https://www.rocketcitywindowcleaning.com/quote/photo/"},
+      {"role": "customer", "text": "Thank you"}
+    ],
+    "expect": {
+      "actions": ["KEEP", "KEEP"],
+      "required_substitution_sources": [],
+      "forbidden_substitution_sources": ["https://www.rocketcitywindowcleaning.com/quote/photo/"]
+    }
+  },
+  {
+    "case_id": "role_reversed_session",
+    "messages": [
+      {"role": "taylor", "text": "Is my car ready after the treatment? How can I pay you?"},
+      {"role": "customer", "text": "We couldn’t get into it today but can try tomorrow."}
+    ],
+    "expect": {"session_action": "EXCLUDE", "allowed_session_reasons": ["ROLE_REVERSED"]}
+  },
+  {
+    "case_id": "personal_family_session",
+    "messages": [
+      {"role": "taylor", "text": "Tell mom I’ll call after dinner"},
+      {"role": "customer", "text": "Okay love you"}
+    ],
+    "expect": {"session_action": "EXCLUDE", "allowed_session_reasons": ["PERSONAL_OR_FAMILY"]}
+  },
+  {
+    "case_id": "payload_dump",
+    "messages": [
+      {"role": "customer", "text": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAUA"},
+      {"role": "taylor", "text": "What is this?"}
+    ],
+    "expect": {"session_action": "EXCLUDE", "allowed_session_reasons": ["NON_TEXT_PAYLOAD"]}
+  },
+  {
+    "case_id": "benign_empathy",
+    "messages": [
+      {"role": "customer", "text": "I’ve had a rough week and completely forgot to respond."},
+      {"role": "taylor", "text": "No worries at all! I completely understand"}
+    ],
+    "expect": {"actions": ["KEEP", "KEEP"], "required_substitution_sources": [], "forbidden_substitution_sources": []}
+  }
+]

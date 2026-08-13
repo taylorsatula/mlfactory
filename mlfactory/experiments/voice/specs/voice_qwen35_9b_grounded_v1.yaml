@@ -1,0 +1,41 @@
+stage: voice-robust-train
+name: voice-qwen35-9b-grounded-v1
+experiment: voice
+
+base_model: /home/admin/models/hf/Qwen3.5-9B
+threads: /home/admin/mlfactory/mlfactory/experiments/voice/data/threads
+synthetic_data_dir: /home/admin/mlfactory/runs/voice-grounded-synth-fixed-20260805T211214Z/artifacts/extended_data
+python: /home/admin/dft-eval-harness/.venv312/bin/python
+device: cuda:0
+load_in_4bit: true
+
+seed: 20260807
+max_real_train: 1000
+max_real_eval: 250
+synthetic_repeats: 4
+replay_repeats: 4
+max_length: 512
+max_target_tokens: 128
+batch_size: 1
+gradient_accumulation_steps: 4
+max_steps: 400
+eval_every: 50
+eval_examples: 256
+save_every: 100
+learning_rate: 0.00002
+weight_decay: 0.01
+max_grad_norm: 1.0
+warmup_steps: 40
+lora_r: 8
+lora_alpha: 16
+lora_dropout: 0.05
+target_modules: q_proj,k_proj,v_proj,o_proj
+
+env:
+  HF_HOME: /home/admin/.cache/huggingface
+  HF_HUB_OFFLINE: "1"
+  CUDA_VISIBLE_DEVICES: "1"
+  CXX: /usr/bin/g++-13
+  CC: /usr/bin/gcc-13
+  TRITON_DISABLE_AUTOTUNING: "1"
+  PYTHONUNBUFFERED: "1"

@@ -1,0 +1,110 @@
+{
+  "experiment": "voice",
+  "description": "Voice corpus privacy review and pseudonymization",
+  "refresh": 2.0,
+  "probes": [
+    {
+      "id": "completed",
+      "type": "file_line_count",
+      "label": "Completed sessions",
+      "file": "{run_dir}/artifacts/review/results.jsonl"
+    },
+    {
+      "id": "planned",
+      "type": "spec_value",
+      "label": "Planned sessions",
+      "path": "planned_sessions"
+    },
+    {
+      "id": "error_events",
+      "type": "file_line_count",
+      "label": "Error events",
+      "file": "{run_dir}/artifacts/review/errors.jsonl",
+      "warn_if_above": 0
+    },
+    {
+      "id": "pseudonymized",
+      "type": "regex_count",
+      "label": "Pseudonymized messages",
+      "file": "{run_dir}/artifacts/review/results.jsonl",
+      "regex": "\\\"action\\\": \\\"PSEUDONYMIZE\\\""
+    },
+    {
+      "id": "human_review",
+      "type": "regex_count",
+      "label": "Human-review sessions",
+      "file": "{run_dir}/artifacts/review/results.jsonl",
+      "regex": "\\\"session_action\\\": \\\"HUMAN_REVIEW\\\""
+    },
+    {
+      "id": "excluded",
+      "type": "regex_count",
+      "label": "Excluded sessions",
+      "file": "{run_dir}/artifacts/review/results.jsonl",
+      "regex": "\\\"session_action\\\": \\\"EXCLUDE\\\""
+    },
+    {
+      "id": "current",
+      "type": "regex_last_match",
+      "label": "Current progress",
+      "file": "{run_dir}/logs/review.log",
+      "regex": "\\[done ([0-9]+/[0-9]+)\\]"
+    },
+    {
+      "id": "workers",
+      "type": "spec_value",
+      "label": "Workers",
+      "path": "workers"
+    },
+    {
+      "id": "model",
+      "type": "spec_value",
+      "label": "Model",
+      "path": "model"
+    },
+    {
+      "id": "placeholder_file",
+      "type": "file_exists",
+      "label": "Placeholder corpus",
+      "file": "{run_dir}/artifacts/review/placeholder_sessions.jsonl"
+    },
+    {
+      "id": "transformed_file",
+      "type": "file_exists",
+      "label": "Pseudonymized corpus",
+      "file": "{run_dir}/artifacts/review/pseudonymized_sessions-v1.jsonl"
+    },
+    {
+      "id": "disk_usage",
+      "type": "disk_usage",
+      "label": "Disk",
+      "file": "{run_dir}"
+    }
+  ],
+  "progress": {
+    "numerator_probe": "completed",
+    "denominator_probe": "planned",
+    "denominator_label": "sessions"
+  },
+  "panes": [
+    {
+      "title": "Overview",
+      "type": "overview",
+      "probes": ["completed", "planned", "error_events", "current", "workers", "model"],
+      "ratio": 2
+    },
+    {
+      "title": "Review Decisions",
+      "type": "metrics_table",
+      "probes": ["pseudonymized", "human_review", "excluded", "placeholder_file", "transformed_file", "disk_usage"],
+      "ratio": 1
+    },
+    {
+      "title": "Recent Log",
+      "type": "recent_log",
+      "config": {"file": "{run_dir}/logs/review.log", "lines": 18},
+      "size": 20
+    }
+  ],
+  "log_file": "{run_dir}/logs/review.log"
+}

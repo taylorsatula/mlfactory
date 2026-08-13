@@ -1,0 +1,44 @@
+stage: voice-train
+name: voice-qwen35-9b-qlora-long
+experiment: voice
+
+# Local-only QLoRA run. The multimodal checkpoint is used in text-only mode;
+# no images or video are included in this SMS voice experiment.
+base_model: /home/admin/models/hf/Qwen3.5-9B
+threads: mlfactory/experiments/voice/data/threads
+python: /home/admin/dft-eval-harness/.venv312/bin/python
+device: cuda:0
+model_class: image_text_to_text
+load_in_4bit: true
+
+seed: 42
+test_fraction: 0.2
+history_messages: 8
+max_train_examples: 1500
+max_test_examples: 200
+max_length: 384
+max_target_tokens: 128
+batch_size: 1
+gradient_accumulation_steps: 4
+max_steps: 1200
+eval_every: 100
+eval_examples: 24
+save_every: 100
+learning_rate: 0.00005
+weight_decay: 0.0
+max_grad_norm: 1.0
+
+lora_r: 16
+lora_alpha: 32
+lora_dropout: 0.05
+target_modules: q_proj,k_proj,v_proj,o_proj,gate_proj,up_proj,down_proj
+generation_tokens: 96
+
+env:
+  HF_HOME: /home/admin/.cache/huggingface
+  HF_HUB_OFFLINE: "1"
+  CUDA_VISIBLE_DEVICES: "1"
+  CXX: /usr/bin/g++-13
+  CC: /usr/bin/gcc-13
+  TRITON_DISABLE_AUTOTUNING: "1"
+  PYTHONUNBUFFERED: "1"

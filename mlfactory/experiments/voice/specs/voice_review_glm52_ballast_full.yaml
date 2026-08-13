@@ -1,0 +1,19 @@
+stage: review
+name: voice-glm52-ballast-full
+experiment: voice
+
+threads: mlfactory/experiments/voice/data/threads
+prompt: mlfactory/experiments/voice/prompts/review_session.md
+model: glm-5.2-vision-ballast
+
+# Full 96-hour-session corpus after configured customer exclusions.
+limit: -1
+planned_sessions: 1154
+seed: 42
+workers: 10
+retries: 2
+resume_passes: 2
+transform_version: v1
+
+env:
+  PYTHONUNBUFFERED: "1"
