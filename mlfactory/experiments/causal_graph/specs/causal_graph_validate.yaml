@@ -1,0 +1,6 @@
+stage: causal-graph
+name: generator-validation
+experiment: causal_graph
+mode: validate
+count: 10000
+seed: 20260811

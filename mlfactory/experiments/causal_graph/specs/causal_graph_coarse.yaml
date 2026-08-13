@@ -1,0 +1,9 @@
+stage: causal-graph
+name: baseline-coarse
+experiment: causal_graph
+mode: coarse
+model: f16-jackrongds4qwen
+base_url: http://127.0.0.1:3090/v1
+seed: 20260811
+examples_per_depth: 64
+max_tokens: 768

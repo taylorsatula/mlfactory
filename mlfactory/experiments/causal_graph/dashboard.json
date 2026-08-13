@@ -1,0 +1,13 @@
+{
+  "panes": [
+    {"title": "Run status", "probes": ["status", "artifact_count"]},
+    {"title": "Artifacts", "probes": ["summary_exists", "sealed_exists", "final_report_exists"]}
+  ],
+  "probes": {
+    "status": {"type": "const", "value": "causal_graph"},
+    "artifact_count": {"type": "file_line_count", "path": "artifacts/summary.json"},
+    "summary_exists": {"type": "file_exists", "path": "artifacts/summary.json"},
+    "sealed_exists": {"type": "file_exists", "path": "artifacts/sealed_eval.jsonl"},
+    "final_report_exists": {"type": "file_exists", "path": "artifacts/final_report.md"}
+  }
+}
