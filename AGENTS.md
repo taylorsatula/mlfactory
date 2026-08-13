@@ -224,6 +224,10 @@ api_key: ${secrets.OPENROUTER_API_KEY}
 
 The runner expands secrets at execution time; they are never written into manifests.
 
+## Provider preferences
+
+- **Lunaroute:** always prefer the `-ballast` model variant when one is available (e.g., `glm-5.2-vision-ballast`). Fall back to the plain model only if no ballast variant exists.
+
 ## Common mistakes
 
 - **Running experiment scripts directly** — always go through `run_from_spec()`
