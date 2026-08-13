@@ -17,13 +17,20 @@ Quick start::
 
     from mlfactory.core.madlibz import sample_envelope, authoring_messages, freeze_authored
 
-    env = sample_envelope(seed=12, domain="household", genus="temporal_conflict", detectability="hidden")
+    env = sample_envelope(
+        seed=12,
+        domain="diner_breakfast_shift",
+        genus="temporal_conflict",
+        detectability="distant_pair",
+    )
     messages = authoring_messages(env)   # -> model authors the problem
     # freeze_authored(env, authored_json, model="...")
 """
 from .envelope import (
+    ANOMALY_GENUS_DESCRIPTIONS,
     ANOMALY_GENUSES,
     AUTHORING_SYSTEM_PROMPT,
+    DETECTABILITY_DESCRIPTIONS,
     DETECTABILITY_GRANULARS,
     DOMAIN_PROFILES,
     Envelope,
@@ -33,8 +40,10 @@ from .envelope import (
 )
 
 __all__ = [
+    "ANOMALY_GENUS_DESCRIPTIONS",
     "ANOMALY_GENUSES",
     "AUTHORING_SYSTEM_PROMPT",
+    "DETECTABILITY_DESCRIPTIONS",
     "DETECTABILITY_GRANULARS",
     "DOMAIN_PROFILES",
     "Envelope",

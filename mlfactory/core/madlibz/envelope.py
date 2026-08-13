@@ -24,9 +24,19 @@ import hashlib
 import random
 from dataclasses import dataclass
 
+from .catalog import (
+    ANOMALY_GENUS_DESCRIPTIONS,
+    ANOMALY_GENUSES,
+    DETECTABILITY_DESCRIPTIONS,
+    DETECTABILITY_GRANULARS,
+    DOMAIN_PROFILES,
+)
+
 __all__ = [
+    "ANOMALY_GENUS_DESCRIPTIONS",
     "ANOMALY_GENUSES",
     "AUTHORING_SYSTEM_PROMPT",
+    "DETECTABILITY_DESCRIPTIONS",
     "DETECTABILITY_GRANULARS",
     "DOMAIN_PROFILES",
     "Envelope",
@@ -34,25 +44,6 @@ __all__ = [
     "freeze_authored",
     "sample_envelope",
 ]
-
-
-# What kind of wrong the anomaly is.  Classification, not scale.
-ANOMALY_GENUSES: tuple[str, ...] = (
-    "temporal_conflict",       # timeline or ordering that contradicts itself
-    "contradictory_goals",     # two stated wants that cannot both hold
-    "ambiguous_referent",      # an unclear what/who/which the answer depends on
-    "hidden_assumption",       # a premise the prompt silently needs
-    "red_herring",             # a tempting detail that provably does not matter
-    "underspecified_question", # a clearly missing piece; correct move is to flag it
-    "inconsistent_constraints",# stated facts that physically/numerically cannot coexist
-)
-
-# Where the anomaly lives relative to the surface.  Placement, not subtlety score.
-DETECTABILITY_GRANULARS: tuple[str, ...] = (
-    "blatant",     # the conflict sits nearly adjacent in the text
-    "hidden",      # present but buried among mundane detail
-    "indirection", # only derivable by composing separate facts
-)
 
 
 @dataclass(frozen=True)
@@ -63,47 +54,12 @@ class Envelope:
     stakes: str
     genus: str
     detectability: str
-    domain_notes: str
 
     @property
     def envelope_hash(self) -> str:
         payload = repr((self.seed, self.domain, self.persona, self.stakes,
                         self.genus, self.detectability))
         return hashlib.sha256(payload.encode()).hexdigest()
-
-
-DOMAIN_PROFILES: dict[str, dict[str, tuple[str, ...] | str]] = {
-    "gardening": {
-        "notes": "Raised beds, frost dates, watering, soil mixes, succession planting. Living stakes.",
-        "personas": (
-            "a first-time community-garden plot holder",
-            "someone converting a lawn corner into beds",
-            "a beginner who lost last year's seedlings to frost",
-            "a parent gardening with their kid",
-        ),
-        "stakes": (
-            "the garden center only delivers on Saturdays",
-            "a late frost would kill everything",
-            "the car is tiny so orders must be right",
-            "the plot inspection is coming up",
-        ),
-    },
-    "household": {
-        "notes": "Errands, chores, cooking at scale, moving, schedules, bills. Practical stakes.",
-        "personas": (
-            "a first-time homeowner",
-            "someone prepping for family visiting",
-            "a renter trying not to lose a deposit",
-            "a new parent running the household solo this week",
-        ),
-        "stakes": (
-            "the hardware store closes early",
-            "guests arrive Friday",
-            "the budget is fixed",
-            "the landlord walks through tomorrow",
-        ),
-    },
-}
 
 
 def sample_envelope(
@@ -134,7 +90,6 @@ def sample_envelope(
         stakes=rng.choice(profile["stakes"]),
         genus=genus or rng.choice(ANOMALY_GENUSES),
         detectability=detectability or rng.choice(DETECTABILITY_GRANULARS),
-        domain_notes=str(profile["notes"]),
     )
 
 
@@ -153,10 +108,9 @@ payload is the anomaly: one engineered conflict, planted according to its
 genus and placed according to its detectability.
 
 - Genus is what kind of wrong the anomaly is. Build exactly that kind.
-- Detectability is where it lives relative to the surface:
-  "blatant" sits nearly adjacent in the text; "hidden" is present but
-  buried among mundane detail; "indirection" is never stated and can only
-  be found by composing separate facts.
+- Detectability is where the anomaly lives in the prose. Follow the
+  supplied placement definition exactly; it describes textual placement,
+  not a numeric difficulty level.
 - The person must not notice or flag the anomaly. They think they are
   asking an ordinary question.
 - No outside knowledge needed, no textbook phrasing, no bullet lists, no
@@ -179,11 +133,13 @@ Return one JSON object:
 
 def authoring_messages(envelope: Envelope) -> list[dict[str, str]]:
     lines = [
-        f"DOMAIN: {envelope.domain} ({envelope.domain_notes})",
+        f"DOMAIN: {envelope.domain}",
         f"PERSONA: {envelope.persona}",
         f"STAKES: {envelope.stakes}",
         f"ANOMALY GENUS: {envelope.genus}",
+        f"GENUS DEFINITION: {ANOMALY_GENUS_DESCRIPTIONS[envelope.genus]}",
         f"DETECTABILITY: {envelope.detectability}",
+        f"PLACEMENT DEFINITION: {DETECTABILITY_DESCRIPTIONS[envelope.detectability]}",
         "",
         f"envelope_hash: {envelope.envelope_hash}",
         "",
