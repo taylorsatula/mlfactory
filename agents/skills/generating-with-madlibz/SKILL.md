@@ -32,34 +32,20 @@ env = sample_envelope(seed: int, domain: str, *, genus=None, detectability=None)
 | Lever | Values | Behavior |
 |---|---|---|
 | `seed` | int | Fully deterministic: same (seed, domain) → same envelope, always. |
-| `domain` | key of `DOMAIN_PROFILES` | Selects the persona/stakes/notes pools. |
+| `domain` | key of `DOMAIN_PROFILES` | Selects a cohesive persona/stakes world. |
 | `genus` | one of `ANOMALY_GENUSES` | Optional override; blind draw by default. |
 | `detectability` | one of `DETECTABILITY_GRANULARS` | Optional override; blind draw by default. |
 
-**Anomaly genuses** — what kind of wrong the planted anomaly is:
+**Anomaly genuses** classify what kind of wrong the planted anomaly is. The 25 active choices and their authoring definitions live in `ANOMALY_GENUS_DESCRIPTIONS`.
 
-| Genus | Meaning |
-|---|---|
-| `temporal_conflict` | Timeline or ordering that contradicts itself |
-| `contradictory_goals` | Two stated wants that cannot both hold |
-| `ambiguous_referent` | An unclear what/who/which the answer depends on |
-| `hidden_assumption` | A premise the prompt silently needs |
-| `red_herring` | A tempting detail that provably does not matter |
-| `underspecified_question` | A clearly missing piece; the correct move is to flag it |
-| `inconsistent_constraints` | Stated facts that physically/numerically cannot coexist |
-
-**Detectability granulars** — where the anomaly lives relative to the surface (placement, not subtlety):
-
-- `blatant` — the conflict sits nearly adjacent in the text
-- `hidden` — present but buried among mundane detail
-- `indirection` — never stated; only derivable by composing separate facts
+**Detectability granulars** classify where the anomaly lives in the prose, not how difficult it should be. The 25 active choices and their authoring definitions live in `DETECTABILITY_DESCRIPTIONS`.
 
 **Naming rule for all levers:** every lever is a *classification of the thing*, never a numeric scale or a self-rating. LLMs classify reliably but cannot calibrate 0.0–1.0 intensities. When extending, name categories of the territory ("what kind" / "where placed"), not magnitudes ("how much").
 
 ## Workflow
 
 ```python
-env = sample_envelope(seed=42, domain="household")
+env = sample_envelope(seed=42, domain="diner_breakfast_shift")
 messages = authoring_messages(env)
 # -> send to the authoring model with thinking/reasoning ENABLED and a
 #    generous token budget. The problem is invented in the reasoning block;
@@ -94,7 +80,7 @@ The `anomaly` block is ground truth declared by the author. Preserve it — it i
 Blind draws give the natural joint distribution over persona × stakes × genus × detectability. To hit a target mix, override levers per draw:
 
 ```python
-plan = [("temporal_conflict", "hidden"), ("red_herring", "indirection"), ...]
+plan = [("temporal_conflict", "distant_pair"), ("red_herring", "background_burial"), ...]
 for i, (genus, det) in enumerate(plan):
     env = sample_envelope(seed=base_seed + i, domain=domain, genus=genus, detectability=det)
 ```
@@ -103,19 +89,20 @@ Persona and stakes still come from the blind draw even when genus/detectability 
 
 ## Extending
 
-- **New domain**: add an entry to `DOMAIN_PROFILES` in `envelope.py` (`notes`, `personas`, `stakes`). Nothing else changes.
-- **New genus**: append to `ANOMALY_GENUSES`. Name a category of wrongness, in the style of the existing entries.
-- **New granular**: append to `DETECTABILITY_GRANULARS`. Describe placement relative to the surface, then teach the authoring prompt what the placement means (the system prompt enumerates granulars inline).
+- **New domain**: add an entry to `DOMAIN_PROFILES` in `catalog.py` with `personas` and `stakes`. Domain notes are intentionally excluded; the curated entries embody the world.
+- **New genus**: add its name and authoring definition to `ANOMALY_GENUS_DESCRIPTIONS` in `catalog.py`.
+- **New granular**: add its name and placement definition to `DETECTABILITY_DESCRIPTIONS` in `catalog.py`.
 
 ## Caveats (learned the hard way)
 
 - **Sampling profiles are per-model compatibility settings, not global constants.** A profile that elicits rich traces from one model can induce degeneration (repetition avalanches, vocabulary collapse) in another at identical settings. Detect degeneration structurally — sliding-window lexical diversity, n-gram repetition rate, output-length anomalies — never by keyword lists; the next avalanche uses different words.
-- **Detectability is per-model.** An anomaly that is `hidden` to one model is blatant to another and invisible to a third. Calibrate against the model that will consume the corpus before locking a mixture, and treat the granular as a request, not a guarantee.
+- **Detectability is per-model.** An anomaly requested at any placement may be obvious to one model and invisible to another. Calibrate against the model that will consume the corpus before locking a mixture, and treat the granular as a request, not a guarantee.
 - **Determinism holds per (prompt, seed, sampling).** llama.cpp reproduces output byte-identically for a fixed triple; provider APIs generally do not. Freeze records are the replay mechanism for anything probabilistic.
-- **Provider preference:** on Lunaroute, prefer the `-ballast` model variant when available (see AGENTS.md).
+- **Provider preference:** on Lunaroute, prefer the `-ballast` model variant when available (see AGENTS.md). On first use in a session, query `GET /v1/models` to discover which models are currently active — do not assume hardcoded model IDs are still valid.
 
 ## Reference
 
-- Generator: `mlfactory/core/madlibz/envelope.py` (the whole tier is one module; read it before extending)
+- Generator: `mlfactory/core/madlibz/envelope.py`
+- Curated catalog: `mlfactory/core/madlibz/catalog.py`
 - Tests: `tests/test_madlibz.py`
 - A retired deterministic-answer tier (typed slots, computed answers) exists in git history at commit `26654b0` for use cases that need programmatically verifiable answers. Do not mix the two philosophies: answer-verification at generation time is what collapses a corpus into worksheet exercises.

@@ -1,0 +1,71 @@
+{
+  "experiment": "corpus",
+  "description": "Corpus generation progress",
+  "refresh": 5,
+  "log_file": "data/corpus_run.log",
+  "probes": [
+    {
+      "id": "completed",
+      "type": "file_line_count",
+      "file": "data/corpus_300.jsonl",
+      "label": "Completed"
+    },
+    {
+      "id": "process",
+      "type": "shell_command",
+      "command": "pgrep -f generate_corpus_300.py | head -1",
+      "parser": "int",
+      "label": "PID"
+    },
+    {
+      "id": "last_genus",
+      "type": "regex_last_match",
+      "file": "data/corpus_run.log",
+      "regex": "genus: (\\w+)"
+    },
+    {
+      "id": "last_detect",
+      "type": "regex_last_match",
+      "file": "data/corpus_run.log",
+      "regex": "detect: (\\w+)"
+    },
+    {
+      "id": "last_elapsed",
+      "type": "regex_last_match",
+      "file": "data/corpus_run.log",
+      "regex": "elapsed=([\\d.]+)s"
+    },
+    {
+      "id": "gpu_status",
+      "type": "gpu_status"
+    },
+    {
+      "id": "const_300",
+      "type": "const",
+      "value": 300
+    }
+  ],
+  "progress": {
+    "numerator_probe": "completed",
+    "denominator_probe": "const_300"
+  },
+  "panes": [
+    {
+      "title": "Progress",
+      "type": "overview",
+      "probes": ["completed", "process", "last_genus", "last_detect", "last_elapsed"],
+      "ratio": 1
+    },
+    {
+      "title": "Recent Log",
+      "type": "recent_log",
+      "config": {"lines": 12},
+      "ratio": 1
+    },
+    {
+      "title": "GPU",
+      "type": "gpu_table",
+      "ratio": 1
+    }
+  ]
+}

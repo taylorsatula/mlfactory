@@ -419,3 +419,220 @@ DETECTABILITY_DESCRIPTIONS: dict[str, str] = {'adjacent': 'The conflicting detai
 
 ANOMALY_GENUSES: tuple[str, ...] = tuple(ANOMALY_GENUS_DESCRIPTIONS)
 DETECTABILITY_GRANULARS: tuple[str, ...] = tuple(DETECTABILITY_DESCRIPTIONS)
+
+
+# Clean-arm "texture" levers.  Unlike anomaly genuses, these do NOT describe a
+# planted defect.  They classify the *kind of interpretive difficulty* that makes
+# a mundane situation require sustained reasoning toward a concrete commitment.
+# Each description encodes both halves of the design invariant: the tension that
+# forces multi-step reasoning, and the concrete deliverable the person needs.
+TEXTURE_DESCRIPTIONS: dict[str, str] = {
+    'tangled_situation': ('Overlapping authorities, loyalties, or expectations pull in different '
+                          'directions. The person needs a concrete course of action now, but '
+                          'choosing it requires sorting out who has standing, what the affected '
+                          'person wants, and what the immediate practical risk is.'),
+    'competing_concerns': ('Several legitimate goals conflict and none can be fully satisfied at '
+                           'once. The person needs a recommended approach, reached by weighing '
+                           'the concerns and committing to a reasonable balance rather than '
+                           'finding a formula that satisfies everything.'),
+    'unclear_ask': ('The literal request differs from the real need, often because context is '
+                    'withheld. The assistant must infer the underlying goal from partial '
+                    'disclosure and produce something that serves it, while respecting what was '
+                    'not said.'),
+    'multi_perspective': ('Different parties hold incompatible but sincere views of the same '
+                          'subject. The person needs a usable output that honors the '
+                          'perspectives without forcing a false resolution, requiring judgment '
+                          'about tone, attribution, and purpose.'),
+    'open_ended_planning': ('A plan must be made under soft constraints with no uniquely correct '
+                            'calculation. The person needs a layout, sequence, or strategy, '
+                            'trading off compatibility, flow, atmosphere, and practicality.'),
+    'delicate_context': ('The difficulty is emotional and situational rather than logistical. The '
+                         'person needs immediate guidance on what to say or do, requiring '
+                         'sensitivity, respect for others\u2019 roles, and action without '
+                         'overstepping.')}
+
+TEXTURES: tuple[str, ...] = tuple(TEXTURE_DESCRIPTIONS)
+
+
+# Thrash-arm levers.  These drive high-cognitive-load analytical tasks that
+# produce long, effortful reasoning traces.  The goal is NOT a deterministic
+# answer but sustained messy work: multi-step analysis, reconciliation of
+# conflicting sources, constraint navigation, etc.
+THRASH_LOAD_DESCRIPTIONS: dict[str, str] = {
+    'multi_entity_tracking': ('The task requires holding many entities, variables, or '
+                              'facts in mind simultaneously and reasoning about their '
+                              'interactions. The cognitive load comes from volume and '
+                              'interconnection, not from a single hard step.'),
+    'constraint_web': ('Multiple interacting constraints must be satisfied at once. '
+                       'Satisfying one constraint pressures others, requiring iterative '
+                       'adjustment and tradeoff reasoning rather than a single clean solve.'),
+    'sequential_dependency': ('The task requires a chain of steps where each depends on '
+                              'the output of the previous one. Getting an early step wrong '
+                              'cascades, so careful sequential reasoning is required.'),
+    'source_reconciliation': ('Multiple sources of information partially conflict or '
+                              'complement each other. The task requires weighing, '
+                              'cross-referencing, and synthesizing them into a coherent '
+                              'picture without a single authoritative source.'),
+    'state_reconstruction': ('The current state must be inferred from scattered, '
+                             'incomplete fragments of evidence. The task is to build up '
+                             'a coherent picture from pieces that do not obviously fit '
+                             'together.'),
+    'cascading_implication': ('Each finding opens new questions or invalidates earlier '
+                              'assumptions. The reasoning must repeatedly update its '
+                              'working model as new implications surface.')}
+
+THRASH_LOADS: tuple[str, ...] = tuple(THRASH_LOAD_DESCRIPTIONS)
+
+THRASH_AMPLIFIER_DESCRIPTIONS: dict[str, str] = {
+    'red_herrings': ('The task includes plausible but irrelevant details that '
+                     'attract attention and must be identified and set aside.'),
+    'missing_data': ('Key information is absent and must be reasoned around, '
+                     'estimated, or flagged as uncertain rather than assumed.'),
+    'competing_priorities': ('Multiple objectives pull in different directions; '
+                             'optimizing for one degrades another, forcing explicit '
+                             'tradeoff reasoning.'),
+    'sheer_scale': ('The volume of information is large enough that tracking '
+                    'everything accurately is itself the challenge.'),
+    'indirection': ('The relevant information is not where one would first look; '
+                    'the path to the answer requires lateral or non-obvious '
+                    'connections.'),
+    'temporal_spread': ('Information arrives from different time periods or '
+                        'stages, and the task requires tracking what changed when '
+                        'and what is still current.')}
+
+THRASH_AMPLIFIERS: tuple[str, ...] = tuple(THRASH_AMPLIFIER_DESCRIPTIONS)
+
+# Analysis-heavy domains for the thrash arm.
+THRASH_DOMAIN_PROFILES: dict[str, dict[str, tuple[str, ...]]] = {
+    'clinical_case_review': {
+        'personas': (
+            'a resident presenting a complex case at morning rounds',
+            'a nurse practitioner triaging overlapping symptoms',
+            'a pharmacist reconciling medications from multiple prescribers',
+            'a specialist reviewing a referral with incomplete records'),
+        'stakes': (
+            'the patient is deteriorating and a decision is needed soon',
+            'a family member is pushing for a different treatment approach',
+            'the case must be presented to the attending within the hour',
+            'test results are pending but action may not wait')},
+    'forensic_evidence_analysis': {
+        'personas': (
+            'a detective reviewing evidence from multiple crime scenes',
+            'a forensic analyst writing up findings for court',
+            'a cold-case investigator reopening a file with new information',
+            'a crime scene technician reconciling field notes with lab results'),
+        'stakes': (
+            'the case goes to trial next week and the report must be airtight',
+            'a suspect is in custody and the clock is running',
+            'new evidence contradicts the original theory',
+            'the victim\u2019s family is demanding answers')},
+    'financial_reconciliation': {
+        'personas': (
+            'an auditor tracing discrepancies across multiple ledgers',
+            'a bookkeeper merging records after a company acquisition',
+            'a fraud investigator following a trail of suspicious transactions',
+            'an accountant preparing year-end statements with missing receipts'),
+        'stakes': (
+            'the audit report is due to regulators by end of week',
+            'a large unexplained gap threatens payroll',
+            'the client is threatening legal action over billing errors',
+            'a merger deadline depends on clean books')},
+    'structural_assessment': {
+        'personas': (
+            'a civil engineer evaluating a bridge after inspection findings',
+            'a building inspector assessing damage after a storm',
+            'a project engineer reviewing load calculations for a renovation',
+            'a structural analyst comparing design specs to field measurements'),
+        'stakes': (
+            'the structure must reopen to traffic by Monday',
+            'residents are waiting to re-enter the building',
+            'a failure could be catastrophic and liability is unclear',
+            'budget constraints limit repair options')},
+    'epidemiological_trace': {
+        'personas': (
+            'a public health officer tracing contacts after a positive test',
+            'an epidemiologist analyzing cluster patterns across regions',
+            'a hospital infection control nurse investigating a ward outbreak',
+            'a food safety inspector tracking a contamination source'),
+        'stakes': (
+            'cases are doubling every two days',
+            'a public announcement must be made before the weekend',
+            'the source is still active and exposing more people',
+            'multiple agencies have conflicting data')},
+    'spectral_interpretation': {
+        'personas': (
+            'a chemist interpreting NMR peaks for an unknown compound',
+            'a geologist reading seismic data for subsurface structure',
+            'an astronomer analyzing light curves from a variable source',
+            'a materials scientist examining diffraction patterns'),
+        'stakes': (
+            'the paper deadline is in two days',
+            'the sample degrades if not identified quickly',
+            'a collaborator\u2019s interpretation conflicts with the data',
+            'the instrument time is almost up')},
+    'logistics_coordination': {
+        'personas': (
+            'a supply chain manager rerouting shipments after a disruption',
+            'an event coordinator managing vendor schedules for a festival',
+            'a military logistics officer planning a resupply operation',
+            'a hospital administrator coordinating bed availability across wards'),
+        'stakes': (
+            'a shipment is stuck at customs and the client deadline is tomorrow',
+            'three events are competing for the same venue and crew',
+            'weather is closing a route and alternatives are limited',
+            'a critical resource is needed at two locations simultaneously')},
+    'environmental_impact_review': {
+        'personas': (
+            'an environmental consultant assessing a proposed development',
+            'a wildlife biologist evaluating habitat disruption data',
+            'a water quality specialist interpreting monitoring results',
+            'a regulatory reviewer weighing stakeholder submissions'),
+        'stakes': (
+            'the development permit decision is next month',
+            'a protected species may be affected',
+            'community opposition is growing',
+            'baseline data is incomplete')},
+    'insurance_claims_adjudication': {
+        'personas': (
+            'a claims adjuster evaluating a complex multi-party accident',
+            'an underwriter reviewing a policy for coverage gaps',
+            'a fraud investigator cross-referencing claim histories',
+            'a loss assessor estimating damage from conflicting reports'),
+        'stakes': (
+            'the claimant is disputing the initial assessment',
+            'multiple policies may overlap on the same loss',
+            'a legal deadline forces a decision before all evidence arrives',
+            'the claim amount exceeds the adjuster\u2019s authority limit')},
+    'astronomical_data_reduction': {
+        'personas': (
+            'a graduate student reducing telescope observation data',
+            'a survey scientist calibrating photometric measurements',
+            'a radio astronomer interpreting interferometry output',
+            'a planetary scientist comparing images across missions'),
+        'stakes': (
+            'the observation window has closed and this is the only data',
+            'a collaborator needs the reduced data for a paper due Friday',
+            'calibration errors may have corrupted part of the dataset',
+            'the signal is faint and near the detection limit')},
+    'pharmacokinetic_dosing': {
+        'personas': (
+            'a clinical pharmacist adjusting doses for a renal patient',
+            'an oncology nurse calculating infusion rates for a protocol',
+            'a pediatrician weighing dose adjustments for a child',
+            'a researcher modeling drug interactions in a trial'),
+        'stakes': (
+            'the patient\u2019s labs came back abnormal and dosing must change today',
+            'two drugs interact and both are essential',
+            'the patient is underweight and the standard protocol may not apply',
+            'a missed dose window has already occurred')},
+    'manufacturing_defect_analysis': {
+        'personas': (
+            'a quality engineer tracing a recurring defect across shifts',
+            'a process engineer diagnosing yield loss on a production line',
+            'a failure analyst examining returned components',
+            'a plant manager deciding whether to halt production'),
+        'stakes': (
+            'a major customer order ships Friday',
+            'the defect rate has tripled this week',
+            'a recall is being considered',
+            'two teams blame each other\u2019s process')} }

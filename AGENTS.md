@@ -226,7 +226,7 @@ The runner expands secrets at execution time; they are never written into manife
 
 ## Provider preferences
 
-- **Lunaroute:** always prefer the `-ballast` model variant when one is available (e.g., `glm-5.2-vision-ballast`). Fall back to the plain model only if no ballast variant exists.
+- **Lunaroute:** always prefer the `-ballast` model variant when one is available (e.g., `glm-5.2-vision-ballast`). Fall back to the plain model only if no ballast variant exists. On first use in a session, query `GET /v1/models` to get the list of currently active model names — the available set can change between sessions.
 
 ## Common mistakes
 

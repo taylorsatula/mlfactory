@@ -7,9 +7,12 @@ from mlfactory.core.madlibz import (
     ANOMALY_GENUS_DESCRIPTIONS,
     ANOMALY_GENUSES,
     AUTHORING_SYSTEM_PROMPT,
+    CLEAN_AUTHORING_SYSTEM_PROMPT,
     DETECTABILITY_DESCRIPTIONS,
     DETECTABILITY_GRANULARS,
     DOMAIN_PROFILES,
+    TEXTURE_DESCRIPTIONS,
+    TEXTURES,
     authoring_messages,
     freeze_authored,
     sample_envelope,
@@ -90,5 +93,78 @@ def test_freeze_authored():
     assert rec["provenance"] == {"run": "r1"}
     with pytest.raises(ValueError):
         freeze_authored(env, {"prose": "  ", "anomaly": {}}, model="test-model")
+    with pytest.raises(ValueError):
+        freeze_authored(env, {"prose": "hi"}, model="test-model")
+
+
+def test_clean_textures_are_curated_classifications():
+    assert len(TEXTURES) == 6
+    assert set(TEXTURES) == set(TEXTURE_DESCRIPTIONS)
+    # Textures classify the kind of interpretive difficulty, never a score.
+    for description in TEXTURE_DESCRIPTIONS.values():
+        assert "0.0" not in description and "confidence" not in description.lower()
+
+
+def test_clean_blind_draws_are_deterministic_and_valid():
+    a = sample_envelope(seed=7, domain="wedding_feast", mode="clean")
+    b = sample_envelope(seed=7, domain="wedding_feast", mode="clean")
+    assert a == b and a.envelope_hash == b.envelope_hash
+    assert a.texture in TEXTURES
+    assert a.genus is None and a.detectability is None
+    assert a.persona and a.stakes
+    # Clean and anomaly draws for the same seed/domain must not collide.
+    anomaly = sample_envelope(seed=7, domain="wedding_feast")
+    assert anomaly.envelope_hash != a.envelope_hash
+
+
+def test_clean_lever_override_and_rejections():
+    specified = sample_envelope(seed=7, domain="wedding_feast", mode="clean",
+                                texture="tangled_situation")
+    assert specified.texture == "tangled_situation"
+    with pytest.raises(ValueError):
+        sample_envelope(seed=7, domain="wedding_feast", mode="clean", texture="bogus")
+    with pytest.raises(ValueError):
+        sample_envelope(seed=7, domain="wedding_feast", mode="clean",
+                        genus="temporal_conflict")
+    with pytest.raises(ValueError):
+        sample_envelope(seed=7, domain="wedding_feast", texture="tangled_situation")
+    with pytest.raises(ValueError):
+        sample_envelope(seed=7, domain="wedding_feast", mode="bogus")
+
+
+def test_clean_authoring_messages_carry_texture():
+    env = sample_envelope(seed=9, domain="caregiving_at_home", mode="clean",
+                          texture="unclear_ask")
+    messages = authoring_messages(env)
+    system = next(m["content"] for m in messages if m["role"] == "system")
+    user = next(m["content"] for m in messages if m["role"] == "user")
+    assert system == CLEAN_AUTHORING_SYSTEM_PROMPT
+    # The clean prompt must steer toward a concrete commitment, not a puzzle,
+    # and must never ask the author to dodge a final answer.
+    assert "concrete response or" in system and "decision" in system
+    assert "avoid a final answer" not in system
+    assert "reasoning" in system and "decision_target" in system
+    assert env.texture in user and TEXTURE_DESCRIPTIONS[env.texture] in user
+    assert env.persona in user and env.stakes in user
+    assert env.envelope_hash in user
+    assert "ANOMALY GENUS" not in user
+
+
+def test_freeze_authored_clean():
+    env = sample_envelope(seed=9, domain="caregiving_at_home", mode="clean",
+                          texture="delicate_context")
+    rec = freeze_authored(env, {
+        "prose": "I'm at a gathering after a funeral...",
+        "surface_question": "what should I say to the children right now",
+        "reasoning": {"texture": env.texture,
+                      "why_sustained_reasoning_needed": "grief + no clear authority",
+                      "decision_target": "immediate guidance for speech and action"},
+    }, model="test-model", run="r2")
+    assert rec["envelope_hash"] == env.envelope_hash
+    assert rec["envelope"]["texture"] == env.texture
+    assert "genus" not in rec["envelope"]
+    assert rec["reasoning"]["decision_target"] == "immediate guidance for speech and action"
+    assert "anomaly" not in rec
+    assert rec["provenance"] == {"run": "r2"}
     with pytest.raises(ValueError):
         freeze_authored(env, {"prose": "hi"}, model="test-model")
