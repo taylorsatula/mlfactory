@@ -636,3 +636,180 @@ THRASH_DOMAIN_PROFILES: dict[str, dict[str, tuple[str, ...]]] = {
             'the defect rate has tripled this week',
             'a recall is being considered',
             'two teams blame each other\u2019s process')} }
+
+
+# Code-arm levers.  A standalone category for software-engineering problems
+# written in a terse, direct voice — not conversational first-person narrative.
+# Downstream solvers reason over the text alone (no shell, no repo access, no
+# tools), so authored problems must be fully self-contained: the problem
+# statement is the entire codebase.  Up to five load-bearing code snippets are
+# permitted; red-herring snippets are not.
+CODE_TASK_DESCRIPTIONS: dict[str, str] = {
+    'diagnose_and_fix': ('A concrete failure is presented: something crashes, errors, or '
+                         'behaves observably wrong. The solver must identify the root cause '
+                         'from the presented material and produce a working fix, not a patch '
+                         'over the symptom.'),
+    'implement_from_requirements': ('The solver must produce working code that satisfies a '
+                                    'stated set of requirements and constraints. The difficulty '
+                                    'is satisfying them all at once; individual requirements are '
+                                    'easy to satisfy only in conflict with one another.'),
+    'constrained_refactor': ('Existing code must be restructured to meet a new requirement '
+                             'without changing its observable behavior. Stated constraints bind '
+                             'which shapes of solution are acceptable, so the solver must verify '
+                             'behavior preservation, not just rewrite.'),
+    'explain_and_predict': ('The solver must explain why the code behaves as observed and then '
+                            'correctly predict what happens under a specified change. Both halves '
+                            'are required: a mechanism account and its consequence.'),
+    'repair_the_pipeline': ('The build, test, or deployment process itself is broken rather than '
+                            'the application logic. The solver must restore the process by '
+                            'reasoning about tooling, configuration, and environment.'),
+    'reconcile_and_decide': ('Sources, requirements, or constraints partially conflict and no '
+                             'option satisfies everything. The solver must weigh the presented '
+                             'material and commit to one justified course of action with its '
+                             'tradeoffs stated.'),
+}
+
+CODE_FRICTION_DESCRIPTIONS: dict[str, str] = {
+    'conflicting_evidence': ('Two or more presented artifacts — logs, tests, documentation, '
+                             'observed behavior — disagree with each other. Resolution requires '
+                             'determining which account holds and under which conditions, not '
+                             'averaging them.'),
+    'partial_reproduction': ('The failure occurs intermittently or only under one environment '
+                             'or input condition. The solver must identify the gating condition '
+                             'from the presented evidence rather than assuming the failure '
+                             'always or never occurs.'),
+    'misleading_surface': ('The most visible suspect — an error message, a recent change, an '
+                           'obviously odd line — is not the true cause. The real cause lies '
+                           'elsewhere in the presented material and is reachable only by '
+                           'checking the obvious suspect against the evidence.'),
+    'stale_assumption': ('A comment, document, configuration value, or stated belief describes '
+                         'an older state of the system. Treating it as current leads to a wrong '
+                         'conclusion; the presented material contains evidence that it is out '
+                         'of date.'),
+    'hidden_coupling': ('The behavior depends on an interaction that is never stated directly — '
+                        'ordering, shared state, environment, version, or timing. The solver '
+                        'must infer the coupling from how the presented pieces behave.'),
+    'compounding_constraints': ('Multiple requirements interact — compatibility, performance, '
+                                'dependency policy, migration order — so a naive solution to '
+                                'one violates another. The solver must satisfy them jointly.'),
+}
+
+CODE_TASKS: tuple[str, ...] = tuple(CODE_TASK_DESCRIPTIONS)
+CODE_FRICTIONS: tuple[str, ...] = tuple(CODE_FRICTION_DESCRIPTIONS)
+
+# Code-arm domains: technical surface areas.  Personas are requester roles and
+# stakes are external pressures.  Both pools are drawn independently, so every
+# persona must combine plausibly with every stake in the domain — and with any
+# task/friction draw — so neither pool presupposes a specific defect.
+CODE_DOMAIN_PROFILES: dict[str, dict[str, tuple[str, ...]]] = {
+    'python_data_pipeline': {
+        'personas': (
+            'a data engineer responsible for a nightly ETL job',
+            'an analyst maintaining a script that turns source exports into a report',
+            'a junior engineer on call for the team’s batch imports',
+            'a researcher assembling a pipeline that glues exported spreadsheets into one analysis'),
+        'stakes': (
+            'the job must produce numbers before the morning dashboard review',
+            'dropped or duplicated records would corrupt a client-facing report',
+            'the run has a fixed maintenance window and cannot spill past it',
+            'the source export cannot be regenerated once the run consumes it')},
+    'web_api_service': {
+        'personas': (
+            'a backend engineer on call for a production API',
+            'a developer integrating a third-party API into the service',
+            'an engineer maintaining the authentication path of a public endpoint',
+            'a developer responsible for the service’s rate limiting'),
+        'stakes': (
+            'the endpoint is live and cannot be taken down during business hours',
+            'a client integration depends on the current response shape',
+            'a release train leaves tomorrow and the work must go out with it',
+            'traffic bursts are expected during an upcoming public event')},
+    'ci_and_build': {
+        'personas': (
+            'a release engineer responsible for the team’s build pipeline',
+            'a developer whose changes must pass CI before merging',
+            'an engineer maintaining the team’s packaging and install steps',
+            'a team lead trying to unblock a merge queue'),
+        'stakes': (
+            'a tagged release is blocked until the pipeline is green',
+            'each failed build consumes the team’s only shared test environment',
+            'the pipeline has a strict time budget it must stay within',
+            'half the team has merges queued on pipeline results')},
+    'database_access': {
+        'personas': (
+            'a developer responsible for a set of application queries',
+            'an engineer managing the connection pool for a busy service',
+            'a backend engineer preparing a schema migration',
+            'an analyst running aggregation jobs against a growing table'),
+        'stakes': (
+            'the work touches production data that cannot be copied out',
+            'the migration window is short and cannot be repeated this week',
+            'database problems are cascading into unrelated services',
+            'the results feed a compliance submission with a fixed deadline')},
+    'scripting_and_automation': {
+        'personas': (
+            'an operations engineer maintaining scripts written by a departed colleague',
+            'a developer responsible for scheduled jobs that run unattended',
+            'an engineer automating a weekly export assembled from several steps',
+            'a sysadmin responsible for backup and archive scripts'),
+        'stakes': (
+            'the scripts run unattended, so failures surface days late',
+            'one wrong run would delete files that have no other copy',
+            'the automation must survive machines with different shells and locales',
+            'nobody watches the run, so it must be safe by construction')},
+    'dependency_management': {
+        'personas': (
+            'a developer responsible for keeping the project’s dependencies current',
+            'an engineer rebuilding an application environment from its lockfile',
+            'a team member untangling shared internal packages',
+            'an engineer managing version pins across several services'),
+        'stakes': (
+            'an upgrade carries a security patch needed before an audit',
+            'two services share a library and require different versions',
+            'any fix must not force a rewrite the team cannot staff',
+            'the environment is offline and packages come from a local mirror')},
+    'legacy_codebase': {
+        'personas': (
+            'an engineer who inherited a critical module with no tests and no documentation',
+            'a developer adding features to code that predates the current language version',
+            'an engineer migrating callers off a deprecated internal library',
+            'a new hire mapping out which of several similar modules is actually in use'),
+        'stakes': (
+            'the module processes real transactions and cannot be taken offline',
+            'the original author left and no one can confirm intended behavior',
+            'a platform upgrade will retire the old constructs entirely',
+            'regressions surface only in month-end batch processing')},
+    'concurrency_and_scheduling': {
+        'personas': (
+            'a developer responsible for a pool of background workers',
+            'an engineer maintaining a job queue shared by several services',
+            'a backend engineer in charge of the team’s periodic scheduled tasks',
+            'an engineer coordinating a set of dependent, retryable jobs'),
+        'stakes': (
+            'the work touches customer-visible records',
+            'restarting the system clears the transient state before anyone can inspect it',
+            'the scheduler cannot stop without losing queued work',
+            'retries can amplify small defects into large outages')},
+    'deployment_and_runtime': {
+        'personas': (
+            'an engineer responsible for a service running across several hosts',
+            'a developer maintaining the container images a service runs on',
+            'an operations engineer reconciling configuration between staging and production',
+            'an engineer managing rollouts and traffic routing for new releases'),
+        'stakes': (
+            'production and staging differ in ways no one fully documented',
+            'a change freeze is in effect and exceptions need approvals',
+            'rollback is not a clean option because releases bundle several fixes',
+            'the hosts can only be inspected through logs and configuration')},
+    'test_suite_maintenance': {
+        'personas': (
+            'a developer responsible for keeping the test suite trustworthy',
+            'an engineer maintaining tests for time-sensitive code',
+            'a team member in charge of shared test fixtures',
+            'an engineer updating tests after an intentional behavior change'),
+        'stakes': (
+            'the suite gates every merge, so unreliable results erode trust',
+            'some paths cannot be exercised by hand, only through tests',
+            'a behavior change is already shipped and the tests must catch up',
+            'run time is budgeted and changes must not slow the suite')},
+}

@@ -8,6 +8,12 @@ from mlfactory.core.madlibz import (
     ANOMALY_GENUSES,
     AUTHORING_SYSTEM_PROMPT,
     CLEAN_AUTHORING_SYSTEM_PROMPT,
+    CODE_AUTHORING_SYSTEM_PROMPT,
+    CODE_DOMAIN_PROFILES,
+    CODE_FRICTION_DESCRIPTIONS,
+    CODE_FRICTIONS,
+    CODE_TASK_DESCRIPTIONS,
+    CODE_TASKS,
     DETECTABILITY_DESCRIPTIONS,
     DETECTABILITY_GRANULARS,
     DOMAIN_PROFILES,
@@ -168,3 +174,120 @@ def test_freeze_authored_clean():
     assert rec["provenance"] == {"run": "r2"}
     with pytest.raises(ValueError):
         freeze_authored(env, {"prose": "hi"}, model="test-model")
+
+
+def test_code_catalog_is_curated():
+    assert len(CODE_DOMAIN_PROFILES) == 10
+    assert len(CODE_TASKS) == 6
+    assert len(CODE_FRICTIONS) == 6
+    assert set(CODE_TASKS) == set(CODE_TASK_DESCRIPTIONS)
+    assert set(CODE_FRICTIONS) == set(CODE_FRICTION_DESCRIPTIONS)
+    assert all(set(profile) == {"personas", "stakes"} for profile in CODE_DOMAIN_PROFILES.values())
+    assert all(len(profile["personas"]) == 4 for profile in CODE_DOMAIN_PROFILES.values())
+    assert all(len(profile["stakes"]) == 4 for profile in CODE_DOMAIN_PROFILES.values())
+    # Personas and stakes are drawn independently, so neither pool may
+    # presuppose a specific defect; they classify roles and pressures only.
+    for profile in CODE_DOMAIN_PROFILES.values():
+        for text in profile["personas"] + profile["stakes"]:
+            assert "0.0" not in text and "confidence" not in text.lower()
+
+
+def test_code_blind_draws_are_deterministic_and_valid():
+    a = sample_envelope(seed=21, domain="python_data_pipeline", mode="code")
+    b = sample_envelope(seed=21, domain="python_data_pipeline", mode="code")
+    assert a == b and a.envelope_hash == b.envelope_hash
+    assert a.task_kind in CODE_TASKS and a.friction in CODE_FRICTIONS
+    assert a.genus is None and a.detectability is None and a.texture is None
+    assert a.load_type is None and a.amplifier is None
+    assert a.persona and a.stakes
+
+
+def test_code_lever_override_and_rejections():
+    blind = sample_envelope(seed=21, domain="python_data_pipeline", mode="code")
+    specified = sample_envelope(seed=21, domain="python_data_pipeline", mode="code",
+                                task_kind="diagnose_and_fix", friction="stale_assumption")
+    assert specified.task_kind == "diagnose_and_fix" and specified.friction == "stale_assumption"
+    # Persona/stakes still come from the blind draw when unspecified.
+    assert specified.persona == blind.persona and specified.stakes == blind.stakes
+    assert specified.envelope_hash != blind.envelope_hash
+    with pytest.raises(ValueError):
+        sample_envelope(seed=21, domain="python_data_pipeline", mode="code", task_kind="bogus")
+    with pytest.raises(ValueError):
+        sample_envelope(seed=21, domain="python_data_pipeline", mode="code", friction="bogus")
+    with pytest.raises(ValueError):
+        sample_envelope(seed=21, domain="python_data_pipeline", mode="code",
+                        genus="temporal_conflict")
+    with pytest.raises(ValueError):
+        sample_envelope(seed=21, domain="python_data_pipeline", mode="code",
+                        texture="unclear_ask")
+    with pytest.raises(ValueError):
+        sample_envelope(seed=21, domain="python_data_pipeline", mode="code",
+                        load_type="constraint_web")
+    with pytest.raises(ValueError):
+        sample_envelope(seed=21, domain="no_such_domain", mode="code")
+    # Other arms must reject code levers.
+    with pytest.raises(ValueError):
+        sample_envelope(seed=21, domain="diner_breakfast_shift", task_kind="diagnose_and_fix")
+    with pytest.raises(ValueError):
+        sample_envelope(seed=21, domain="diner_breakfast_shift", mode="clean",
+                        friction="hidden_coupling")
+    with pytest.raises(ValueError):
+        sample_envelope(seed=21, domain="clinical_case_review", mode="thrash",
+                        friction="hidden_coupling")
+
+
+def test_code_authoring_messages_carry_seeds_and_self_containment():
+    env = sample_envelope(seed=23, domain="ci_and_build", mode="code",
+                          task_kind="repair_the_pipeline", friction="conflicting_evidence")
+    messages = authoring_messages(env)
+    system = next(m["content"] for m in messages if m["role"] == "system")
+    user = next(m["content"] for m in messages if m["role"] == "user")
+    assert system == CODE_AUTHORING_SYSTEM_PROMPT
+    # The prompt must account for a solver that reasons over the text alone.
+    assert "no shell" in system and "no tools" in system.lower()
+    assert "self-contained" in system
+    # Snippet policy: at most five, all load-bearing.
+    assert "at most five code snippets" in system and "load-bearing" in system
+    assert env.task_kind in user and CODE_TASK_DESCRIPTIONS[env.task_kind] in user
+    assert env.friction in user and CODE_FRICTION_DESCRIPTIONS[env.friction] in user
+    assert env.persona in user and env.stakes in user
+    assert env.envelope_hash in user
+    assert "ANOMALY GENUS" not in user and "TEXTURE" not in user and "LOAD TYPE" not in user
+
+
+def test_freeze_authored_code():
+    env = sample_envelope(seed=25, domain="legacy_codebase", mode="code")
+    rec = freeze_authored(env, {
+        "prose": "Our month-end batch doubled totals after the last deploy...",
+        "surface_question": "find why totals doubled and present a working fix",
+        "problem": {"task_kind": env.task_kind, "friction": env.friction,
+                    "what_must_be_produced": "a working fix",
+                    "where_the_difficulty_lives": "a stale comment about rounding",
+                    "why_it_requires_work": "the comment contradicts the code path"},
+    }, model="test-model", run="r4")
+    assert rec["envelope_hash"] == env.envelope_hash
+    assert rec["envelope"]["task_kind"] == env.task_kind
+    assert rec["envelope"]["friction"] == env.friction
+    assert rec["problem"]["what_must_be_produced"] == "a working fix"
+    assert "anomaly" not in rec and "reasoning" not in rec
+    assert rec["provenance"] == {"run": "r4"}
+    with pytest.raises(ValueError):
+        freeze_authored(env, {"prose": "hi"}, model="test-model")
+    with pytest.raises(ValueError):
+        freeze_authored(env, {"prose": "  "}, model="test-model")
+    with pytest.raises(ValueError, match="task_kind"):
+        freeze_authored(env, {
+            "prose": "hi",
+            "problem": {"task_kind": "diagnose_fix", "friction": env.friction},
+        }, model="test-model")
+    with pytest.raises(ValueError, match="friction"):
+        freeze_authored(env, {
+            "prose": "hi",
+            "problem": {"task_kind": env.task_kind, "friction": "bogus"},
+        }, model="test-model")
+    with pytest.raises(ValueError, match="what_must_be_produced"):
+        freeze_authored(env, {
+            "prose": "hi",
+            "surface_question": "what should we change?",
+            "problem": {"task_kind": env.task_kind, "friction": env.friction},
+        }, model="test-model")
