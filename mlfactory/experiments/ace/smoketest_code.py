@@ -1,8 +1,9 @@
 #!/usr/bin/env python3
-"""Smoketest: generate 10 code-arm software-engineering problems via Lunaroute.
+"""Generate code-arm software-engineering problems via Lunaroute.
 
-Uses the -background model variant.  One envelope per code domain, blind
-random task/friction draws, seeds 5000-5009.
+By default this is a 10-example smoketest: one envelope per code domain,
+with blind random task/friction draws and seeds 5000-5009. Use --count for a
+larger corpus.
 
 Usage:
     python3.14 smoketest_code.py
@@ -12,7 +13,7 @@ appends frozen records to data/code_smoketest.jsonl. Existing valid records
 are used as the resume checkpoint, so failed or interrupted seeds are retried
 on the next invocation.
 """
-import json, requests, re, time, sys, os
+import argparse, json, requests, re, time, sys, os
 from datetime import datetime
 from pathlib import Path
 
@@ -24,7 +25,11 @@ from mlfactory.core.api import extract_json
 LUNAROUTE_URL = "https://gw.lunaroute.com/v1/chat/completions"
 LUNAROUTE_MODELS_URL = "https://gw.lunaroute.com/v1/models"
 API_KEY = os.environ.get("LUNAROUTE_API_KEY")
-MODEL_PREFERENCE = ["glm-5.2-vision-background"]
+MODEL_PREFERENCE = [
+    "glm-5.2-vision-ballast",
+    "glm-5.2-vision",
+    "glm-5.2-vision-background",
+]
 DOMAINS = sorted(CODE_DOMAIN_PROFILES.keys())
 STREAM_TIMEOUT = 30
 MAX_TOKENS = 32000
@@ -190,21 +195,36 @@ def append_record(record):
 
 
 def main():
-    print(f"[{now()}] === Code-arm smoketest: {N} problems ===")
+    global OUT_PATH
+    parser = argparse.ArgumentParser(description="Generate ACE code-arm examples via Lunaroute")
+    parser.add_argument("--count", type=int, default=N)
+    parser.add_argument("--start-seed", type=int, default=5000)
+    parser.add_argument("--output", type=Path, default=OUT_PATH)
+    parser.add_argument("--corpus", default="code-smoketest")
+    args = parser.parse_args()
+    if args.count <= 0:
+        parser.error("--count must be positive")
+
+    OUT_PATH = args.output
+    count = args.count
+
+    print(f"[{now()}] === Code-arm generation: {count} problems ===")
     require_api_key()
     model_id = discover_and_pick_model()
     print(f"[{now()}] Using model: {model_id}")
 
-    base_seed = 5000
-    plan = [(base_seed + i, DOMAINS[i]) for i in range(N)]
-    print(f"[{now()}] Plan (seed, domain): {plan}")
+    plan = [
+        (args.start_seed + i, DOMAINS[i % len(DOMAINS)])
+        for i in range(count)
+    ]
+    print(f"[{now()}] Plan: seeds {args.start_seed}-{args.start_seed + count - 1}; domains cycle across {len(DOMAINS)} code domains")
 
     OUT_PATH.parent.mkdir(parents=True, exist_ok=True)
     records_by_seed = load_existing_records()
     failures = 0
     if records_by_seed:
         planned_existing = sum(seed in records_by_seed for seed, _ in plan)
-        print(f"[{now()}] Resuming with {planned_existing}/{N} planned records already present")
+        print(f"[{now()}] Resuming with {planned_existing}/{count} planned records already present")
 
     for i, (seed, domain) in enumerate(plan):
         print(f"\n{'─'*70}")
@@ -231,7 +251,7 @@ def main():
         print(f"  authored JSON received in {elapsed:.1f}s")
 
         try:
-            record = freeze_authored(env, authored, model=model_id, corpus="code-smoketest")
+            record = freeze_authored(env, authored, model=model_id, corpus=args.corpus)
         except ValueError as e:
             print(f"  ❌ FAIL: freeze rejected: {e}")
             failures += 1
@@ -253,12 +273,12 @@ def main():
 
     completed = sum(seed in records_by_seed for seed, _ in plan)
     print(f"\n{'='*70}")
-    if failures == 0 and completed == N:
-        print(f"[{now()}] ✅ Code smoketest passed — {N}/{N} generated")
+    if failures == 0 and completed == count:
+        print(f"[{now()}] ✅ Code generation passed — {count}/{count} generated")
     else:
-        print(f"[{now()}] ⚠️  Completed {completed}/{N}, {failures} failures")
+        print(f"[{now()}] ⚠️  Completed {completed}/{count}, {failures} failures")
     print(f"{'='*70}")
-    sys.exit(0 if completed == N else 1)
+    sys.exit(0 if completed == count else 1)
 
 
 if __name__ == "__main__":
