@@ -24,10 +24,10 @@ from mlfactory.core.secrets import SecretsStore, expand_secrets
 from mlfactory.plugins.base import PLUGINS
 
 # Register built-in experiment plugins.
-import mlfactory.experiments.ace.classify_plugin  # noqa: E402,F401
-import mlfactory.experiments.ace.collect_plugin  # noqa: E402,F401
-import mlfactory.experiments.ace.generate_prompts_plugin  # noqa: E402,F401
-import mlfactory.experiments.ace.stratify_plugin  # noqa: E402,F401
+# NOTE: the original ACE experiment (post-hoc trace rewriting) was archived to
+# mlfactory/experiments/ace-legacyapproach/ (not an importable package name) during
+# the pivot to causal in-generation steering. Its plugins are intentionally no
+# longer registered. The rebuilt ACE experiment registers its own stages here.
 import mlfactory.experiments.dft.build_pilot_plugin  # noqa: E402,F401
 import mlfactory.experiments.dft.eval_plugin  # noqa: E402,F401
 import mlfactory.experiments.dft.train_plugin  # noqa: E402,F401

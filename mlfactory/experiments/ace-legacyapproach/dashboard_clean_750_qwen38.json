@@ -1,0 +1,117 @@
+{
+  "experiment": "ace-clean-750-qwen38",
+  "description": "ACE clean prompts — Qwen3.8 trace capture",
+  "refresh": 2.0,
+  "log_file": "{run_dir}/data/clean_750_qwen38.log",
+  "probes": [
+    {
+      "id": "completed",
+      "type": "file_line_count",
+      "label": "Completed",
+      "file": "{run_dir}/data/clean_750_qwen38_traces.jsonl"
+    },
+    {
+      "id": "planned",
+      "type": "const",
+      "label": "Planned",
+      "params": { "value": 753 }
+    },
+    {
+      "id": "eta",
+      "type": "const",
+      "label": "Estimated completion",
+      "params": { "value": "estimating" }
+    },
+    {
+      "id": "tokens_per_second_1m",
+      "type": "const",
+      "label": "Server tok/s (1m)",
+      "params": { "value": "warming" }
+    },
+    {
+      "id": "successful",
+      "type": "json_file_value",
+      "label": "Successful",
+      "file": "{run_dir}/data/clean_750_qwen38_progress.json",
+      "path": "successful"
+    },
+    {
+      "id": "failed",
+      "type": "json_file_value",
+      "label": "Failed",
+      "file": "{run_dir}/data/clean_750_qwen38_progress.json",
+      "path": "failed"
+    },
+    {
+      "id": "current",
+      "type": "regex_last_match",
+      "label": "Current",
+      "file": "{run_dir}/data/clean_750_qwen38.log",
+      "regex": "CURRENT \\[([^]]+)\\] source=([^ ]+) source_index=([^ ]+) seed=([^ ]+) domain=(\\S+)"
+    },
+    {
+      "id": "last_trace",
+      "type": "regex_last_match",
+      "label": "Last trace",
+      "file": "{run_dir}/data/clean_750_qwen38.log",
+      "regex": "TRACE (OK|ERROR) \\[([^]]+)\\]"
+    },
+    {
+      "id": "server_health",
+      "type": "http_json",
+      "label": "Server",
+      "url": "http://127.0.0.1:3090/health",
+      "path": "status"
+    },
+    {
+      "id": "process",
+      "type": "process_alive",
+      "label": "Worker",
+      "pid_file": "{run_dir}/data/clean_750_qwen38.pid"
+    },
+    {
+      "id": "gpu_status",
+      "type": "gpu_status",
+      "label": "GPUs"
+    },
+    {
+      "id": "disk_usage",
+      "type": "disk_usage",
+      "label": "Disk",
+      "file": "{run_dir}",
+      "warn_if_above": 80,
+      "danger_if_above": 95
+    }
+  ],
+  "progress": {
+    "numerator_probe": "completed",
+    "denominator_probe": "planned",
+    "denominator_label": "prompts"
+  },
+  "panes": [
+    {
+      "title": "Progress",
+      "type": "overview",
+      "probes": ["completed", "successful", "failed", "eta", "tokens_per_second_1m", "current", "last_trace", "server_health", "process"],
+      "ratio": 2
+    },
+    {
+      "title": "Run metrics",
+      "type": "metrics_table",
+      "probes": ["completed", "successful", "failed", "eta", "tokens_per_second_1m", "server_health", "process", "disk_usage"],
+      "ratio": 1
+    },
+    {
+      "title": "GPU status",
+      "type": "gpu_table",
+      "probes": ["gpu_status"],
+      "ratio": 2
+    },
+    {
+      "title": "Recent log",
+      "type": "recent_log",
+      "config": { "file": "{run_dir}/data/clean_750_qwen38.log", "lines": 12 },
+      "size": 14
+    }
+  ]
+}
