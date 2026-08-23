@@ -246,11 +246,20 @@ def _run_probe(probe: Probe, run_dir: Path | None, manifest: RunManifest | None)
             if not path or not path.exists():
                 return ProbeResult(value=None, display="n/a", style="dim")
             try:
+                rec = None
+                # scan backwards: logs mix JSON records with tqdm fragments
                 with open(path, "r", encoding="utf-8", errors="ignore") as f:
-                    lines = [l.strip() for l in f if l.strip()]
-                if not lines:
+                    for line in reversed(f.readlines()):
+                        line = line.strip()
+                        if not line.startswith("{"):
+                            continue
+                        try:
+                            rec = json.loads(line)
+                            break
+                        except json.JSONDecodeError:
+                            continue
+                if rec is None:
                     return ProbeResult(value=None, display="empty", style="dim")
-                rec = json.loads(lines[-1])
                 val = rec
                 if probe.path:
                     for key in probe.path.split("."):
@@ -438,7 +447,8 @@ def _render_overview(
 ) -> Panel:
     text = Text()
     if manifest is None:
-        text.append("No run selected\n", style="bold yellow")
+        if config.progress is None:
+            text.append("No run selected\n", style="bold yellow")
     else:
         text.append(f"{manifest.run_id}\n", style="bold cyan")
         text.append(f"Stage: {manifest.stage}  Status: ")
@@ -808,9 +818,10 @@ def build_layout(
     watch_run: str | None,
     stage: str | None,
     recent_limit: int,
+    ad_hoc: bool = False,
 ) -> Layout:
     manifest = registry.get(watch_run) if watch_run else None
-    if manifest is None:
+    if manifest is None and not ad_hoc:
         latest = registry.find(stage=stage, limit=1)
         if latest:
             manifest = latest[0]
@@ -831,8 +842,10 @@ def build_layout(
     header = Text()
     header.append("mlfactory dashboard", style="bold cyan")
     header.append(f"  •  registry: {registry.db_path}  •  ")
-    if watch_run:
+    if watch_run and not ad_hoc:
         header.append(f"watching: {watch_run[:50]}  •  ", style="dim")
+    elif ad_hoc:
+        header.append(f"config: {config.experiment} (ad-hoc)  •  ", style="dim")
     header.append("Ctrl-C to quit", style="dim")
     layout["header"].update(Panel(header, border_style="cyan"))
 
@@ -915,25 +928,32 @@ def main() -> None:
     parser.add_argument("--registry", "-r", default=".mlfactory/registry.db")
     parser.add_argument("--stage", default=None)
     parser.add_argument("--watch-run", default=None)
+    parser.add_argument("--config", default=None,
+                        help="Explicit dashboard config path; skips registry-based "
+                             "config lookup (for ad-hoc monitors not tied to a run).")
     parser.add_argument("--limit", type=int, default=12)
     parser.add_argument("--refresh", type=float, default=None)
     args = parser.parse_args()
 
     registry = Registry(args.registry)
+    ad_hoc = bool(args.config)
     manifest: RunManifest | None = None
-    if args.watch_run:
-        manifest = registry.get(args.watch_run)
-    if manifest is None:
-        latest = registry.find(stage=args.stage, limit=1)
-        if latest:
-            manifest = latest[0]
-
-    config = _load_experiment_config(manifest)
+    if ad_hoc:
+        config = ExperimentDashboardConfig.load(Path(args.config))
+    else:
+        if args.watch_run:
+            manifest = registry.get(args.watch_run)
+        if manifest is None:
+            latest = registry.find(stage=args.stage, limit=1)
+            if latest:
+                manifest = latest[0]
+        config = _load_experiment_config(manifest)
     refresh = args.refresh if args.refresh is not None else config.refresh
 
     console = Console()
+    watch = None if ad_hoc else (args.watch_run or (manifest.run_id if manifest else None))
     with Live(
-        build_layout(registry, config, args.watch_run or (manifest.run_id if manifest else None), args.stage, args.limit),
+        build_layout(registry, config, watch, args.stage, args.limit, ad_hoc),
         console=console,
         refresh_per_second=1,
         screen=True,

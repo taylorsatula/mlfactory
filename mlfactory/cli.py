@@ -119,14 +119,18 @@ def ingest(ctx: click.Context, manifest: Path, parent: tuple[str, ...]) -> None:
 @main.command("dashboard")
 @click.option("--watch-run", default=None)
 @click.option("--stage", default=None)
+@click.option("--config", "config_path", default=None,
+              help="Explicit dashboard config file (bypasses registry lookup).")
 @click.option("--refresh", type=float, default=2.0)
 @click.pass_context
-def dashboard_cmd(ctx: click.Context, watch_run: str | None, stage: str | None, refresh: float) -> None:
+def dashboard_cmd(ctx: click.Context, watch_run: str | None, stage: str | None, config_path: str | None, refresh: float) -> None:
     """Launch the read-only Rich Live dashboard."""
     import subprocess
     import sys
 
     cmd = [sys.executable, "-m", "mlfactory.core.dashboard", "--registry", str(ctx.obj["registry"].db_path)]
+    if config_path:
+        cmd.extend(["--config", config_path])
     if watch_run:
         cmd.extend(["--watch-run", watch_run])
     if stage:
