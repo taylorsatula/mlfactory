@@ -46,6 +46,14 @@ from .catalog import (
     THRASH_DOMAIN_PROFILES,
     THRASH_LOAD_DESCRIPTIONS,
     THRASH_LOADS,
+    VERIFIABLE_DOMAIN_DESCRIPTIONS,
+    VERIFIABLE_DOMAIN_PROFILES,
+    VERIFIABLE_SEARCH_TOPOLOGY_DESCRIPTIONS,
+    VERIFIABLE_SEARCH_TOPOLOGIES,
+    VERIFIABLE_TASK_DESCRIPTIONS,
+    VERIFIABLE_TASKS,
+    VERIFIABLE_VERIFIER_DESCRIPTIONS,
+    VERIFIABLE_VERIFIERS,
 )
 
 __all__ = [
@@ -54,6 +62,7 @@ __all__ = [
     "AUTHORING_SYSTEM_PROMPT",
     "CLEAN_AUTHORING_SYSTEM_PROMPT",
     "CODE_AUTHORING_SYSTEM_PROMPT",
+    "VERIFIABLE_AUTHORING_SYSTEM_PROMPT",
     "CODE_DOMAIN_PROFILES",
     "CODE_FRICTION_DESCRIPTIONS",
     "CODE_FRICTIONS",
@@ -71,6 +80,14 @@ __all__ = [
     "THRASH_DOMAIN_PROFILES",
     "THRASH_LOAD_DESCRIPTIONS",
     "THRASH_LOADS",
+    "VERIFIABLE_DOMAIN_DESCRIPTIONS",
+    "VERIFIABLE_DOMAIN_PROFILES",
+    "VERIFIABLE_SEARCH_TOPOLOGY_DESCRIPTIONS",
+    "VERIFIABLE_SEARCH_TOPOLOGIES",
+    "VERIFIABLE_TASK_DESCRIPTIONS",
+    "VERIFIABLE_TASKS",
+    "VERIFIABLE_VERIFIER_DESCRIPTIONS",
+    "VERIFIABLE_VERIFIERS",
     "authoring_messages",
     "freeze_authored",
     "sample_envelope",
@@ -90,6 +107,9 @@ class Envelope:
     amplifier: str | None = None
     task_kind: str | None = None
     friction: str | None = None
+    search_topology: str | None = None
+    verifier_kind: str | None = None
+    objective_task: str | None = None
 
     @property
     def envelope_hash(self) -> str:
@@ -99,6 +119,10 @@ class Envelope:
         elif self.load_type is not None:
             payload = repr((self.seed, self.domain, self.persona, self.stakes,
                             "thrash", self.load_type, self.amplifier))
+        elif self.objective_task is not None:
+            payload = repr((self.seed, self.domain, self.persona, self.stakes,
+                            "verifiable", self.objective_task, self.search_topology,
+                            self.verifier_kind))
         elif self.task_kind is not None:
             payload = repr((self.seed, self.domain, self.persona, self.stakes,
                             "code", self.task_kind, self.friction))
@@ -120,6 +144,9 @@ def sample_envelope(
     amplifier: str | None = None,
     task_kind: str | None = None,
     friction: str | None = None,
+    search_topology: str | None = None,
+    verifier_kind: str | None = None,
+    objective_task: str | None = None,
 ) -> Envelope:
     """Draw one envelope deterministically.
 
@@ -129,8 +156,8 @@ def sample_envelope(
     ``mode="code"`` a task kind and friction come from the seed instead.
     Callers build mixtures by specifying levers per draw.
     """
-    if mode not in ("anomaly", "clean", "thrash", "code"):
-        raise ValueError(f"unknown mode {mode!r} (expected 'anomaly', 'clean', 'thrash', or 'code')")
+    if mode not in ("anomaly", "clean", "thrash", "code", "verifiable"):
+        raise ValueError(f"unknown mode {mode!r} (expected 'anomaly', 'clean', 'thrash', 'code', or 'verifiable')")
 
     if mode == "thrash":
         if domain not in THRASH_DOMAIN_PROFILES:
@@ -153,6 +180,30 @@ def sample_envelope(
             stakes=rng.choice(profile["stakes"]),
             load_type=load_type or rng.choice(THRASH_LOADS),
             amplifier=amplifier or rng.choice(THRASH_AMPLIFIERS),
+        )
+
+    if mode == "verifiable":
+        if domain not in VERIFIABLE_DOMAIN_PROFILES:
+            raise ValueError(f"unknown verifiable domain {domain!r} (known: {', '.join(sorted(VERIFIABLE_DOMAIN_PROFILES))})")
+        if any(value is not None for value in (genus, detectability, texture, load_type, amplifier, task_kind, friction)):
+            raise ValueError("anomaly/clean/thrash/code controls are not valid in verifiable mode")
+        if objective_task is not None and objective_task not in VERIFIABLE_TASKS:
+            raise ValueError(f"unknown objective_task {objective_task!r} (known: {', '.join(VERIFIABLE_TASKS)})")
+        if search_topology is not None and search_topology not in VERIFIABLE_SEARCH_TOPOLOGIES:
+            raise ValueError(f"unknown search_topology {search_topology!r} (known: {', '.join(VERIFIABLE_SEARCH_TOPOLOGIES)})")
+        if verifier_kind is not None and verifier_kind not in VERIFIABLE_VERIFIERS:
+            raise ValueError(f"unknown verifier_kind {verifier_kind!r} (known: {', '.join(VERIFIABLE_VERIFIERS)})")
+        profile = VERIFIABLE_DOMAIN_PROFILES[domain]
+        digest = hashlib.sha256(f"envelope:verifiable:{seed}:{domain}".encode()).digest()
+        rng = random.Random(int.from_bytes(digest[:8], "big"))
+        return Envelope(
+            seed=int(seed),
+            domain=domain,
+            persona=rng.choice(profile["personas"]),
+            stakes=rng.choice(profile["stakes"]),
+            objective_task=objective_task or rng.choice(VERIFIABLE_TASKS),
+            search_topology=search_topology or rng.choice(VERIFIABLE_SEARCH_TOPOLOGIES),
+            verifier_kind=verifier_kind or rng.choice(VERIFIABLE_VERIFIERS),
         )
 
     if mode == "code":
@@ -343,6 +394,55 @@ Return one JSON object:
 """
 
 
+VERIFIABLE_AUTHORING_SYSTEM_PROMPT = """\
+You are the problem-authoring stage of a dataset-generation pipeline.
+
+Author one self-contained reasoning problem whose answer is objectively
+checkable. The problem must be finite and concrete: all relevant facts,
+records, rules, code, numbers, and edge cases appear in the prose, and no
+obscure outside knowledge is needed. The solver should have to search rather
+than apply one obvious local step, but the search pressure must come from the
+structure of the material, not from theatrical language or instructions about
+how to reason.
+
+The requested task kind and search topology are controls, not a script for the
+solver's trace. Build exactly the supplied task and topology. Include an
+initially plausible path, interacting constraints or hypotheses, and enough
+information for meaningful checking or revision when the path fails. Do not
+say "Wait", "Actually", "reconsider", or require any fixed number of revisions;
+do not mention chain-of-thought or ask the solver to narrate its reasoning.
+Do not make the task subjective, dependent on current events, or solvable only
+by recalling domain trivia. Keep the finite instance modest but nontrivial
+(roughly 6–12 entities and 8–20 interacting facts or operations), so the
+problem is deep enough to search without becoming a brute-force data dump.
+Use concise internal planning and spend the output budget on a complete,
+checkable problem and metadata rather than an elaborate hidden derivation.
+
+The prose should state a direct request for the answer, exact output, witness,
+assignment, trace, proof result, or minimal correction. It must not reveal the
+reference answer or verifier to the solver. The verifier kind identifies a
+mechanical check, and the metadata must state the canonical answer or a
+fully deterministic verification procedure. If multiple outputs are valid,
+define a canonical output or an exact acceptance test.
+
+Return exactly one JSON object:
+{
+  "prose": "<the complete problem statement>",
+  "surface_question": "<the direct request>",
+  "problem": {
+    "task_kind": "<the task kind you were given>",
+    "search_topology": "<the topology you were given>",
+    "verifier_kind": "<the verifier kind you were given>",
+    "what_must_be_produced": "<the concrete deliverable>",
+    "where_search_pressure_lives": "<the interacting structure that makes search necessary>",
+    "reference_answer": "<the canonical answer or exact expected output>",
+    "deterministic_verifier": "<a mechanical, reproducible check of the answer>",
+    "key_invariants": "<facts or invariants that must hold during verification>"
+  }
+}
+"""
+
+
 CODE_AUTHORING_SYSTEM_PROMPT = """\
 You are the problem-authoring stage of a dataset-generation pipeline.
 
@@ -391,6 +491,27 @@ Return one JSON object:
 
 
 def authoring_messages(envelope: Envelope) -> list[dict[str, str]]:
+    if envelope.objective_task is not None:
+        lines = [
+            f"DOMAIN: {envelope.domain}",
+            f"DOMAIN DEFINITION: {VERIFIABLE_DOMAIN_DESCRIPTIONS[envelope.domain]}",
+            f"PERSONA: {envelope.persona}",
+            f"STAKES: {envelope.stakes}",
+            f"TASK KIND: {envelope.objective_task}",
+            f"TASK DEFINITION: {VERIFIABLE_TASK_DESCRIPTIONS[envelope.objective_task]}",
+            f"SEARCH TOPOLOGY: {envelope.search_topology}",
+            f"TOPOLOGY DEFINITION: {VERIFIABLE_SEARCH_TOPOLOGY_DESCRIPTIONS[envelope.search_topology]}",
+            f"VERIFIER KIND: {envelope.verifier_kind}",
+            f"VERIFIER DEFINITION: {VERIFIABLE_VERIFIER_DESCRIPTIONS[envelope.verifier_kind]}",
+            "",
+            f"envelope_hash: {envelope.envelope_hash}",
+            "",
+            "Author the objectively checkable problem.",
+        ]
+        return [
+            {"role": "system", "content": VERIFIABLE_AUTHORING_SYSTEM_PROMPT},
+            {"role": "user", "content": "\n".join(lines)},
+        ]
     if envelope.task_kind is not None:
         lines = [
             f"DOMAIN: {envelope.domain}",
@@ -474,6 +595,49 @@ def freeze_authored(envelope: Envelope, authored: dict, *, model: str, **provena
     prose = str(authored.get("prose") or "").strip()
     if not prose:
         raise ValueError("cannot freeze empty prose")
+    if envelope.objective_task is not None:
+        problem = authored.get("problem")
+        if not isinstance(problem, dict):
+            raise ValueError("authored verifiable problem ground truth must be an object")
+        for field, expected in (
+            ("task_kind", envelope.objective_task),
+            ("search_topology", envelope.search_topology),
+            ("verifier_kind", envelope.verifier_kind),
+        ):
+            if problem.get(field) != expected:
+                raise ValueError(
+                    f"authored verifiable problem {field} does not match envelope "
+                    f"({problem.get(field)!r} != {expected!r})")
+        if not isinstance(authored.get("surface_question"), str) or not authored["surface_question"].strip():
+            raise ValueError("authored verifiable problem missing non-empty surface_question")
+        for field in (
+            "what_must_be_produced",
+            "where_search_pressure_lives",
+            "reference_answer",
+            "deterministic_verifier",
+            "key_invariants",
+        ):
+            value = problem.get(field)
+            if not isinstance(value, str) or not value.strip():
+                raise ValueError(f"authored verifiable problem missing non-empty {field}")
+        return {
+            "envelope_hash": envelope.envelope_hash,
+            "surface_hash": hashlib.sha256(prose.encode()).hexdigest(),
+            "seed": envelope.seed,
+            "domain": envelope.domain,
+            "prose": prose,
+            "surface_question": authored["surface_question"],
+            "problem": problem,
+            "envelope": {
+                "persona": envelope.persona,
+                "stakes": envelope.stakes,
+                "objective_task": envelope.objective_task,
+                "search_topology": envelope.search_topology,
+                "verifier_kind": envelope.verifier_kind,
+            },
+            "authoring_model": model,
+            "provenance": provenance,
+        }
     if envelope.load_type is not None:
         if "reasoning" not in authored:
             raise ValueError("authored record missing reasoning ground truth")

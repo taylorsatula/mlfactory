@@ -701,6 +701,101 @@ CODE_FRICTIONS: tuple[str, ...] = tuple(CODE_FRICTION_DESCRIPTIONS)
 # stakes are external pressures.  Both pools are drawn independently, so every
 # persona must combine plausibly with every stake in the domain — and with any
 # task/friction draw — so neither pool presupposes a specific defect.
+# Verifiable-arm controls.  This arm is for objectively checkable reasoning
+# problems: the author must provide a reference answer or a deterministic
+# verifier, while the envelope controls the search topology rather than a
+# scripted reasoning trace.
+VERIFIABLE_TASK_DESCRIPTIONS: dict[str, str] = {
+    'constraint_satisfaction': ('Solve a finite constraint problem and return the unique '
+                                'assignment, feasible set, or impossibility certificate.'),
+    'combinatorial_reasoning': ('Count, enumerate, rank, or optimize a finite combinatorial '
+                                'construction under the stated rules.'),
+    'algorithm_trace': ('Simulate an algorithm or data structure over the supplied operations '
+                        'and return its exact final state or output.'),
+    'stateful_planning': ('Choose and order actions in a finite state space so that all stated '
+                          'preconditions, resources, and terminal requirements are satisfied.'),
+    'evidence_reconciliation': ('Reconcile finite observations, logs, or records and identify '
+                                'the only hypothesis or state consistent with them.'),
+    'formal_logic': ('Determine entailment, satisfiability, validity, or the satisfying '
+                     'assignments of a self-contained finite logical theory.'),
+    'debugging_analysis': ('Identify the root cause of a deterministic failure and provide a '
+                           'minimal correction that passes the supplied checks.'),
+    'adversarial_verification': ('Find the required counterexample, boundary case, or test '
+                                 'witness and verify it against the stated implementation or rule.'),
+}
+
+VERIFIABLE_SEARCH_TOPOLOGY_DESCRIPTIONS: dict[str, str] = {
+    'delayed_constraint_conflict': ('An initially feasible-looking choice consumes a resource '
+                                    'or creates a commitment that violates a constraint revealed '
+                                    'only after several linked decisions.'),
+    'competing_hypotheses': ('Several explanations fit the first observations, and later '
+                             'observations discriminate among them; the final choice must account '
+                             'for every supplied fact.'),
+    'deceptive_local_optimum': ('A tempting locally best move produces a worse global result, '
+                                'so the solver must compare branches or preserve a less obvious '
+                                'option.'),
+    'representation_change': ('The material is awkward in its surface form but becomes tractable '
+                              'when represented as a graph, table, state machine, set, or invariant.'),
+    'bookkeeping_state_interaction': ('Repeated operations mutate shared state, and the answer '
+                                      'depends on tracking ownership, ordering, or current state '
+                                      'rather than treating records independently.'),
+    'adversarial_edge_case': ('A rule that works on ordinary examples fails at a supplied boundary '
+                              'or adversarial case, which must be found and handled explicitly.'),
+    'dependency_chain': ('Several conclusions or actions form a dependency chain whose order and '
+                         'intermediate results determine the final answer.'),
+    'cross_source_reconciliation': ('Separate tables, logs, or accounts overlap imperfectly; '
+                                    'matching and reconciling them exposes the answer.'),
+}
+
+VERIFIABLE_VERIFIER_DESCRIPTIONS: dict[str, str] = {
+    'exact_assignment': 'Compare the returned assignment with the canonical variable-to-value mapping.',
+    'finite_count_or_optimum': 'Recompute the finite count or objective from the stated rules and compare exactly.',
+    'state_transition_replay': 'Replay every supplied operation from the initial state and compare the final state.',
+    'constraint_checker': 'Run each stated constraint against the proposed output and require all to pass.',
+    'hypothesis_elimination': 'Check each candidate hypothesis against every observation and require exactly one survivor.',
+    'truth_table_or_model_check': 'Evaluate the finite formulas or all relevant assignments and compare the result.',
+    'test_case_execution': 'Apply the supplied deterministic test cases to the proposed fix or output.',
+    'counterexample_checker': 'Check that the witness satisfies the input rules and falsifies the target claim.',
+}
+
+VERIFIABLE_TASKS: tuple[str, ...] = tuple(VERIFIABLE_TASK_DESCRIPTIONS)
+VERIFIABLE_SEARCH_TOPOLOGIES: tuple[str, ...] = tuple(VERIFIABLE_SEARCH_TOPOLOGY_DESCRIPTIONS)
+VERIFIABLE_VERIFIERS: tuple[str, ...] = tuple(VERIFIABLE_VERIFIER_DESCRIPTIONS)
+
+VERIFIABLE_DOMAIN_DESCRIPTIONS: dict[str, str] = {
+    'route_and_timetable': 'A finite transit or delivery routing problem with stops, times, transfers, and capacity rules.',
+    'resource_scheduling': 'A finite schedule assigning jobs, people, or rooms to slots under availability and precedence rules.',
+    'warehouse_operations': 'A finite inventory and picking problem with bins, orders, substitutions, and changing stock state.',
+    'graph_networks': 'A self-contained graph problem involving paths, connectivity, matching, flow, or dependency structure.',
+    'logic_records': 'A finite logic problem over people, objects, labels, and relations stated entirely in the prompt.',
+    'state_machine_workflow': 'A finite workflow or protocol whose states change under explicitly listed events and guards.',
+    'ledger_reconciliation': 'A finite reconciliation of transactions, balances, timestamps, or overlapping records.',
+    'algorithm_data_structures': 'A deterministic algorithm, parser, queue, cache, or data-structure trace over supplied inputs.',
+    'access_policy_rules': 'A finite authorization or policy problem evaluated using explicitly stated predicates and exceptions.',
+    'debugging_fixture': 'A self-contained code or pseudocode failure with logs, tests, and enough material to derive a fix.',
+    'set_cover_and_selection': 'A finite selection or packing problem where overlapping sets and resource limits must be optimized.',
+    'adversarial_testing': 'A finite implementation or rule that must be tested against edge cases and a required witness.',
+}
+
+VERIFIABLE_DOMAIN_PROFILES: dict[str, dict[str, tuple[str, ...]]] = {
+    'route_and_timetable': {'personas': ('a dispatcher planning a small set of deliveries', 'a commuter coordinating several transfers', 'a coordinator assigning vehicles to timed stops', 'an operator recovering a route after a delay'), 'stakes': ('the final departure cannot be missed', 'every package must reach its destination', 'only one vehicle has the required capacity', 'the schedule must be issued before the next shift')},
+    'resource_scheduling': {'personas': ('a coordinator assigning sessions to rooms', 'a supervisor planning a small maintenance window', 'a teacher arranging finite shared equipment', 'a scheduler balancing staff coverage'), 'stakes': ('all required sessions must fit', 'a fixed deadline cannot move', 'one resource is unavailable after a stated time', 'the plan will be checked against a published roster')},
+    'warehouse_operations': {'personas': ('a warehouse clerk reconciling pick tickets', 'a shift lead releasing orders from a small stockroom', 'an inventory analyst investigating substitutions', 'a dispatcher preparing a constrained shipment'), 'stakes': ('the truck leaves after the final pick', 'one missing item cannot be reordered', 'reserved stock must not be double-counted', 'the customer order must be fulfilled exactly')},
+    'graph_networks': {'personas': ('an analyst mapping dependencies between services', 'a planner connecting sites with limited links', 'an engineer checking a small network design', 'a researcher tracing a finite relationship graph'), 'stakes': ('one broken link changes the plan', 'the network must remain connected', 'a capacity limit binds the final choice', 'the result must be auditable from the supplied graph')},
+    'logic_records': {'personas': ('an archivist matching labels to records', 'a coordinator resolving a small assignment puzzle', 'an investigator reconciling descriptions of objects', 'a clerk checking a finite set of statements'), 'stakes': ('one record must be identified without guessing', 'the assignment will be used immediately', 'duplicate labels create a real filing risk', 'the result must explain every supplied clue')},
+    'state_machine_workflow': {'personas': ('an operator tracking a finite approval workflow', 'an engineer reconstructing a protocol session', 'a coordinator processing requests through stages', 'a tester checking event handling'), 'stakes': ('an invalid transition would lose work', 'the terminal state controls a release', 'events arrive in the stated order', 'the current state must be reported exactly')},
+    'ledger_reconciliation': {'personas': ('a bookkeeper reconciling a small ledger', 'an auditor matching exports from two systems', 'an analyst tracing a balance discrepancy', 'a cashier closing a register with adjustments'), 'stakes': ('the closing balance must be exact', 'one transaction has no duplicate source', 'the report is due before the next period', 'every adjustment must be accounted for')},
+    'algorithm_data_structures': {'personas': ('a developer tracing a compact algorithm', 'a reviewer checking a parser or queue', 'a student validating a data-structure implementation', 'an engineer reproducing a deterministic bug'), 'stakes': ('the output feeds a later step', 'a boundary input exposes the failure', 'the implementation cannot be replaced wholesale', 'the trace must be reproducible from the given operations')},
+    'access_policy_rules': {'personas': ('an administrator reviewing access requests', 'an engineer checking a policy evaluator', 'an auditor reconciling roles and exceptions', 'a security analyst testing a small rule set'), 'stakes': ('an unauthorized grant must be prevented', 'a legitimate emergency path must remain open', 'the policy change is due for review', 'the decision must be explainable from the rules')},
+    'debugging_fixture': {'personas': ('an engineer diagnosing a small failing program', 'a maintainer repairing a deterministic regression', 'a reviewer checking a patch against tests', 'an on-call developer tracing a reproducible failure'), 'stakes': ('the fix must pass before release', 'the failure corrupts a downstream result', 'the patch must remain local', 'the supplied tests are the acceptance oracle')},
+    'set_cover_and_selection': {'personas': ('a planner selecting a small set of facilities', 'a curator choosing overlapping items under a budget', 'an analyst allocating limited coverage resources', 'a coordinator choosing teams for required capabilities'), 'stakes': ('every requirement must be covered', 'the budget is fixed', 'one selected item has a hidden incompatibility', 'the choice must be minimal or provably optimal')},
+    'adversarial_testing': {'personas': ('a test engineer seeking a smallest failing input', 'a reviewer checking a claimed invariant', 'an auditor designing boundary tests', 'a developer validating a compact implementation'), 'stakes': ('the claim gates a release', 'ordinary tests have all passed', 'the smallest witness is needed for diagnosis', 'the result must be checked mechanically')},
+}
+
+# Code-arm levers: technical surface areas.  Personas are requester roles and
+# stakes are external pressures.  Both pools are drawn independently, so every
+# persona must combine plausibly with every stake in the domain — and with any
+# task/friction draw — so neither pool presupposes a specific defect.
 CODE_DOMAIN_PROFILES: dict[str, dict[str, tuple[str, ...]]] = {
     'python_data_pipeline': {
         'personas': (
