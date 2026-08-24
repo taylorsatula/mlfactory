@@ -23,8 +23,8 @@ The dependency-free `numpy_softmax` train backend validates the complete trainin
 |---|---|
 | Plugin lifecycle (`prepare`/`execute`/`finalize`) | `transform_plugin.py` |
 | `MetricsLogger` → `dashboard.jsonl` | Per-chunk `metrics.step()` |
-| `save_summary()` from `core.artifacts` | Aggregate stats → `artifacts/summary.json` |
-| Artifact hashing | `finalize()` hashes `chunks.jsonl` + `summary.json` |
+| `datasave()` from `core.datasave` | Chunks + summary saved with title/description labels |
+| `finalize_artifacts()` | Hashes + registers artifacts into the manifest (de-dups labeled files) |
 | Spec-driven tunables | `chunk_size`, `num_paragraphs`, `input_text` |
 
 **No external dependencies** — runs on any machine with Python 3.10+.
@@ -62,7 +62,7 @@ The NumPy backend is deliberately small and tests orchestration rather than mode
 | `APIClient` for LLM-as-judge | Rate classification correctness |
 | `Judge.compare()` for pairwise A/B | Optional pairwise comparisons |
 | **Guard logic** | `manifest.status = "guarded"` when quality < threshold |
-| `save_config()` for reproducibility | Eval config persisted as artifact |
+| `datasave()` for reproducibility | Eval config + scores saved with title/description labels |
 | Multi-stage lineage | Reads parent classify's `classifications.jsonl` |
 | `compute_quality_report()` | Aggregate accuracy, per-topic breakdown |
 
@@ -183,11 +183,11 @@ if m3.status == "guarded":
 | File | Purpose |
 |---|---|
 | `transform.py` | Domain logic: chunking, statistics, classification, evaluation |
-| `transform_plugin.py` | Stage 1 plugin — MetricsLogger, save_summary |
+| `transform_plugin.py` | Stage 1 plugin — MetricsLogger, datasave, finalize_artifacts |
 | `classify_plugin.py` | Stage 2 plugin — model server, APIClient, inference_env |
 | `train.py` | NumPy fine-tuning, checkpoint loading, prediction |
 | `train_plugin.py` | Stage 3 plugin — training backends, metrics, checkpoints |
-| `eval_plugin.py` | Stage 4 plugin — Judge, guard logic, save_config |
+| `eval_plugin.py` | Stage 4 plugin — Judge, guard logic, datasave |
 | `specs/sample_transform.yaml` | Stage 1 spec |
 | `specs/sample_transform_small.yaml` | Stage 1 smoke test |
 | `specs/sample_classify.yaml` | Stage 2 spec (documented with all options) |

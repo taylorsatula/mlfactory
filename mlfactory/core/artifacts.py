@@ -5,12 +5,11 @@ directory while computing hashes and updating the manifest.
 """
 from __future__ import annotations
 
-import hashlib
 import json
 from pathlib import Path
 from typing import Any
 
-from mlfactory.core.manifest import FileRecord, RunManifest, sha256_file
+from mlfactory.core.manifest import RunManifest
 
 
 def _write_json_atomic(path: Path, data: Any) -> None:
@@ -28,16 +27,30 @@ def save_checkpoint(
     tokenizer: Any | None = None,
     manifest: RunManifest | None = None,
     label: str | None = None,
+    *,
+    title: str | None = None,
+    description: str | None = None,
+    tags: list[str] | None = None,
+    caveats: str | None = None,
+    sensitivity: str | None = None,
+    schema: dict[str, Any] | None = None,
+    name: str | None = None,
 ) -> Path:
     """Save a PEFT adapter + tokenizer to ``artifacts/checkpoint-<step>/``.
 
-    Also updates the manifest artifact list if one is provided.
+    Also updates the manifest artifact list if one is provided. The same
+    lab-notebook metadata as :func:`mlfactory.core.datasave.datasave` is attached
+    to every file in the checkpoint (title/description are required to make
+    data discoverable, but default sensibly so existing callers keep working).
     """
     run_dir = Path(run_dir)
     artifacts_dir = run_dir / "artifacts"
     artifacts_dir.mkdir(parents=True, exist_ok=True)
 
-    name = label or (f"checkpoint-{step}" if step is not None else "checkpoint-final")
+    name = name or label or (f"checkpoint-{step}" if step is not None else "checkpoint-final")
+    title = title or f"Checkpoint {name}"
+    description = description or "Model checkpoint saved during training."
+
     ckpt_dir = artifacts_dir / name
     ckpt_dir.mkdir(parents=True, exist_ok=True)
 
@@ -46,19 +59,14 @@ def save_checkpoint(
         tokenizer.save_pretrained(ckpt_dir)
 
     if manifest is not None:
-        new_artifacts: list[FileRecord] = []
-        for p in ckpt_dir.rglob("*"):
-            if p.is_file():
-                new_artifacts.append(
-                    FileRecord(
-                        path=str(p.resolve()),
-                        sha256=sha256_file(p),
-                        role=f"artifact:{name}/{p.relative_to(ckpt_dir)}",
-                        size_bytes=p.stat().st_size,
-                    )
-                )
-        manifest.artifacts.extend(new_artifacts)
-        manifest.write(run_dir / "manifest.json")
+        from mlfactory.core.datasave import register_checkpoint_dir
+
+        register_checkpoint_dir(
+            manifest, run_dir, ckpt_dir,
+            title=title, description=description, name=name,
+            tags=tags, caveats=caveats, sensitivity=sensitivity,
+            data_schema=schema,
+        )
 
     return ckpt_dir
 

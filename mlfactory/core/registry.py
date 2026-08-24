@@ -337,6 +337,62 @@ class Registry:
         )
 
     # ------------------------------------------------------------------
+    # artifact discovery (lab catalog across runs)
+    # ------------------------------------------------------------------
+    def find_artifacts(
+        self,
+        tag: str | None = None,
+        title: str | None = None,
+        stage: str | None = None,
+        sensitivity: str | None = None,
+        format: str | None = None,
+        limit: int = 10_000,
+    ) -> list[dict[str, Any]]:
+        """Search artifact metadata across all runs (the lab master catalog).
+
+        Returns one dict per matching artifact: ``{run_id, stage, name, title,
+        description, format, tags, caveats, sensitivity, path, sha256, size_bytes,
+        created_at}``. Only artifacts carrying lab metadata (a ``title`` from
+        :func:`mlfactory.core.datasave.datasave` or
+        :func:`mlfactory.core.artifacts.save_checkpoint`) are returned.
+
+        Args:
+            tag: require this tag to be present in the artifact's tags.
+            title: case-insensitive substring match on the title.
+            stage, sensitivity, format: exact match on the artifact's field.
+        """
+        out: list[dict[str, Any]] = []
+        for manifest in self.find(stage=stage, limit=limit):
+            for art in manifest.artifacts:
+                if not art.title:
+                    continue
+                if tag is not None and tag not in (art.tags or []):
+                    continue
+                if title is not None and title.lower() not in (art.title or "").lower():
+                    continue
+                if sensitivity is not None and art.sensitivity != sensitivity:
+                    continue
+                if format is not None and art.format != format:
+                    continue
+                out.append({
+                    "run_id": manifest.run_id,
+                    "stage": manifest.stage,
+                    "name": art.name,
+                    "title": art.title,
+                    "description": art.description,
+                    "format": art.format,
+                    "tags": list(art.tags or []),
+                    "caveats": art.caveats,
+                    "sensitivity": art.sensitivity,
+                    "data_schema": art.data_schema,
+                    "path": art.path,
+                    "sha256": art.sha256,
+                    "size_bytes": art.size_bytes,
+                    "created_at": art.created_at,
+                })
+        return out
+
+    # ------------------------------------------------------------------
     # migration helpers
     # ------------------------------------------------------------------
     def ingest_manifest(self, manifest: RunManifest, parent_run_ids: list[str] | None = None) -> None:

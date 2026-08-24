@@ -14,8 +14,8 @@ from pathlib import Path
 from typing import Any
 
 from mlfactory.core.api import APIClient, APIConfig, extract_json
+from mlfactory.core.datasave import DataSaver, finalize_artifacts
 from mlfactory.core.env import inference_env
-from mlfactory.core.manifest import FileRecord, sha256_file
 from mlfactory.core.metrics import MetricsLogger
 from mlfactory.plugins.base import PLUGINS, StagePlugin
 
@@ -139,10 +139,18 @@ class SampleClassifyPlugin(StagePlugin):
                     metrics.event("classify_error", {"chunk": i, "error": error})
 
         # Write classifications.jsonl — consumed by the eval stage.
-        out_path = self.run_dir / "artifacts" / "classifications.jsonl"
-        with open(out_path, "w", encoding="utf-8") as f:
-            for c in classifications:
-                f.write(json.dumps(c, ensure_ascii=False) + "\n")
+        saver = DataSaver(self.run_dir, self.manifest)
+        out_path = saver.save(
+            "classifications.jsonl",
+            classifications,
+            title="Topic classifications",
+            description=(
+                "Per-chunk topic classifications produced by LLM inference. "
+                "Each row pairs a chunk with its assigned topic, confidence and reasoning."
+            ),
+            tags=["labels", "sample"],
+            format="jsonl",
+        )
 
         # Compute topic distribution for summary.
         topic_counts: dict[str, int] = {}
@@ -159,8 +167,19 @@ class SampleClassifyPlugin(StagePlugin):
             "classifications_artifact": str(out_path.resolve()),
         }
 
-        from mlfactory.core.artifacts import save_summary
-        save_summary(self.run_dir, summary, manifest=self.manifest)
+        from mlfactory.core.datasave import DataSaver
+        # Save the summary with a lab label; mirror it onto manifest.summary.
+        self.manifest.summary = summary
+        DataSaver(self.run_dir, self.manifest).save(
+            "summary.json",
+            summary,
+            title="Classify summary",
+            description=(
+                "Aggregate classification results for the run. Holds the "
+                "topic distribution and mean confidence over all classified chunks."
+            ),
+            format="json",
+        )
 
         metrics.event("classify_complete", {
             "total": len(classifications),
@@ -208,7 +227,7 @@ class SampleClassifyPlugin(StagePlugin):
 
     # ------------------------------------------------------------------
     def finalize(self) -> None:
-        """Hash artifacts, stop model server, persist manifest."""
+        """Stop the model server, hash any unregistered artifacts, persist manifest."""
         # Stop the model server if we started one.
         if hasattr(self, "_model_server") and self._model_server:
             try:
@@ -216,32 +235,7 @@ class SampleClassifyPlugin(StagePlugin):
             except Exception:
                 pass
 
-        artifacts_dir = self.run_dir / "artifacts"
-        for p in sorted(artifacts_dir.rglob("*")):
-            if p.is_file():
-                rel = p.relative_to(artifacts_dir)
-                self.manifest.artifacts.append(
-                    FileRecord(
-                        path=str(p.resolve()),
-                        sha256=sha256_file(p),
-                        role=f"artifact:{rel}",
-                        size_bytes=p.stat().st_size,
-                    )
-                )
-
-        logs_dir = self.run_dir / "logs"
-        for p in sorted(logs_dir.rglob("*")):
-            if p.is_file():
-                self.manifest.logs.append(
-                    FileRecord(
-                        path=str(p.resolve()),
-                        sha256=sha256_file(p),
-                        role=f"log:{p.name}",
-                        size_bytes=p.stat().st_size,
-                    )
-                )
-
-        self.manifest.write(self.run_dir / "manifest.json")
+        finalize_artifacts(self.manifest, self.run_dir)
 
 
 PLUGINS.register(SampleClassifyPlugin)

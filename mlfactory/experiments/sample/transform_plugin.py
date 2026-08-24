@@ -8,11 +8,9 @@ Demonstrates:
 """
 from __future__ import annotations
 
-import json
 from pathlib import Path
 
-from mlfactory.core.artifacts import save_summary
-from mlfactory.core.manifest import FileRecord, sha256_file
+from mlfactory.core.datasave import DataSaver, finalize_artifacts
 from mlfactory.core.metrics import MetricsLogger
 from mlfactory.plugins.base import PLUGINS, StagePlugin
 
@@ -57,10 +55,22 @@ class SampleTransformPlugin(StagePlugin):
         chunk_records = run_transform(input_text, chunk_size, num_paragraphs)
 
         # Write chunks.jsonl — the artifact consumed by the classify stage.
-        chunks_path = self.run_dir / "artifacts" / "chunks.jsonl"
-        with open(chunks_path, "w", encoding="utf-8") as f:
-            for record in chunk_records:
-                f.write(json.dumps(record, ensure_ascii=False) + "\n")
+        # Every datum is saved through DataSaver with a lab-notebook label
+        # (title + two-sentence description); the file is hashed and registered
+        # into the manifest automatically, so finalize() only needs
+        # finalize_artifacts() instead of the manual rglob+sha256 loop.
+        saver = DataSaver(self.run_dir, self.manifest)
+        chunks_path = saver.save(
+            "chunks.jsonl",
+            chunk_records,
+            title="Chunked corpus",
+            description=(
+                "Input text split into fixed-size chunks for classification. "
+                "Each row is one chunk with its word/sentence statistics."
+            ),
+            tags=["corpus", "sample"],
+            format="jsonl",
+        )
 
         # Log per-chunk metrics via MetricsLogger → dashboard.jsonl.
         metrics = MetricsLogger(self.run_dir, run_id=self.manifest.run_id, echo=False)
@@ -92,8 +102,20 @@ class SampleTransformPlugin(StagePlugin):
             "chunks_artifact": str(chunks_path.resolve()),
         }
 
-        # save_summary writes artifacts/summary.json and updates manifest.summary.
-        save_summary(self.run_dir, summary, manifest=self.manifest)
+        # Save the run summary with a lab label. datasave registers summary.json
+        # into the manifest; we also mirror it onto manifest.summary (the field
+        # the dashboard/registry read), which is what save_summary() did.
+        self.manifest.summary = summary
+        saver.save(
+            "summary.json",
+            summary,
+            title="Transform summary",
+            description=(
+                "Aggregate statistics for the chunked corpus. Computed from "
+                "chunks.jsonl: total words/sentences/characters and per-chunk averages."
+            ),
+            format="json",
+        )
 
         metrics.event("transform_complete", {
             "num_chunks": len(chunk_records),
@@ -102,33 +124,8 @@ class SampleTransformPlugin(StagePlugin):
 
     # ------------------------------------------------------------------
     def finalize(self) -> None:
-        """Hash all artifacts and logs, persist the manifest."""
-        artifacts_dir = self.run_dir / "artifacts"
-        for p in sorted(artifacts_dir.rglob("*")):
-            if p.is_file():
-                rel = p.relative_to(artifacts_dir)
-                self.manifest.artifacts.append(
-                    FileRecord(
-                        path=str(p.resolve()),
-                        sha256=sha256_file(p),
-                        role=f"artifact:{rel}",
-                        size_bytes=p.stat().st_size,
-                    )
-                )
-
-        logs_dir = self.run_dir / "logs"
-        for p in sorted(logs_dir.rglob("*")):
-            if p.is_file():
-                self.manifest.logs.append(
-                    FileRecord(
-                        path=str(p.resolve()),
-                        sha256=sha256_file(p),
-                        role=f"log:{p.name}",
-                        size_bytes=p.stat().st_size,
-                    )
-                )
-
-        self.manifest.write(self.run_dir / "manifest.json")
+        """Hash any artifacts/logs not already registered; persist the manifest."""
+        finalize_artifacts(self.manifest, self.run_dir)
 
 
 PLUGINS.register(SampleTransformPlugin)

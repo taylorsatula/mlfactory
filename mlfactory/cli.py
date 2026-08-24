@@ -7,6 +7,11 @@ from pathlib import Path
 import click
 
 from mlfactory.core.manifest import RunManifest
+from mlfactory.core.notes import (
+    append_note,
+    read_notes,
+    search_notes,
+)
 from mlfactory.core.registry import Registry
 from mlfactory.core.runner import create_run, run_from_spec
 from mlfactory.core.secrets import SecretsStore
@@ -79,12 +84,32 @@ def ls(ctx: click.Context, stage: str | None, status: str | None, limit: int) ->
 @click.argument("run_id")
 @click.pass_context
 def show(ctx: click.Context, run_id: str) -> None:
-    """Show a manifest from the registry."""
+    """Show a manifest from the registry, with any lab notes appended."""
     registry: Registry = ctx.obj["registry"]
     manifest = registry.get(run_id)
     if manifest is None:
         raise click.ClickException(f"run {run_id} not found")
     click.echo(manifest.model_dump_json(indent=2))
+    notes = _load_notes_for_show(ctx, registry, run_id)
+    if notes:
+        click.echo("\n# lab notes")
+        for n in notes:
+            ts = n.get("ts", "")
+            author = n.get("author", "")
+            text = n.get("text", "")
+            click.echo(f"- [{ts}] ({author}) {text}")
+
+
+def _load_notes_for_show(ctx: click.Context, registry: Registry, run_id: str) -> list[dict]:
+    from pathlib import Path
+
+    from mlfactory.core.notes import _resolve_run_dir, read_notes as _read_notes
+
+    try:
+        run_dir = _resolve_run_dir(registry, run_id)
+    except Exception:
+        return []
+    return _read_notes(run_dir)
 
 
 @main.command()
@@ -102,6 +127,79 @@ def lineage(ctx: click.Context, run_id: str) -> None:
     click.echo("Children:")
     for cid, rel in children:
         click.echo(f"  {cid} ({rel})")
+
+
+@main.command("note")
+@click.argument("run_id")
+@click.argument("text", nargs=-1, required=True)
+@click.option("--author", default=None, help="Override author (default: MLFACTORY_AUTHOR, git user.name, or login).")
+@click.pass_context
+def note_cmd(ctx: click.Context, run_id: str, text: tuple[str, ...], author: str | None) -> None:
+    """Append one timestamped lab note to a run.
+
+    \b
+    Examples:
+      mlfactory note 20260823-141022.train "lr 3e-5 diverges step 800, same as run X"
+      mlfactory note 20260823-141022.train suspect init -- try 1e-5
+
+    TEXT is joined with spaces, so quotes are optional for single arguments.
+    One line, no structure required — cheaper than a sticky note. See the
+    "Lab notes" section of AGENTS.md for when to write one.
+    """
+    registry: Registry = ctx.obj["registry"]
+    body = " ".join(text)
+    try:
+        record = append_note(registry, run_id, body, author=author)
+    except ValueError as exc:
+        raise click.ClickException(str(exc))
+    click.echo(f"Noted on {run_id}: {record['ts']}")
+
+
+@main.command("notes")
+@click.argument("run_id", required=False)
+@click.option("--grep", "pattern", default=None, help="Regex search across all runs' notes (run_id optional then).")
+@click.option("-i/--ignore-case", "ignore_case", default=True, help="Case-insensitive grep (default on).")
+@click.pass_context
+def notes_cmd(ctx: click.Context, run_id: str | None, pattern: str | None, ignore_case: bool) -> None:
+    """Read notes for a run, or grep across all runs' notes.
+
+    \b
+    Examples:
+      mlfactory notes 20260823-141022.train        # all notes on one run
+      mlfactory notes --grep diverges              # which runs hit this?
+      mlfactory notes --grep 'lr 3e-5' -i          # case-insensitive
+
+    With a run_id: prints that run's notes oldest-first. With --grep and no
+    run_id: searches every run under runs/ and prints "run_id  ts  text".
+    """
+    from pathlib import Path
+
+    from mlfactory.core.notes import _resolve_run_dir
+
+    if pattern is not None:
+        hits = search_notes(pattern, runs_dir=Path("runs"), ignore_case=ignore_case)
+        if not hits:
+            click.echo("No notes matched.")
+            return
+        for rid, n in hits:
+            ts = n.get("ts", "")
+            text = n.get("text", "")
+            click.echo(f"{rid}\t{ts}\t{text}")
+        return
+
+    if run_id is None:
+        raise click.ClickException("provide a run_id, or use --grep to search across all runs.")
+    registry: Registry = ctx.obj["registry"]
+    run_dir = _resolve_run_dir(registry, run_id)
+    notes = read_notes(run_dir)
+    if not notes:
+        click.echo(f"No notes for {run_id}.")
+        return
+    for n in notes:
+        ts = n.get("ts", "")
+        author = n.get("author", "")
+        text = n.get("text", "")
+        click.echo(f"[{ts}] ({author}) {text}")
 
 
 @main.command()

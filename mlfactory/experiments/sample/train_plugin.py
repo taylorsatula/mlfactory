@@ -4,7 +4,7 @@ from __future__ import annotations
 from pathlib import Path
 from typing import Any
 
-from mlfactory.core.artifacts import save_config, save_summary
+from mlfactory.core.datasave import DataSaver, finalize_artifacts
 from mlfactory.core.env import training_env
 from mlfactory.core.finetune import build_causal_lm_examples, train_transformers_causal_lm
 from mlfactory.core.manifest import FileRecord, sha256_file
@@ -98,7 +98,10 @@ class SampleTrainPlugin(StagePlugin):
                     metric_callback=log_step,
                 )
                 checkpoint = save_softmax_model(
-                    model, self.run_dir / "artifacts" / "checkpoint-final"
+                    model,
+                    self.run_dir / "artifacts" / "checkpoint-final",
+                    manifest=self.manifest,
+                    run_dir=self.run_dir,
                 )
             else:
                 examples = build_causal_lm_examples(
@@ -124,12 +127,33 @@ class SampleTrainPlugin(StagePlugin):
             "excluded_labels": sorted(excluded),
             "checkpoint": str(checkpoint.resolve()),
         }
-        save_config(self.run_dir, {
-            "backend": backend,
-            "training": training,
-            "exclude_labels": sorted(excluded),
-        }, name="training_config.json")
-        save_summary(self.run_dir, summary, manifest=self.manifest)
+        saver = DataSaver(self.run_dir, self.manifest)
+        saver.save(
+            "training_config.json",
+            {
+                "backend": backend,
+                "training": training,
+                "exclude_labels": sorted(excluded),
+            },
+            title="Training configuration",
+            description=(
+                "Reproducible training hyperparameters for this run. Records the "
+                "backend, optimizer settings and any excluded topic labels."
+            ),
+            tags=["config", "sample"],
+            format="json",
+        )
+        self.manifest.summary = summary
+        saver.save(
+            "summary.json",
+            summary,
+            title="Training summary",
+            description=(
+                "Training report for the run. Holds the backend, loss/accuracy "
+                "trajectory and the resolved checkpoint path."
+            ),
+            format="json",
+        )
         metrics.event("training_complete", {
             "backend": backend,
             "num_examples": len(records),
@@ -137,27 +161,8 @@ class SampleTrainPlugin(StagePlugin):
         })
 
     def finalize(self) -> None:
-        artifacts_dir = self.run_dir / "artifacts"
-        for path in sorted(artifacts_dir.rglob("*")):
-            if path.is_file():
-                relative = path.relative_to(artifacts_dir)
-                self.manifest.artifacts.append(FileRecord(
-                    path=str(path.resolve()),
-                    sha256=sha256_file(path),
-                    role=f"artifact:{relative}",
-                    size_bytes=path.stat().st_size,
-                ))
-
-        logs_dir = self.run_dir / "logs"
-        for path in sorted(logs_dir.rglob("*")):
-            if path.is_file():
-                self.manifest.logs.append(FileRecord(
-                    path=str(path.resolve()),
-                    sha256=sha256_file(path),
-                    role=f"log:{path.name}",
-                    size_bytes=path.stat().st_size,
-                ))
-        self.manifest.write(self.run_dir / "manifest.json")
+        """Hash any unregistered artifacts/logs; persist the manifest."""
+        finalize_artifacts(self.manifest, self.run_dir)
 
 
 PLUGINS.register(SampleTrainPlugin)

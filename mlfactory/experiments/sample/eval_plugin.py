@@ -14,8 +14,7 @@ from pathlib import Path
 from typing import Any
 
 from mlfactory.core.api import APIClient, APIConfig, Judge, extract_json
-from mlfactory.core.artifacts import save_config, save_summary
-from mlfactory.core.manifest import FileRecord, sha256_file
+from mlfactory.core.datasave import DataSaver, finalize_artifacts
 from mlfactory.core.metrics import MetricsLogger
 from mlfactory.plugins.base import PLUGINS, StagePlugin
 
@@ -155,35 +154,70 @@ class SampleEvalPlugin(StagePlugin):
         quality_report = compute_quality_report(evaluations)
 
         # Write per-item evaluations.
-        eval_path = self.run_dir / "artifacts" / "quality_scores.jsonl"
-        with open(eval_path, "w", encoding="utf-8") as f:
-            for e in evaluations:
-                f.write(json.dumps(e, ensure_ascii=False) + "\n")
+        saver = DataSaver(self.run_dir, self.manifest)
+        eval_path = saver.save(
+            "quality_scores.jsonl",
+            evaluations,
+            title="Per-chunk quality scores",
+            description=(
+                "LLM-as-judge quality scores for each classification. Each "
+                "row scores one chunk's classification with a score, correctness flag and feedback."
+            ),
+            tags=["eval", "sample"],
+            format="jsonl",
+        )
 
         # Write pairwise results if we did any.
         if pairwise_results:
-            pw_path = self.run_dir / "artifacts" / "pairwise_results.jsonl"
-            with open(pw_path, "w", encoding="utf-8") as f:
-                for pw in pairwise_results:
-                    f.write(json.dumps(pw, ensure_ascii=False) + "\n")
+            saver.save(
+                "pairwise_results.jsonl",
+                pairwise_results,
+                title="Pairwise comparison results",
+                description=(
+                    "A/B pairwise comparisons of chunk topic clarity from "
+                    "Judge.compare(). Each row records which chunk won against the reference."
+                ),
+                tags=["eval", "pairwise", "sample"],
+                format="jsonl",
+            )
 
-        # Build and save the eval report.
+        # Save the run summary with a lab label; mirror it onto manifest.summary.
         eval_report = {
             **quality_report,
             "input_file": str(self._classifications_path),
             "judge_model": spec.get("judge_model", "unknown"),
             "pairwise_comparisons": len(pairwise_results),
         }
-        save_summary(self.run_dir, eval_report, manifest=self.manifest)
+        self.manifest.summary = eval_report
+        saver.save(
+            "summary.json",
+            eval_report,
+            title="Eval summary",
+            description=(
+                "Aggregate quality report for the run. Holds accuracy, average "
+                "score and the number of pairwise comparisons."
+            ),
+            format="json",
+        )
 
         # Save the eval config for reproducibility.
-        save_config(self.run_dir, {
-            "judge_model": spec.get("judge_model"),
-            "judge_base_url": spec.get("judge_base_url"),
-            "quality_threshold": spec.get("quality_threshold", 0.7),
-            "pairwise": spec.get("pairwise", False),
-            "max_samples": max_samples,
-        }, name="eval_config.json")
+        saver.save(
+            "eval_config.json",
+            {
+                "judge_model": spec.get("judge_model"),
+                "judge_base_url": spec.get("judge_base_url"),
+                "quality_threshold": spec.get("quality_threshold", 0.7),
+                "pairwise": spec.get("pairwise", False),
+                "max_samples": max_samples,
+            },
+            title="Eval configuration",
+            description=(
+                "Reproducible judge configuration for this eval run. Records the "
+                "judge model, endpoint, quality threshold and sampling limit."
+            ),
+            tags=["config", "sample"],
+            format="json",
+        )
 
         # ---- Guard logic ----
         # If quality is below the threshold, mark the run as "guarded".
@@ -227,33 +261,8 @@ class SampleEvalPlugin(StagePlugin):
 
     # ------------------------------------------------------------------
     def finalize(self) -> None:
-        """Hash all artifacts and logs, persist the manifest."""
-        artifacts_dir = self.run_dir / "artifacts"
-        for p in sorted(artifacts_dir.rglob("*")):
-            if p.is_file():
-                rel = p.relative_to(artifacts_dir)
-                self.manifest.artifacts.append(
-                    FileRecord(
-                        path=str(p.resolve()),
-                        sha256=sha256_file(p),
-                        role=f"artifact:{rel}",
-                        size_bytes=p.stat().st_size,
-                    )
-                )
-
-        logs_dir = self.run_dir / "logs"
-        for p in sorted(logs_dir.rglob("*")):
-            if p.is_file():
-                self.manifest.logs.append(
-                    FileRecord(
-                        path=str(p.resolve()),
-                        sha256=sha256_file(p),
-                        role=f"log:{p.name}",
-                        size_bytes=p.stat().st_size,
-                    )
-                )
-
-        self.manifest.write(self.run_dir / "manifest.json")
+        """Hash any unregistered artifacts/logs; persist the manifest."""
+        finalize_artifacts(self.manifest, self.run_dir)
 
 
 PLUGINS.register(SampleEvalPlugin)

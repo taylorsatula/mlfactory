@@ -44,6 +44,22 @@ class FileRecord(BaseModel):
     role: str = "input"  # input, artifact, log, etc.
     size_bytes: int | None = None
 
+    # Lab-notebook metadata attached by ``mlfactory.core.datasave.datasave``.
+    # Optional so raw inputs/logs can reuse this record type without carrying a
+    # human-readable label. Provenance that does not vary per artifact (git
+    # commit, environment, hardware, parent runs) lives on the run manifest, not
+    # here; these fields hold only the per-artifact *meaning* a scientist would
+    # write on the sample label.
+    name: str | None = None            # stable, slug-like key for this artifact
+    title: str | None = None           # human-readable name
+    description: str | None = None     # ~2 sentences: what it is + how made / what it measures
+    format: str | None = None          # json|jsonl|csv|tsv|text|yaml|numpy|npz|parquet|bytes|checkpoint
+    tags: list[str] = Field(default_factory=list)        # findability keywords
+    caveats: str | None = None         # known issues / "do not use for ..." warnings
+    sensitivity: str | None = None      # public|internal|restricted (privacy / human-subjects)
+    data_schema: dict[str, Any] | None = None  # how to read it: columns/keys, dtypes, units
+    created_at: str | None = None      # ISO timestamp the datum was saved
+
 
 class EnvironmentInfo(BaseModel):
     python_version: str = sys.version

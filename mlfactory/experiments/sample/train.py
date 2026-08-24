@@ -132,8 +132,20 @@ def train_softmax_classifier(
     return model, report
 
 
-def save_softmax_model(model: dict[str, Any], output_dir: str | Path) -> Path:
-    """Persist a safe, reloadable model without pickle-based object arrays."""
+def save_softmax_model(
+    model: dict[str, Any],
+    output_dir: str | Path,
+    *,
+    manifest: Any = None,
+    run_dir: str | Path | None = None,
+    title: str = "Numpy softmax checkpoint",
+    description: str | None = None,
+) -> Path:
+    """Persist a safe, reloadable model without pickle-based object arrays.
+
+    When ``manifest`` is given, the checkpoint files are labeled with lab
+    metadata and registered into the manifest via ``register_checkpoint_dir``.
+    """
     output_dir = Path(output_dir)
     output_dir.mkdir(parents=True, exist_ok=True)
     np.save(output_dir / "weights.npy", model["weights"], allow_pickle=False)
@@ -147,6 +159,28 @@ def save_softmax_model(model: dict[str, Any], output_dir: str | Path) -> Path:
     (output_dir / "config.json").write_text(
         json.dumps(metadata, indent=2, ensure_ascii=False), encoding="utf-8"
     )
+    if manifest is not None:
+        from mlfactory.core.datasave import register_checkpoint_dir
+
+        register_checkpoint_dir(
+            manifest,
+            run_dir if run_dir is not None else output_dir.parent.parent,
+            output_dir,
+            title=title,
+            description=description or (
+                "Lightweight numpy softmax classifier checkpoint. Holds the "
+                "learned weight matrix, bias vector, vocabulary and label set."
+            ),
+            name=output_dir.name,
+            data_schema={
+                "format": "mlfactory.numpy_softmax",
+                "files": {
+                    "weights.npy": "float64 [vocab, labels]",
+                    "bias.npy": "float64 [labels]",
+                    "config.json": "vocabulary + labels",
+                },
+            },
+        )
     return output_dir
 
 
