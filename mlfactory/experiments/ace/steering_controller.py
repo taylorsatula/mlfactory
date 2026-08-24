@@ -63,6 +63,12 @@ from safetensors.torch import load_file, save_file
 
 MODEL_PATH = "/home/admin/models/hf/Qwen3.5-9B"
 
+# Stopping: config.json sets eos=248044 (<|endoftext|>), but chat turns end
+# with <|im_end|> (248046) and the model ships no generation_config.json, so
+# generate() would never stop at turn end without an explicit list.
+STOP_TOKEN_IDS = [248044, 248046]
+PAD_TOKEN_ID = 248044  # <|endoftext|> — distinct from <|im_end|>
+
 # 0-indexed of 32 blocks; full_attention blocks are 3,7,11,15,19,23,27,31.
 STEER_LAYER = 15
 HIDDEN_SIZE = 4096
@@ -97,13 +103,19 @@ class SteeringController(nn.Module):
         """Return (delta, gate) for residual states h of shape [..., H].
 
         ||delta|| < alpha * ||h|| componentwise-bound via elementwise tanh.
+        Compute happens in the controller's parameter dtype (bf16 controller
+        -> identical to h; fp32 controller -> h upcast, delta downcast back,
+        which keeps zero-init bit-exact in both cases: cast(0) == 0).
         """
-        z = self.act(self.down(F.layer_norm(h, (self.hidden_size,))))
+        dtype = self.down.weight.dtype
+        hc = h.to(dtype) if h.dtype != dtype else h
+        z = self.act(self.down(F.layer_norm(hc, (self.hidden_size,))))
         d = torch.tanh(self.up(z))                          # [..., H], |d_i| < 1
-        scale = (self.alpha * h.norm(dim=-1, keepdim=True)
+        scale = (self.alpha * hc.norm(dim=-1, keepdim=True)
                  / math.sqrt(self.hidden_size))
         g = torch.sigmoid(self.gate(z))                     # [..., 1] in (0, 1)
-        return g * scale * d, g
+        delta = g * scale * d
+        return delta.to(h.dtype), g.to(h.dtype)
 
     def forward(self, h: torch.Tensor) -> torch.Tensor:
         delta, _ = self.intervention(h)
@@ -147,19 +159,28 @@ class ResidualSteering:
     once per position during prefill and once per generated token during
     cached decode. With ``record=True``, per-call (delta, gate, norms) are
     stashed on CPU for inspection — intended for short test sequences only.
+    With ``collect=True``, grad-carrying per-call mean relative intervention
+    norms are kept in ``self.collected`` (for the magnitude regularizer).
     """
 
     def __init__(self, model, controller: SteeringController,
-                 layer_idx: int = STEER_LAYER, record: bool = False):
+                 layer_idx: int = STEER_LAYER, record: bool = False,
+                 collect: bool = False):
         self.model = model
         self.controller = controller
         self.layer_idx = layer_idx
         self.record = record
+        self.collect = collect
         self.records: list[dict] = []
+        self.collected: list[torch.Tensor] = []
         self._handle = None
 
     def _hook(self, module, args, output):
         delta, g = self.controller.intervention(output)
+        if self.collect:
+            rel = (delta.float().norm(dim=-1)
+                   / output.float().norm(dim=-1).clamp_min(1e-12))
+            self.collected.append(rel.mean())
         if self.record:
             self.records.append({
                 "delta": delta.detach().cpu(),
@@ -188,10 +209,18 @@ def freeze_base_model(model):
     return model
 
 
-def build_prompt_ids(tok, prompt: str) -> list[int]:
-    """Chat-templated user prompt, generation-ready (same pattern as probes)."""
-    enc = tok.apply_chat_template([{"role": "user", "content": prompt}],
-                                  add_generation_prompt=True, tokenize=True)
+def build_prompt_ids(tok, prompt: str, enable_thinking: bool = True) -> list[int]:
+    """Chat-templated user prompt, generation-ready (same pattern as probes).
+
+    ``enable_thinking=True`` (default) opens a live ``<think>`` block — the
+    model's native reasoning mode. Training uses ``False`` so the template
+    closes thinking immediately; otherwise completions rarely terminate
+    within a few hundred tokens and terminal-correctness rewards vanish.
+    """
+    enc = tok.apply_chat_template(
+        [{"role": "user", "content": prompt}],
+        add_generation_prompt=True, tokenize=True,
+        enable_thinking=enable_thinking)
     return list(enc.input_ids if hasattr(enc, "input_ids") else enc)
 
 
@@ -199,13 +228,14 @@ def generate(model, tok, prompt: str, max_new_tokens: int = 32,
              controller: SteeringController | None = None,
              layer_idx: int = STEER_LAYER, record: bool = False,
              do_sample: bool = False, temperature: float = 1.0,
-             top_p: float = 1.0, seed: int | None = None):
+             top_p: float = 1.0, seed: int | None = None,
+             enable_thinking: bool = True):
     """Generation path with optional steering. Returns (ids, records).
 
     With ``do_sample=False`` this is greedy and deterministic. With sampling,
     pass a fixed ``seed`` for reproducibility.
     """
-    ids = build_prompt_ids(tok, prompt)
+    ids = build_prompt_ids(tok, prompt, enable_thinking=enable_thinking)
     x = torch.tensor([ids], device=model.device)
     mask = torch.ones_like(x)
     if seed is not None:
@@ -214,13 +244,53 @@ def generate(model, tok, prompt: str, max_new_tokens: int = 32,
            if controller is not None else nullcontext())
     kwargs = dict(input_ids=x, attention_mask=mask,
                   max_new_tokens=max_new_tokens, do_sample=do_sample,
-                  pad_token_id=tok.eos_token_id)
+                  eos_token_id=STOP_TOKEN_IDS, pad_token_id=PAD_TOKEN_ID)
     if do_sample:
         kwargs.update(temperature=temperature, top_p=top_p)
     with ctx as active:
         out = model.generate(**kwargs)
     records = active.records if controller is not None else []
     return out, records
+
+
+def generate_batch(model, tok, prompt: str, n: int,
+                   max_new_tokens: int = 384,
+                   controller: SteeringController | None = None,
+                   layer_idx: int = STEER_LAYER, record: bool = False,
+                   do_sample: bool = True, temperature: float = 0.9,
+                   top_p: float = 0.95, seed: int | None = None,
+                   enable_thinking: bool = True):
+    """Batched rollouts of ONE prompt (identical length -> no left padding).
+
+    Returns (seqs, records) where seqs[i] is the full id list of rollout i
+    trimmed right after its first EOS at/after the prompt (or untrimmed if
+    the rollout never emitted EOS). Deterministic given ``seed``.
+    """
+    ids = build_prompt_ids(tok, prompt, enable_thinking=enable_thinking)
+    x = torch.tensor([ids] * n, device=model.device)
+    mask = torch.ones_like(x)
+    if seed is not None:
+        torch.manual_seed(seed)
+    ctx = (ResidualSteering(model, controller, layer_idx, record)
+           if controller is not None else nullcontext())
+    kwargs = dict(input_ids=x, attention_mask=mask,
+                  max_new_tokens=max_new_tokens, do_sample=do_sample,
+                  eos_token_id=STOP_TOKEN_IDS, pad_token_id=PAD_TOKEN_ID)
+    if do_sample:
+        kwargs.update(temperature=temperature, top_p=top_p)
+    with ctx as active:
+        out = model.generate(**kwargs)
+    records = active.records if controller is not None else []
+    stop = set(STOP_TOKEN_IDS)
+    seqs = []
+    for row in out.tolist():
+        end = len(row)
+        for i in range(len(ids), len(row)):
+            if row[i] in stop:
+                end = i + 1          # include the stopping token
+                break
+        seqs.append(row[:end])
+    return seqs, records
 
 
 def teacher_forced_logits(model, tok, prompt: str, continuation: str,

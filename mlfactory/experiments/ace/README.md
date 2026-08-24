@@ -49,6 +49,17 @@ Rebuilt from scratch. Current contents:
   Run: `CUDA_VISIBLE_DEVICES=1 .venv/bin/python -m pytest
   test_steering_controller.py -s -v`. Passing tests validate the control
   surface only — NOT that steering improves reasoning.
+- `problems.py` — 24 train / 12 holdout multi-step arithmetic problems with
+  computed gold answers (disjoint template families). Used because no local
+  corpus has objective gold answers. Verifier: last `Answer: <number>`.
+- `train_controller.py` — smallest GRPO-style learnability run. Reward =
+  terminal correctness only; KL (k3) vs frozen Qwen + relative-norm regularizer.
+  Matched unsteered rollouts share prompts/seeds. Thinking closed
+  (`enable_thinking=False`) so completions terminate. Artifacts under
+  `data/controller_train/` (gitignored).
+  `CUDA_VISIBLE_DEVICES=1 .venv/bin/python train_controller.py`
+- `test_train_smoke.py` — verifier / set / advantage / k3 unit tests plus one
+  GPU micro-iteration (controller-only update, Qwen frozen).
 - `specs/` — run specs (empty until stages are implemented).
 - `.venv/` — dedicated environment (below), gitignored.
 
