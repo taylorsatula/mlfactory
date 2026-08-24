@@ -21,6 +21,7 @@ ProbeType = Literal[
     "regex_count",
     "regex_last_match",
     "jsonl_last_record",
+    "json_file_value",
     "process_alive",
     "http_status",
     "http_json",

@@ -139,6 +139,11 @@ class MyPlugin(StagePlugin):
     def finalize(self) -> None:
         """Hash artifacts, write summary, stop services. ALWAYS called."""
 
+    @classmethod
+    def dashboard(cls) -> "ExperimentDashboardConfig | None":
+        """Optional: return this stage's dashboard config (persisted to run_dir
+        at create time). Return None to opt out. Default is None."""
+
 PLUGINS.register(MyPlugin)
 ```
 
@@ -259,7 +264,13 @@ The sample `eval` plugin demonstrates this pattern.
 
 ## Dashboard config
 
-Each experiment provides `dashboard.json` (or `dashboard_<stage>.json`). Probe types: `file_line_count`, `regex_count`, `regex_last_match`, `jsonl_last_record`, `process_alive`, `http_status`, `http_json`, `gpu_status`, `disk_usage`, `shell_command`, `spec_value`, `file_exists`, `const`.
+A dashboard is a read-only projection of a run's live state. The config **travels with the run**: `create_run` resolves it from the plugin's `dashboard()` classmethod (or a sibling static file the method loads) and persists it to `run_dir/dashboard.json`. The viewer reads it from the run dir, not from the source tree at view time — so the dashboard is reproducible from the run alone, like every other artifact.
+
+Declaring a dashboard (pick one):
+- **Programmatic** — override `StagePlugin.dashboard() -> ExperimentDashboardConfig | None` on the plugin. Most common: load a sibling static file via `ExperimentDashboardConfig.load(Path(__file__).with_name("dashboard_<stage>.json"))`. The sample experiment does this for all four stages.
+- **Opt out** — `dashboard: none` in the spec, or `dashboard()` returning `None`, suppresses persistence; the viewer falls back to a generic status/GPU/disk view.
+
+Probe types: `file_line_count`, `regex_count`, `regex_last_match`, `jsonl_last_record`, `json_file_value`, `process_alive`, `http_status`, `http_json`, `gpu_status`, `disk_usage`, `shell_command`, `spec_value`, `file_exists`, `const`.
 
 ## Remote execution (Vast.ai)
 

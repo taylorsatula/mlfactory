@@ -278,6 +278,26 @@ def _run_probe(probe: Probe, run_dir: Path | None, manifest: RunManifest | None)
             except Exception as e:
                 return ProbeResult(value=None, display=f"error: {e}", style="red")
 
+        if probe.type == "json_file_value":
+            path = _resolve_path(probe.file, run_dir)
+            if not path or not path.exists():
+                return ProbeResult(value=None, display="n/a", style="dim")
+            try:
+                val: Any = json.loads(path.read_text(encoding="utf-8"))
+                if probe.path:
+                    for key in probe.path.split("."):
+                        if isinstance(val, dict):
+                            val = val.get(key)
+                        else:
+                            val = None
+                            break
+                display = str(val) if val is not None else "n/a"
+                r = ProbeResult(value=val, display=display)
+                r.style = _style_for_numeric(r, probe)
+                return r
+            except Exception as e:
+                return ProbeResult(value=None, display=f"error: {e}", style="red")
+
         if probe.type == "jsonl_metric_last":
             key = str(probe.params.get("key") or probe.path or probe.id)
             path = _resolve_path(probe.file, run_dir)
@@ -785,30 +805,22 @@ def _render_text(results: dict[str, ProbeResult], pane: Pane, config: Experiment
 
 
 def _load_experiment_config(manifest: RunManifest | None) -> ExperimentDashboardConfig:
+    """Resolve a run's dashboard config from the run itself.
+
+    The config is persisted to ``run_dir/dashboard.json`` at create time by the
+    runner (from the plugin's ``dashboard()`` classmethod), so the viewer reads
+    it from the run rather than from the source tree checked out at view time —
+    the dashboard is reproducible from the run alone, like every other artifact.
+    No persisted config → generic fallback (status/GPU/disk).
+    """
     if manifest is None:
         return generic_config()
-    experiment = manifest.spec.get("experiment")
-    stage = manifest.stage
-    if not experiment:
-        return generic_config()
-    candidates: list[Path] = []
-    if stage:
-        candidates.extend([
-            Path(f"mlfactory/experiments/{experiment}/dashboard_{stage}.json"),
-            Path(f"mlfactory/experiments/{experiment}/dashboard_{stage}.yaml"),
-            Path(f"mlfactory/experiments/{experiment}/dashboard_{stage}.yml"),
-        ])
-    if experiment == "voice":
-        # The synthetic adapter reuses the same scalar training telemetry.
-        candidates.append(Path("mlfactory/experiments/voice/dashboard_voice-train.json"))
-    candidates.extend([
-        Path(f"mlfactory/experiments/{experiment}/dashboard.json"),
-        Path(f"mlfactory/experiments/{experiment}/dashboard.yaml"),
-        Path(f"mlfactory/experiments/{experiment}/dashboard.yml"),
-    ])
-    for c in candidates:
-        if c.exists():
-            return ExperimentDashboardConfig.load(c)
+    run_dir = Path(manifest.source.path).parent if manifest.source else None
+    if run_dir is not None:
+        for name in ("dashboard.json", "dashboard.yaml", "dashboard.yml"):
+            cand = run_dir / name
+            if cand.exists():
+                return ExperimentDashboardConfig.load(cand)
     return generic_config()
 
 
@@ -961,13 +973,7 @@ def main() -> None:
         try:
             while True:
                 live.update(
-                    build_layout(
-                        registry,
-                        config,
-                        args.watch_run or (manifest.run_id if manifest else None),
-                        args.stage,
-                        args.limit,
-                    )
+                    build_layout(registry, config, watch, args.stage, args.limit, ad_hoc)
                 )
                 time.sleep(refresh)
         except KeyboardInterrupt:

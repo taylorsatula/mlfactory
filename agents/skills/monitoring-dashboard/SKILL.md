@@ -14,6 +14,7 @@ The dashboard is a read-only Rich Live TUI. It polls probes declared in an exper
 - Watching a training run's loss curve or sample count.
 - Building a live view for a new experiment stage.
 - You need GPU temperature, disk usage, or process health at a glance.
+- You are overseeing an extended model/inference run and need an ETA plus a one-minute-smoothed token throughput readout.
 
 ## Core pattern
 
@@ -55,7 +56,19 @@ Or from the shell: `mlfactory dashboard --watch-run <run_id>`.
 
 ## Wireframe template
 
-Copy this skeleton and adapt to your run. Most extended runs need progress tracking, recent log tail, and GPU status at minimum.
+Copy this skeleton and adapt to your run. Most extended runs need progress tracking, recent log tail, GPU status, an estimated completion time, and (for model generation) tokens/sec smoothed over the last 60 seconds at minimum.
+
+### Required overwatch metrics
+
+For any extended run:
+
+- **ETA:** show both an estimated remaining duration and an absolute estimated completion time. Base it on remaining work and a documented rolling or recent completion-rate estimate; do not display a static startup guess without labeling it.
+- **Token throughput:** for inference/generation runs, show a rolling one-minute rate from timestamped cumulative token counters. Prefer Prometheus/server counters or append-only telemetry. Do not label characters/sec, lifetime-average tokens/sec, or prompt throughput as generated tokens/sec.
+- **Warm-up state:** display `warming`, `estimating`, or `unavailable` when there is not enough telemetry rather than showing a misleading zero.
+- **Scope:** state whether throughput is run-specific or server-wide. A server-wide counter is acceptable only when the run owns the endpoint or concurrent traffic is ruled out.
+- **Failure visibility:** expose missing telemetry or stale counters as a warning/error, not as a healthy value.
+
+The `json_file_value` probe reads any JSON status file your run writes (e.g. a `progress.json` your plugin emits with ETA/throughput). mlfactory does not provide a standard writer for that file — your experiment owns emitting it; the probe is the generic reader. The rules above apply to whatever telemetry source you use (a `progress.json`, `dashboard.jsonl` via `jsonl_metric_last`, or server counters).
 
 ```json
 {
@@ -85,6 +98,20 @@ Copy this skeleton and adapt to your run. Most extended runs need progress track
       "label": "Latest"
     },
     {
+      "id": "eta",
+      "type": "json_file_value",
+      "file": "{run_dir}/progress.json",
+      "path": "eta",
+      "label": "Estimated completion"
+    },
+    {
+      "id": "tokens_per_second_1m",
+      "type": "json_file_value",
+      "file": "{run_dir}/progress.json",
+      "path": "tokens_per_second_1m",
+      "label": "Tokens/sec (1m)"
+    },
+    {
       "id": "gpu_status",
       "type": "gpu_status"
     },
@@ -102,7 +129,7 @@ Copy this skeleton and adapt to your run. Most extended runs need progress track
     {
       "title": "Progress",
       "type": "overview",
-      "probes": ["completed", "process", "last_metric"],
+      "probes": ["completed", "process", "last_metric", "eta", "tokens_per_second_1m"],
       "ratio": 1
     },
     {
@@ -151,6 +178,7 @@ with Live(build_layout(config), refresh_per_second=1, screen=True) as live:
 |------|----------|
 | `file_line_count` | Number of lines in a file (e.g., generated samples). |
 | `jsonl_last_record` | Last JSON row in `dashboard.jsonl`. |
+| `json_file_value` | A dotted value from a regular JSON status/progress file. |
 | `regex_last_match` | Last match of a regex in a log file. |
 | `process_alive` | Whether a PID is still running. |
 | `http_status` / `http_json` | Health of a local HTTP service. |

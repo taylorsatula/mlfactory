@@ -17,6 +17,11 @@ class SampleTrainPlugin(StagePlugin):
 
     stage = "train"
 
+    @classmethod
+    def dashboard(cls):
+        from mlfactory.core.dashboard_config import ExperimentDashboardConfig
+        return ExperimentDashboardConfig.load(Path(__file__).with_name("dashboard_train.json"))
+
     def __init__(self, manifest):
         super().__init__(manifest)
         self.spec = manifest.spec

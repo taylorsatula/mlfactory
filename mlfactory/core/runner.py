@@ -88,6 +88,32 @@ def _link_inputs_to_run_dir(inputs: list, run_dir: Path) -> None:
             shutil.copy2(src, link)
 
 
+def _persist_dashboard_config(stage: str, spec: dict[str, Any], run_dir: Path) -> None:
+    """Resolve the run's dashboard config and persist it to run_dir/dashboard.json.
+
+    Resolution order: explicit ``dashboard: none`` in spec (opt out, write
+    nothing) → plugin class's ``dashboard()`` classmethod → nothing (viewer
+    generic fallback). Never raises: a dashboard is optional, and a missing or
+    broken plugin must not fail run creation.
+    """
+    from mlfactory.core.dashboard_config import ExperimentDashboardConfig
+
+    if str(spec.get("dashboard", "")).lower() == "none":
+        return
+    try:
+        plugin_cls = PLUGINS.get(stage)
+    except KeyError:
+        return
+    try:
+        config = plugin_cls.dashboard()
+    except Exception:
+        return
+    if config is None:
+        return
+    config_path = run_dir / "dashboard.json"
+    config_path.write_text(config.model_dump_json(indent=2), encoding="utf-8")
+
+
 def create_run(
     spec_path: Path,
     stage: str | None = None,
@@ -138,6 +164,15 @@ def create_run(
         parent_runs=parent_runs,
     )
     manifest.write(run_dir / "manifest.json")
+
+    # Resolve and persist the run's dashboard config. The config travels with
+    # the run so the viewer reads it from run_dir (reproducible from the run
+    # alone), not from the source tree checked out at view time. ``dashboard:
+    # none`` in the spec, or the plugin's dashboard() returning None, opts out
+    # (the viewer then falls back to a generic view). A missing/unregistered
+    # plugin must not fail run creation.
+    _persist_dashboard_config(stage, spec, run_dir)
+
     return manifest
 
 

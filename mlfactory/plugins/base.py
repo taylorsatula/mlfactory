@@ -6,9 +6,12 @@ from __future__ import annotations
 
 from abc import ABC, abstractmethod
 from pathlib import Path
-from typing import Any, ClassVar
+from typing import TYPE_CHECKING, Any, ClassVar
 
 from mlfactory.core.manifest import RunManifest
+
+if TYPE_CHECKING:
+    from mlfactory.core.dashboard_config import ExperimentDashboardConfig
 
 
 class StagePlugin(ABC):
@@ -22,6 +25,23 @@ class StagePlugin(ABC):
     @property
     def run_dir(self) -> Path:
         return Path(self.manifest.source.path).parent if self.manifest.source else Path("runs") / self.manifest.run_id
+
+    @classmethod
+    def dashboard(cls) -> "ExperimentDashboardConfig | None":
+        """Return this stage's dashboard config, or None to opt out.
+
+        A config is a property of the stage *type*, not of a run instance, so
+        this is a classmethod. The runner calls it at create time and persists
+        the result to ``run_dir/dashboard.json`` so the viewer resolves a run's
+        dashboard from the run itself (reproducible), not from the source tree
+        checked out at view time. Returning ``None`` (the default) opts out: the
+        viewer then falls back to a generic status/GPU/disk view.
+
+        Two common implementations: load a sibling static file
+        (``ExperimentDashboardConfig.load(Path(__file__).with_name(...))``) or
+        build the config programmatically. Both serialize to the same schema.
+        """
+        return None
 
     @abstractmethod
     def prepare(self) -> None:
