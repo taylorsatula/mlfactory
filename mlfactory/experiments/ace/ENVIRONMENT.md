@@ -36,8 +36,44 @@ uv pip install --python .venv/bin/python -e /home/admin/mlfactory
 | Package | Reason |
 |---|---|
 | bitsandbytes | bf16 full-precision loads only |
-| flash-linear-attention / causal-conv1d | Qwen3.5 hybrid linear-attention fast kernels — transformers falls back to correct torch implementations; revisit only if generation throughput demands it |
+| flash-linear-attention / causal-conv1d | Installed **on the remote training stack** 2026-08-25 after throughput demanded the revisit; measured **zero gain** (~150 tok/s batch-4 unchanged) — transformers may be silently falling back; see `STATUS.md` Q11. Not installed locally (local venv does no generation at scale) |
 | peft | custom controller instead (`core/steering_controller.py`) |
+| flash-attn | Installed **on the remote training stack** 2026-08-25 (2.8.3.post1, sm_90 source build — no prebuilt wheel matches torch 2.13); measured **zero gain** vs SDPA at short and long context — the bottleneck is not the full-attention blocks (`STATUS.md` Q11) |
+
+## Remote training stack (Vast H200, 2026-08-25)
+
+GRPO runs on Vast instance #46911241: 2× H200 140 GB (PCIe 5.0
+interconnect — no NVLink), driver 590.48.01, vLLM-template image.
+Repo at `/workspace/mlfactory` (git archive + rsync, `pip install -e .`),
+weights at `/workspace/models/hub/models--Qwen--Qwen3.5-9B` (bf16,
+`HF_HOME=/workspace/models`). **`workspace_is_volume=false`: nothing
+survives recycle/destroy — results rsync home.**
+
+**Access and lifecycle (2026-08-25):** ssh
+`root@198.145.108.59:30854` with `~/.ssh/id_vast` (`-i`,
+`IdentitiesOnly`). Instance stop/start is controlled **from local**
+(192.168.1.9): `~/.local/bin/vastai {stop,start} instance 48673764`
+with the account key stored in mlfactory secrets (`mlfactory secrets
+get VAST_API_KEY`) and mirrored at `~/.vast_api_key` (chmod 600, picked
+up by the CLI automatically). Stop/start preserves the whole container
+filesystem. The in-container `CONTAINER_API_KEY` is SELF-scoped only —
+it 401s on external API calls and cannot restart a stopped box, so all
+lifecycle control goes through local with the account key.
+
+| Package | Version | Note |
+|---|---|---|
+| python | 3.12 | `/venv/main` |
+| torch | 2.13.0+cu130 | image-provided (local ace venv: 2.11.0+cu128 — recorded for provenance) |
+| transformers | 5.15.0 | image-provided (local: 5.14.1) |
+| flash-attn | 2.8.3.post1 | sm_90 source build; zero measured gain (Q11) |
+| flash-linear-attention | 0.5.2 | zero measured gain pending invocation check (Q11) |
+| causal-conv1d | 1.7.0 | TORCH_CUDA_ARCH_LIST=9.0 build |
+
+Launch convention: `export PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True`;
+tmux sessions `smoke`/`flashbuild`-style with named logs under
+`/workspace/`. The vLLM/model-ui/ray template services must be stopped
+before training (they hold the GPUs); `supervisorctl start vllm`
+restores them.
 
 ## Validation
 

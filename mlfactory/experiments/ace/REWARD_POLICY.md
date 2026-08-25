@@ -71,6 +71,17 @@ Minimize entropy, recurrence, tortuosity, or trace length. Rewarding
 shortness directly would reward premature convergence (length is an
 *outcome* of search quality, never a target — `FAILURE_MODES.md`).
 
+## Backdoor to watch: truncation
+
+Terminal reward on a capped rollout leaks length in through the
+backdoor: a trace that hits the backstop cap almost always scores 0, so
+"finish before the cap" is reward-correlated signal shaped like the
+banned length axis without being added as a term. Measured: 22% of q8 b2
+rollouts and 6/24 first-bf16-smoke traces hit the 26k cap. Report
+per-group cap-hit rate in every GRPO batch; all-truncated groups have
+zero advantage anyway; treat the cap as a per-row covariate, never as a
+silent scorer. (Evidence: `lab_notes/2026-08-25-grpo-h200-smoke-results.md`.)
+
 ## Quick reference: decision test
 
 > "Is this thing I want to add a reward?" — If it is anything other than

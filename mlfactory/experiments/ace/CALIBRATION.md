@@ -159,6 +159,16 @@ Evidence: `lab_notes/2026-08-25-b2-r1-hard-preset-landing.md`,
 never a family average — frozen-30's lesson, reaffirmed: the raw family
 averages here (e.g. machine 37.5% buggy) concealed near-ceiling prompts.
 
+**bf16 re-verification preview (2026-08-25, Vast H200, n=4 per prompt,
+preliminary):** the first unsteered bf16 batch opened with one prompt per
+family (smoke, seeds 70_000+pid, thinking on): adversary **4/4**,
+machine **4/4**, assign **3/4**, certify **1/4**, grid **2/4**,
+hypothesis **4/4** — mixed rewards persist on bf16, and the base looks
+stronger than q8 on several families. bf16 traces run longer (median
+22.3k vs q8 18.4k; 6/24 cap-hit). n=4 per prompt — no band verdicts
+until the full first unsteered batch re-measures all 46 at proper n
+(`STATUS.md` R9; `lab_notes/2026-08-25-grpo-h200-smoke-results.md`).
+
 **Verifier-authority note:** the deterministic `gen` check() is the scoring
 authority. A 2026-08-24 pass repaired systemic extraction false negatives
 (machine / adversary / assign / hypothesis) that made families look far

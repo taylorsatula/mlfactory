@@ -9,12 +9,28 @@
 
 | Ruling | Value | Rationale |
 |---|---|---|
-| Concurrency | **one sample at a time** (HF collectors); llama-server API collection uses parallel slots (`--parallel N`, KV pooled) | 24 GB VRAM; an 8-wide batch of 32k-token reasoning traces OOMs a 24 GB card in HF; a GGUF quant leaves room for slot concurrency |
+| Concurrency | **one sample at a time** (HF collectors on the 24 GB 3090s); llama-server API collection uses parallel slots (`--parallel N`, KV pooled); **same-prompt group batches are fine on the H200 training box** (140 GB; smoke ran batch-4 thinking-on groups at 26k caps) | 24 GB VRAM; an 8-wide batch of 32k-token reasoning traces OOMs a 24 GB card in HF; a GGUF quant leaves room for slot concurrency; the H200 changes the arithmetic (R9) |
 | Thinking | **enabled** (`enable_thinking=True`) | native reasoning mode; the phenomenon of interest |
 | Precision | **substrate identity between measurement and consumer** (bf16 HF for anything the bf16 training stack or hidden-state access consumes; q8_0 GGUF + MTP accepted for text-level collection/calibration, user ruling 2026-08-24) | q8 lands near-identically but fails differently — bands are substrate-flexible with re-verification by regeneration; failure-mode observables and training are not. See "Substrate policy" below |
 | Per-sample seed | `seed_base + 17*proposal_id + sample_i` | bit-stable resume for unfinished samples |
 | Backstop cap | **26000 tokens** | reduced from 32000 — terminal loops do not contribute to identical-conditions comparison; a trace needing >26k to be right is a recorded model flaw |
 | Sampling | temperature 0.8, top-p 0.95 | default for reasoning rollouts |
+
+## Training runs (GRPO)
+
+Controller training runs on the **Vast H200 box** (2×140 GB, bf16 HF,
+stack in `ENVIRONMENT.md` §remote) — the local 3090s are
+collection-only for this phase (user ruling 2026-08-25). Box lifecycle
+(stop/start) is controlled **from local** with the account key
+(`ENVIRONMENT.md` §remote — Access and lifecycle); stop/start preserves
+the container filesystem, so stopping during local code work is safe.
+Standing
+conditions there: template inference services stopped before training;
+results rsynced home (no persistent volume); replay windows ≤8k
+(measured ceiling, `STATUS.md` R9); per-group cap-hit rate reported
+with every batch (`REWARD_POLICY.md` §backdoor). The first unsteered
+rollout batch is the pool's bf16 re-verification (Substrate policy,
+condition 3).
 
 ## Substrate policy (2026-08-24 ruling)
 

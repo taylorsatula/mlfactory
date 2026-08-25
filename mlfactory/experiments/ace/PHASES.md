@@ -54,10 +54,27 @@ prompts is the keeper test.
 prerequisite for Phase 3 and is engineered before it. Leaning
 fork-from-prefix, which doubles as Phase 3 fork machinery.
 
+**2026-08-25 measurement (H200, R9):** teacher-forced replay with
+gradients fits a ≤8k-token window (111.6 GB peak at cap 8192; OOM at
+16384; memory linear in window). Pool traces median 22.3k tokens, and
+the hypothesis locates the learnable decision points (reheat, durable
+pruning) mid-to-late trace (`HYPOTHESIS.md`) — so a single-prefix
+window is structurally insufficient and **segmented (windowed) replay
+is required by the hypothesis, with the 8k measurement setting the
+window size**. Gradient path verified finite; frozen-base fingerprint
+holds through backward.
+
 ## Phase 3 — fork causality gate
 
 **Output:** steering value proven on forked outcome distributions, or the
 controller line is killed.
+
+**2026-08-25 attempt prep:** first serious attempt standing up on the
+Vast H200 — thinking-on (ruling: the earlier thinking-off/short-cap
+script shape was the wrong regime for this gate), b2 46-prompt pool,
+segmented replay, 2-GPU rollout parallelism. The bar is Q10's: beat a
+well-tuned constant λ on the pre-allocated reasoning-length axis on
+forked outcomes.
 
 **Gate:** the passenger test (`COUNTERFACTUAL_FRAMEWORK.md`). Same prefix,
 steered vs no-op, both run to terminal verification. Correlation between
