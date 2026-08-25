@@ -1,6 +1,4 @@
 # Large binary artifacts — regenerable from code + seeds, not version-controlled
-map_b1/
-scan_b1/
 controller_train/
 
 # Large rollout JSONLs — evidence on disk, not in git
