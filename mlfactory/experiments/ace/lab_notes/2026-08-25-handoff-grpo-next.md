@@ -1,4 +1,6 @@
 # HANDOFF — 2026-08-25 — post-compaction successor state
+# SUPERSEDED (same day, evening) by
+# lab_notes/2026-08-25-handoff-grpo-wiring-next.md — read that one.
 # Read this first. Durable detail lives at the pointers; this file carries
 # only what the artifacts do not.
 
