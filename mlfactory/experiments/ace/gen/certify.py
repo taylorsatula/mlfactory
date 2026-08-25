@@ -26,6 +26,20 @@ from .common import Problem, answer_text
 NODES = "ABCDEFGHIJ"
 COLORS = ["red", "blue", "green", "yellow"]
 
+# Surface skins: entity nouns vary; node letters, color names, and the
+# Node=channel answer format are pinned (verifier parses them).
+SKINS = [
+    {"container": "A deployment graph has", "item": "services",
+     "edge_noun": "Conflict edges (services that must NOT share a "
+                  "channel)", "resource": "channels"},
+    {"container": "A regional broadcast network has", "item":
+     "transmitter sites", "edge_noun": "Interference pairs (sites that "
+     "must NOT share a frequency)", "resource": "frequencies"},
+    {"container": "An exam venue has", "item": "rooms",
+     "edge_noun": "Adjacency conflicts (rooms that must NOT share a "
+                  "proctor channel)", "resource": "channels"},
+]
+
 
 def _k_color(n, edges, k):
     adj = [set() for _ in range(n)]
@@ -103,17 +117,14 @@ def make(rng: random.Random, knobs: dict) -> Problem:
 
         listed = trap_order if (not want_none and knobs.get("trap", True)
                                 and trap_order) else list(range(n))
+        skin = rng.choice(SKINS)
         edge_str = ", ".join(f"{NODES[u]}-{NODES[v]}" for u, v in edges)
         prose = (
-            f"A deployment graph has {n} services, listed in audit order: "
-            + ", ".join(NODES[i] for i in listed) + ".\n\n"
-            f"Conflict edges (services that must NOT share a channel): "
-            f"{edge_str}\n\n"
-            f"There are {k} channels available: {', '.join(COLORS[:k])}."
-            + ("" if want_none or trap_order is None else
-               f"\n\nNote: assigning channels greedily in the listed audit "
-               f"order forces a {k+1}th channel, yet the auditor insists a "
-               f"{k}-channel assignment exists.")
+            f"{skin['container']} {n} {skin['item']}, listed in audit "
+            "order: " + ", ".join(NODES[i] for i in listed) + ".\n\n"
+            f"{skin['edge_noun']}: {edge_str}\n\n"
+            f"There are {k} {skin['resource']} available: "
+            f"{', '.join(COLORS[:k])}."
         )
         if sol is None:
             ans = "NONE"
@@ -121,9 +132,9 @@ def make(rng: random.Random, knobs: dict) -> Problem:
             ans = ", ".join(f"{NODES[i]}={COLORS[sol[i]]}" for i in range(n))
         return Problem(
             family="certify", prose=prose,
-            question=f"Give a valid {k}-channel assignment as Node=channel "
-                     f"pairs covering every service, or state NONE if no "
-                     f"valid assignment exists.",
+            question=f"Assign each listed node one of the {k} available "
+                     f"{skin['resource']} (Node=color pairs covering every "
+                     f"node), or state NONE if no valid assignment exists.",
             answer=ans,
             verifier_kind="constraint_checker",
             objective_task="constraint_satisfaction",

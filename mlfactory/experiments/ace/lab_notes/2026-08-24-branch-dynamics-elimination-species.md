@@ -82,7 +82,7 @@ resolution — opening, closing, durable pruning, reverification behavior?
 ## Next instruments (queued)
 
 1. **v2 segmentation in representation space**: change-point detection on
-   the stored layer-15 hidden states (`data/teacherforced_b1/*.npz`), embed
+   the stored layer-15 hidden states (`data/scan_b1/*.npz`; was `teacherforced_b1/`), embed
    elimination episodes, measure **semantic return-after-elimination** as
    the reopening metric. If it separates outcomes within-prompt, it is both
    a Phase-1 observable and a Phase-3 fork trigger.

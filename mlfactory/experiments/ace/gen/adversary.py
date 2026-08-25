@@ -126,30 +126,49 @@ def make(rng: random.Random, knobs: dict) -> Problem:
     raise RuntimeError("adversary: no instance at target depth found")
 
 
-_WIT_RE = re.compile(r"([ABC]+)\s*:\s*(-?\d+(?:\s*,\s*-?\d+)*)")
+# Tolerant witness extraction: the command sequence may be contiguous
+# ("BAAB") or separated ("B A A B", "B,A,A,B"), and the credit trace may be
+# decorated (":", "cmds:", "credits:", backticks, parens). Label words are
+# stripped first so a label starting with a command letter ("CMDS") cannot
+# leak into the sequence. Semantics unchanged: the witness must be SHORTEST
+# (same length as the reference) and must drive the counter negative under the
+# rule table; a stated trace must match the re-derived trace exactly.
+def _witness(ans: str):
+    t = re.sub(r"\s+", " ", ans.strip())
+    t = re.sub(r"(?i)\b(cmds?|commands?|credits?|credit|sequence|seq|trace|values?|result|answer)\b",
+               " ", t)
+    m = re.search(r"[ABC](?:[\s,]*[ABC])*", t)
+    if not m:
+        return None, []
+    seq = re.sub(r"[^ABC]", "", m.group(0))
+    tr = [int(x) for x in re.findall(r"-?\d+", t[m.end():])]
+    return (seq or None), tr
 
 
 def check(completion: str, reference: str, knobs: dict | None = None) -> bool:
-    got = _WIT_RE.search(answer_text(completion))
-    want = _WIT_RE.search(reference)
-    if not (got and want):
+    g_seq, g_tr = _witness(answer_text(completion))
+    w_seq, w_tr = _witness(answer_text(reference))
+    if not g_seq or not w_seq:
         return False
-    g_seq = got.group(1)
-    g_tr = [int(x) for x in re.findall(r"-?\d+", got.group(2))]
-    w_seq = want.group(1)
-    w_tr = [int(x) for x in re.findall(r"-?\d+", want.group(2))]
-    if g_seq == w_seq and g_tr == w_tr:
-        return True
-    # accept an alternative valid witness when rules are available
-    if knobs and "rules" in knobs and len(g_seq) == len(w_seq):
+    # shortest witness required: same length as the reference witness
+    if len(g_seq) != len(w_seq):
+        return False
+    # verify against the rule table when available (authoritative)
+    if knobs and "rules" in knobs:
         rules = {(m, cmd): (nm, dn) for m, cmd, nm, dn in knobs["rules"]}
         m, c = 0, 0
-        trace = []
+        derived = []
         for cmd in g_seq:
             if (m, cmd) not in rules:
                 return False
             m, dn = rules[(m, cmd)]
             c += dn
-            trace.append(c)
-        return c < 0 and trace == g_tr
-    return False
+            derived.append(c)
+        if c >= 0:
+            return False
+        # full answer required: a stated credit trace must be present and
+        # match the re-derived trace exactly (the prompt asks for both the
+        # sequence and the credit values)
+        return bool(g_tr) and g_tr == derived
+    # no rules: exact match only
+    return g_seq == w_seq and g_tr == w_tr

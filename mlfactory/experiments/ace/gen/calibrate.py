@@ -23,7 +23,8 @@ import json
 from collections import defaultdict
 from pathlib import Path
 
-from . import adversary, assign, certify, grid, hypothesis, machine
+from . import adversary, assign, certify, construct, grid, hypothesis, \
+    machine, revise
 
 CHECK = {
     "assign": assign.check,
@@ -32,6 +33,8 @@ CHECK = {
     "certify": certify.check,
     "grid": grid.check,
     "hypothesis": hypothesis.check,
+    "construct": construct.check,
+    "revise": revise.check,
 }
 
 

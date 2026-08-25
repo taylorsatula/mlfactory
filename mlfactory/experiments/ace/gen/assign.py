@@ -21,6 +21,14 @@ STAFF = ["Ana", "Bo", "Cy", "Di", "Ed", "Fay", "Gus", "Hal"]
 FLAVOR = ["Intake", "Safety", "Quality", "Logistics",
           "Compliance", "Systems", "Customer", "Audit"]
 
+# Surface skins: venue framing varies; session ids (S#), staff names, and
+# rule phrasings are pinned because the verifier parses S#=Name pairs.
+SKINS = [
+    "A training center must staff {n} sessions, S1 through S{n}.",
+    "A dispatch office must cover {n} service calls, S1 through S{n}.",
+    "A conference team must schedule {n} track sessions, S1 through S{n}.",
+]
+
 
 def _violates(con, a):
     """True if complete/partial assignment a violates constraint con."""
@@ -132,8 +140,9 @@ def make(rng: random.Random, knobs: dict) -> Problem:
 
         lines = "\n".join(f"  {k+1}. {_phrased(c, names)}"
                           for k, c in enumerate(order))
+        skin = rng.choice(SKINS)
         prose = (
-            f"A training center must staff {n} sessions, S1 through S{n}. "
+            skin.format(n=n) + " " +
             f"Each session is led by exactly one of {m} staff: "
             f"{', '.join(names)}. Every rule below must hold.\n\n"
             f"Sessions: " + ", ".join(
@@ -156,10 +165,16 @@ def make(rng: random.Random, knobs: dict) -> Problem:
     raise RuntimeError("assign: no unique-solution instance found")
 
 
-_PAIR_RE = re.compile(r"(S\d+)\s*=\s*([A-Za-z]+)")
+# Tolerant to separator (":" vs "=") and case in the model's S#/Name pairs.
+# Structural validation unchanged: the full slot->name mapping must equal the
+# reference exactly.
+_PAIR_RE = re.compile(r"(S\d+)\s*[:=]\s*([A-Za-z]+)", re.IGNORECASE)
 
 
 def check(completion: str, reference: str, knobs: dict | None = None) -> bool:
-    got = dict(_PAIR_RE.findall(answer_text(completion)))
-    want = dict(_PAIR_RE.findall(reference))
+    def parse(s):
+        return {slot.upper(): name.lower()
+                for slot, name in _PAIR_RE.findall(s)}
+    got = parse(answer_text(completion))
+    want = parse(reference)
     return bool(want) and got == want

@@ -6,7 +6,10 @@ proves uniqueness; redundant clues are then pruned so every remaining
 clue is load-bearing (cross_source_reconciliation structure).
 
 Knobs:
-    n_pos   4-6   shelf positions (categories scale with it)
+    n_pos   4-7   shelf positions (categories scale with it)
+    max_at  0-99  max direct "X stands in slot k" clues admitted;
+                  low values force difficulty through relational
+                  inference (b2: at<=1 -> LIVE, at>=2 -> DEAD-EASY)
 """
 from __future__ import annotations
 
@@ -16,10 +19,22 @@ import re
 from .common import Problem, answer_text
 
 POOLS = {
-    "name": ["Ash", "Birch", "Cedar", "Elm", "Holly", "Maple"],
-    "year": ["1711", "1712", "1713", "1714", "1715", "1716"],
-    "material": ["vellum", "leather", "cloth", "linen", "rag", "palm"],
+    "name": ["Ash", "Birch", "Cedar", "Elm", "Holly", "Maple", "Rowan"],
+    "year": ["1711", "1712", "1713", "1714", "1715", "1716", "1717"],
+    "material": ["vellum", "leather", "cloth", "linen", "rag", "palm",
+                 "silk"],
 }
+
+# Surface skins: venue framing varies; attribute names (label, accession
+# year, binding) and the "Slot N: label, year, binding" answer format are
+# pinned because the verifier parses by position.
+SKINS = [
+    "{P} bound records stand on a shelf in slots 1 (leftmost) through {P}.",
+    "{P} rare volumes stand in a display case, positions 1 (leftmost) "
+    "through {P}.",
+    "{P} archive folios stand in a ledger row, slots 1 (leftmost) "
+    "through {P}.",
+]
 
 
 def _clue_vars(cl):
@@ -142,7 +157,13 @@ def make(rng: random.Random, knobs: dict) -> Problem:
         rng.shuffle(pool)
 
         clues = []
+        at_used = 0
+        max_at = knobs.get("max_at", 99)
         for cl in pool:
+            if cl[0] == "at":
+                if at_used >= max_at:
+                    continue
+                at_used += 1
             clues.append(cl)
             if _count(P, cats, clues) == 1:
                 break
@@ -157,9 +178,9 @@ def make(rng: random.Random, knobs: dict) -> Problem:
 
         clue_lines = "\n".join(f"  {i+1}. {_phrased(c)}"
                                for i, c in enumerate(clues))
+        skin = rng.choice(SKINS)
         prose = (
-            f"{P} bound records stand on a shelf in slots 1 (leftmost) "
-            f"through {P}. Each has a distinct label "
+            skin.format(P=P) + " Each has a distinct label "
             f"({', '.join(cats['name'])}), a distinct accession year "
             f"({', '.join(cats['year'])}), and a distinct binding "
             f"({', '.join(cats['material'])}). The labels are lost; a "
@@ -178,7 +199,8 @@ def make(rng: random.Random, knobs: dict) -> Problem:
             verifier_kind="truth_table_or_model_check",
             objective_task="constraint_satisfaction",
             search_topology="cross_source_reconciliation",
-            knobs={"n_pos": P, "n_clues": len(clues)},
+            knobs={"n_pos": P, "n_clues": len(clues),
+                   "n_at": sum(1 for c in clues if c[0] == "at")},
             seed=rng.randrange(2**31))
     raise RuntimeError("grid: no unique-solution instance found")
 

@@ -17,13 +17,33 @@ import sys
 from pathlib import Path
 
 DATA = Path(__file__).resolve().parent.parent / "data"
-LOGS = {"0": DATA / "acegen_probe_b1_gpu0.log",
-        "1": DATA / "acegen_probe_b1_gpu1.log"}
-OUTS = {"0": DATA / "acegen_probe_b1_gpu0.jsonl",
-        "1": DATA / "acegen_probe_b1_gpu1.jsonl"}
-TOTAL = 384
-PGREP_PAT = {"0": "[c]ollect_qwen.*candidate-range 24:48",
-             "1": "[c]ollect_qwen.*candidate-range 0:24"}
+
+# Per-batch configuration; selected by optional second CLI arg (default b1).
+BATCHES = {
+    "b1": {
+        "logs": {"0": DATA / "acegen_probe_b1_gpu0.log",
+                 "1": DATA / "acegen_probe_b1_gpu1.log"},
+        "outs": {"0": DATA / "acegen_probe_b1_gpu0.jsonl",
+                 "1": DATA / "acegen_probe_b1_gpu1.jsonl"},
+        "total": 384,
+        "pgrep": {"0": "[c]ollect_rollouts .*candidate-range 24:48",
+                  "1": "[c]ollect_rollouts .*candidate-range 0:24"},
+    },
+    "b2": {
+        "logs": {"0": DATA / "acegen_probe_b2_gpu0.log",
+                 "1": DATA / "acegen_probe_b2_gpu1.log"},
+        "outs": {"0": DATA / "acegen_probe_b2_gpu0.jsonl",
+                 "1": DATA / "acegen_probe_b2_gpu1.jsonl"},
+        "total": 384,
+        "pgrep": {"0": "[c]ollect_rollouts_api.*candidate-range 0:24",
+                  "1": "[c]ollect_rollouts_api.*candidate-range 24:48"},
+    },
+}
+BATCH = BATCHES[sys.argv[2] if len(sys.argv) > 2 else "b1"]
+LOGS = BATCH["logs"]
+OUTS = BATCH["outs"]
+TOTAL = BATCH["total"]
+PGREP_PAT = BATCH["pgrep"]
 
 
 def samples(which: str, n: int = 8) -> list[dict]:

@@ -22,7 +22,8 @@ import json
 import random
 from pathlib import Path
 
-from . import adversary, assign, certify, grid, hypothesis, machine
+from . import adversary, assign, certify, construct, grid, hypothesis, \
+    machine, revise
 
 FAMILIES = {
     "assign": assign,
@@ -31,6 +32,8 @@ FAMILIES = {
     "certify": certify,
     "grid": grid,
     "hypothesis": hypothesis,
+    "construct": construct,
+    "revise": revise,
 }
 
 DEFAULT_KNOBS = {
@@ -40,17 +43,22 @@ DEFAULT_KNOBS = {
     "certify":    {"n_nodes": 7, "k": 3, "trap": True, "none_prob": 0.25},
     "grid":       {"n_pos": 5},
     "hypothesis": {"n_sales": 5, "n_payouts": 2, "spread": 15},
+    "construct":  {"n_items": 6, "budget": False, "none_prob": 0.2},
+    "revise":     {"n_records": 4, "spread": 15, "decoy": True},
 }
 
 # Harder preset: nudge knobs toward the top of each range. The calibration
 # loop should move along these axes when prompts land DEAD-EASY.
 HARD_KNOBS = {
-    "assign":     {"n_items": 7, "n_bins": 4, "delayed": True},
-    "machine":    {"n_states": 6, "n_events": 7, "log_len": 15},
+    "assign":     {"n_items": 8, "n_bins": 5, "delayed": True},
+    "machine":    {"n_states": 6, "n_events": 7, "log_len": 17},
     "adversary":  {"n_modes": 4, "target_depth": 5, "max_witness": 2},
-    "certify":    {"n_nodes": 8, "k": 3, "trap": True, "none_prob": 0.3},
-    "grid":       {"n_pos": 6},
-    "hypothesis": {"n_sales": 6, "n_payouts": 3, "spread": 12},
+    "certify":    {"n_nodes": 9, "k": 3, "trap": True, "none_prob": 0.3},
+    "grid":       {"n_pos": 6, "max_at": 1},
+    "hypothesis": {"n_sales": 6, "n_payouts": 3, "spread": 12,
+                   "n_voids": 3},
+    "construct":  {"n_items": 7, "budget": True, "none_prob": 0.25},
+    "revise":     {"n_records": 5, "spread": 12, "decoy": True},
 }
 
 # Easier preset: bottom of each range, for families landing DEAD-HARD.
@@ -61,6 +69,8 @@ EASY_KNOBS = {
     "certify":    {"n_nodes": 6, "k": 3, "trap": False, "none_prob": 0.15},
     "grid":       {"n_pos": 4},
     "hypothesis": {"n_sales": 4, "n_payouts": 1, "spread": 20},
+    "construct":  {"n_items": 5, "budget": False, "none_prob": 0.15},
+    "revise":     {"n_records": 3, "spread": 20, "decoy": False},
 }
 
 

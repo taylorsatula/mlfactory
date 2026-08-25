@@ -1,0 +1,23 @@
+{
+  "experiment": "madlibz-verifiable-frontier-30",
+  "description": "Madlibz verifiable reasoning proposal run",
+  "refresh": 5,
+  "log_file": "/tmp/madlibz_frontier_30.log",
+  "probes": [
+    {"id": "completed", "type": "file_line_count", "file": "/home/admin/mlfactory/mlfactory/experiments/ace/data/frontier_authored.jsonl", "label": "Frozen candidates"},
+    {"id": "total", "type": "const", "params": {"value": 30}, "label": "Target"},
+    {"id": "process", "type": "process_alive", "pid_file": "/tmp/madlibz_frontier_30.pid", "label": "Authoring process"},
+    {"id": "current_proposal", "type": "regex_last_match", "file": "/tmp/madlibz_frontier_30.log", "regex": "\\\"starting\\\": ([0-9]+)", "label": "Current proposal"},
+    {"id": "last_proposal", "type": "regex_last_match", "file": "/tmp/madlibz_frontier_30.log", "regex": "\\\"proposal_id\\\": ([0-9]+)", "label": "Last frozen proposal"},
+    {"id": "last_domain", "type": "regex_last_match", "file": "/tmp/madlibz_frontier_30.log", "regex": "\\\"domain\\\": \\\"([^\\\"]+)\\\"", "label": "Last domain"},
+    {"id": "last_hash", "type": "regex_last_match", "file": "/tmp/madlibz_frontier_30.log", "regex": "\\\"envelope_hash\\\": \\\"([0-9a-f]+)\\\"", "label": "Last envelope hash"},
+    {"id": "artifact", "type": "file_exists", "file": "/home/admin/mlfactory/mlfactory/experiments/ace/data/frontier_authored.jsonl", "label": "Candidate artifact"},
+    {"id": "manifest", "type": "file_exists", "file": "/home/admin/mlfactory/mlfactory/experiments/ace/data/frontier_authored_manifest.json", "label": "Run manifest"}
+  ],
+  "progress": {"numerator_probe": "completed", "denominator_probe": "total", "show_eta": false},
+  "panes": [
+    {"title": "Run status", "type": "overview", "probes": ["process", "current_proposal", "last_proposal", "last_domain", "last_hash", "artifact", "manifest"]},
+    {"title": "Latest activity", "type": "recent_log", "config": {"lines": 14}},
+    {"title": "Counters", "type": "metrics_table", "probes": ["completed", "total", "process", "artifact", "manifest"]}
+  ]
+}

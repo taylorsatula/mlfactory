@@ -9,7 +9,7 @@ is exact by construction. `check` is the STRICT verifier used by
 calibrate.py — it re-scores probe completions and supersedes the probe
 collector's advisory soft match.
 
-Row schema matches data/madlibz_verifiable_frontier_30.jsonl so the
+Row schema matches data/frontier_authored.jsonl so the
 existing collector (collect_qwen_frontier_30.py --candidates ...) consumes
 generated pools unchanged. Extra key `knobs` carries generation parameters
 for calibration joins.

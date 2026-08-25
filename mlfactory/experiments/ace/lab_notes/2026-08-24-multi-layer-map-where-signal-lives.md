@@ -1,9 +1,9 @@
 # Lab note — 2026-08-24 — Multi-layer map: where the signal lives (measurement site ≠ steering site)
 
 Scope: first full per-layer mapping pass over the b1 probe (144 clean
-capturable traces ≤26k). Instruments: `teacherforced_map.py` (all 32
+capturable traces ≤26k). Instruments: `teacherforced_map.py` (now `analysis/residual_map.py`; all 32
 layer residuals + 24 final recurrent states + final-layer entropy) and
-`teacherforced_map_analyze.py` (streaming, 1 GB RAM). This pass answers
+`teacherforced_map_analyze.py` (now `analysis/analyze_map.py`; streaming, 1 GB RAM). This pass answers
 *where each phenomenon is readable* and *whether the recurrent channel
 carries outcome information the residual doesn't* — explicitly decoupled
 from where the controller will eventually hook (the steering layer is a
@@ -129,8 +129,8 @@ chosen later on its own criteria.
 
 - Probe collectors running (160/384, strict scoring native, both GPUs at
   98% util).
-- Artifacts: `teacherforced_map.py`, `teacherforced_map_analyze.py`,
-  `data/teacherforced_map_b1/*.npz` (144 traces: 32-layer residuals @
+- Artifacts: `teacherforced_map.py` (now `analysis/residual_map.py`), `teacherforced_map_analyze.py` (now `analysis/analyze_map.py`),
+  `data/map_b1/*.npz` (was `teacherforced_map_b1/`; 144 traces: 32-layer residuals @
   stride 16, 24 final recurrent states, final-layer entropy, onset
   offsets). 32 GB on disk.
 - Immediate next: (1) lab-note this finding (done); (2) when probe

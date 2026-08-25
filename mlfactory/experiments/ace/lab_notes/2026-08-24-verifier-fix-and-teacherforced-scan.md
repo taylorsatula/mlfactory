@@ -100,7 +100,7 @@ kill-test outcomes.
   fragmentation, not capacity. Fix: `PYTORCH_CUDA_ALLOC_CONF=
   expandable_segments:True`, plus `torch.cuda.empty_cache()` between rows;
   long traces routed to desktop-free GPU1. Scan rerun: 0 failures.
-- `trace_diagnostics.py`/`teacherforced_scan.py` are CPU/GPU separable:
+- `trace_diagnostics.py`/`teacherforced_scan.py` (now `core/trace_diagnostics.py` / `analysis/entropy_scan.py`) are CPU/GPU separable:
   text-level diagnostics need no GPU and can run during collection.
 
 ## State at note time
@@ -108,9 +108,9 @@ kill-test outcomes.
 - Collectors running post-restart (already_done 49 + 79 = 128/384), strict
   scoring native, ETA ~16–19h. Remaining families: adversary (p16–23),
   grid (p32–39), hypothesis (p40–47) plus machine p11–15 tail.
-- Artifacts: `trace_diagnostics.py`, `branch_ledger.py`,
-  `teacherforced_scan.py`, `teacherforced_analyze.py`,
-  `data/teacherforced_b1/*.npz` (128 traces: entropy arrays, layer-15
+- Artifacts: `trace_diagnostics.py` (now `core/trace_diagnostics.py`), `branch_ledger.py` (now `analysis/branch_ledger.py`),
+  `teacherforced_scan.py` (now `analysis/entropy_scan.py`), `teacherforced_analyze.py` (now `analysis/analyze_scan.py`),
+  `data/scan_b1/*.npz` (was `teacherforced_b1/`; 128 traces: entropy arrays, layer-15
   hidden states @ stride 4, onset token offsets).
 - Immediate next: (1) v2 hidden-state segmentation + semantic
   return-after-elimination metric (see companion note); (2) linear probe on
