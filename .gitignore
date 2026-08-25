@@ -8,8 +8,8 @@ __pycache__/
 *.egg-info/
 
 # Run outputs and data (large/binary)
+/data/
 runs/
-data/
 .mlfactory/
 outputs/
 *.safetensors

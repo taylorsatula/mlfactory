@@ -1,0 +1,19 @@
+{
+  "name": "b2_pool_candidates",
+  "title": "ACE b2 pool-expansion candidates",
+  "description": "48 candidates: 8 per family at locked hard designs (skinned prose) p124-163 + 8 adversary default (staged p49-56).",
+  "format": "jsonl",
+  "tags": [
+    "acegen",
+    "b2",
+    "pool-expansion",
+    "candidates"
+  ],
+  "caveats": null,
+  "sensitivity": null,
+  "data_schema": null,
+  "path": "/home/admin/mlfactory/mlfactory/experiments/ace/data/b2/expansion.jsonl",
+  "sha256": "3e60cd8c432efcc99a2132c0ede187451c50f21f1cbeb8702c15a93eb80e0ec8",
+  "size_bytes": 76798,
+  "created_at": "2026-08-25T15:11:17.901994+00:00"
+}

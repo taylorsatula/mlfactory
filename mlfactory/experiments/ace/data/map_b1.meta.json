@@ -1,0 +1,18 @@
+{
+  "name": "map_b1",
+  "title": "Multi-layer map captures (b1)",
+  "description": "146 .npz captures from the multi-layer map (all 32 layer residuals + 24 final recurrent states + final-layer entropy). One npz per trace. Run via analysis/residual_map.py. 32 GB on disk. (146 npz files)",
+  "format": "npz-collection",
+  "tags": [
+    "map",
+    "b1",
+    "teacher-forced"
+  ],
+  "caveats": null,
+  "sensitivity": null,
+  "data_schema": null,
+  "path": "/home/admin/mlfactory/mlfactory/experiments/ace/data/map_b1",
+  "sha256": null,
+  "size_bytes": null,
+  "created_at": "2026-08-24T07:06:24.460694+00:00"
+}

@@ -1,0 +1,19 @@
+{
+  "name": "b2_r1_candidates",
+  "title": "ACE b2 round-1 probe candidates",
+  "description": "15 candidates: first 3 staged b2 hard-preset instances per too-easy family (machine p57-59 at n_rejected=3, assign p65-67, certify p73-75, grid p81-83, hypothesis p89-91). Adversary excluded (already calibrated at default).",
+  "format": "jsonl",
+  "tags": [
+    "acegen",
+    "b2",
+    "r1",
+    "candidates"
+  ],
+  "caveats": null,
+  "sensitivity": null,
+  "data_schema": null,
+  "path": "/home/admin/mlfactory/mlfactory/experiments/ace/data/b2/r1.jsonl",
+  "sha256": "512b95f64561aad979531b097270f477e3037ae4c0d297a9b89cd541912a1bd7",
+  "size_bytes": 23509,
+  "created_at": "2026-08-25T03:04:30.862218+00:00"
+}

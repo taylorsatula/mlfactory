@@ -1,0 +1,19 @@
+{
+  "name": "b2_r2_candidates",
+  "title": "ACE b2 round-2 probe candidates",
+  "description": "15 candidates p97-111: machine ll=17 w/ scaled rejection window (5 rejected), assign n_items=8, certify n_nodes=9 no-spoiler + 1 NONE, grid n_pos=6 fresh seeds, hypothesis VOIDED-sales structure. Pre-skin prose.",
+  "format": "jsonl",
+  "tags": [
+    "acegen",
+    "b2",
+    "r2",
+    "candidates"
+  ],
+  "caveats": null,
+  "sensitivity": null,
+  "data_schema": null,
+  "path": "/home/admin/mlfactory/mlfactory/experiments/ace/data/b2/r2.jsonl",
+  "sha256": "88d2159e26b7bdd3ab0acf023f790b5918c5cc2c4ba82b8d358e6d8cc108d1c3",
+  "size_bytes": 23876,
+  "created_at": "2026-08-25T05:27:31.205839+00:00"
+}

@@ -1,0 +1,109 @@
+{
+  "created_at": "2026-08-25T05:16:22.729191+00:00",
+  "candidates": "data/b2/r2.jsonl",
+  "artifact": "data/acegen_b2_r2_gpu0.jsonl",
+  "backend": "llama.cpp",
+  "quant": "Q8_0-MTP",
+  "n_rows": 64,
+  "n_correct": 52,
+  "acc": 0.8125,
+  "n_truncated": 12,
+  "per_proposal": [
+    {
+      "proposal_id": 97,
+      "domain": "machine",
+      "n": 8,
+      "correct": 7,
+      "acc": 0.875,
+      "ci": [
+        0.5291051942301386,
+        0.9775830911367038
+      ],
+      "n_truncated": 1
+    },
+    {
+      "proposal_id": 98,
+      "domain": "machine",
+      "n": 8,
+      "correct": 7,
+      "acc": 0.875,
+      "ci": [
+        0.5291051942301386,
+        0.9775830911367038
+      ],
+      "n_truncated": 1
+    },
+    {
+      "proposal_id": 99,
+      "domain": "machine",
+      "n": 8,
+      "correct": 7,
+      "acc": 0.875,
+      "ci": [
+        0.5291051942301386,
+        0.9775830911367038
+      ],
+      "n_truncated": 1
+    },
+    {
+      "proposal_id": 100,
+      "domain": "assign",
+      "n": 8,
+      "correct": 7,
+      "acc": 0.875,
+      "ci": [
+        0.5291051942301386,
+        0.9775830911367038
+      ],
+      "n_truncated": 1
+    },
+    {
+      "proposal_id": 101,
+      "domain": "assign",
+      "n": 8,
+      "correct": 7,
+      "acc": 0.875,
+      "ci": [
+        0.5291051942301386,
+        0.9775830911367038
+      ],
+      "n_truncated": 1
+    },
+    {
+      "proposal_id": 102,
+      "domain": "assign",
+      "n": 8,
+      "correct": 5,
+      "acc": 0.625,
+      "ci": [
+        0.30573785458380187,
+        0.863158240538479
+      ],
+      "n_truncated": 3
+    },
+    {
+      "proposal_id": 103,
+      "domain": "certify",
+      "n": 8,
+      "correct": 6,
+      "acc": 0.75,
+      "ci": [
+        0.40926987910258916,
+        0.9285223111419724
+      ],
+      "n_truncated": 2
+    },
+    {
+      "proposal_id": 104,
+      "domain": "certify",
+      "n": 8,
+      "correct": 6,
+      "acc": 0.75,
+      "ci": [
+        0.40926987910258916,
+        0.9285223111419724
+      ],
+      "n_truncated": 2
+    }
+  ]
+}

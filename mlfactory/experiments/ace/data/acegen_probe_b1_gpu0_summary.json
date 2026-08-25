@@ -1,0 +1,404 @@
+{
+  "created_at": "2026-08-24T18:26:25.555224+00:00",
+  "candidates": "data/acegen_probe_b1.jsonl",
+  "artifact": "data/acegen_probe_b1_gpu0.jsonl",
+  "model": "/home/admin/models/hf/Qwen3.5-9B",
+  "n_rows": 192,
+  "n_correct": 174,
+  "acc": 0.90625,
+  "ci": [
+    0.8566867662836848,
+    0.9398753533068414
+  ],
+  "n_truncated": 27,
+  "n_think_closed": 168,
+  "enable_thinking": true,
+  "steering": false,
+  "max_new": 26000,
+  "per_proposal": [
+    {
+      "proposal_id": 25,
+      "domain": "certify",
+      "task": "constraint_satisfaction",
+      "verifier_kind": "constraint_checker",
+      "n": 8,
+      "correct": 8,
+      "acc": 1.0,
+      "ci": [
+        0.6755843804891231,
+        1.0
+      ],
+      "n_truncated": 0,
+      "n_think_closed": 8,
+      "mean_new_tokens": 16871.625
+    },
+    {
+      "proposal_id": 26,
+      "domain": "certify",
+      "task": "constraint_satisfaction",
+      "verifier_kind": "constraint_checker",
+      "n": 8,
+      "correct": 7,
+      "acc": 0.875,
+      "ci": [
+        0.5291051942301386,
+        0.9775830911367038
+      ],
+      "n_truncated": 2,
+      "n_think_closed": 6,
+      "mean_new_tokens": 21551.75
+    },
+    {
+      "proposal_id": 27,
+      "domain": "certify",
+      "task": "constraint_satisfaction",
+      "verifier_kind": "constraint_checker",
+      "n": 8,
+      "correct": 8,
+      "acc": 1.0,
+      "ci": [
+        0.6755843804891231,
+        1.0
+      ],
+      "n_truncated": 0,
+      "n_think_closed": 8,
+      "mean_new_tokens": 18639.0
+    },
+    {
+      "proposal_id": 28,
+      "domain": "certify",
+      "task": "constraint_satisfaction",
+      "verifier_kind": "constraint_checker",
+      "n": 8,
+      "correct": 6,
+      "acc": 0.75,
+      "ci": [
+        0.40926987910258916,
+        0.9285223111419724
+      ],
+      "n_truncated": 4,
+      "n_think_closed": 5,
+      "mean_new_tokens": 23109.625
+    },
+    {
+      "proposal_id": 29,
+      "domain": "certify",
+      "task": "constraint_satisfaction",
+      "verifier_kind": "constraint_checker",
+      "n": 8,
+      "correct": 7,
+      "acc": 0.875,
+      "ci": [
+        0.5291051942301386,
+        0.9775830911367038
+      ],
+      "n_truncated": 1,
+      "n_think_closed": 7,
+      "mean_new_tokens": 16358.0
+    },
+    {
+      "proposal_id": 30,
+      "domain": "certify",
+      "task": "constraint_satisfaction",
+      "verifier_kind": "constraint_checker",
+      "n": 8,
+      "correct": 8,
+      "acc": 1.0,
+      "ci": [
+        0.6755843804891231,
+        1.0
+      ],
+      "n_truncated": 2,
+      "n_think_closed": 6,
+      "mean_new_tokens": 20740.0
+    },
+    {
+      "proposal_id": 31,
+      "domain": "certify",
+      "task": "constraint_satisfaction",
+      "verifier_kind": "constraint_checker",
+      "n": 8,
+      "correct": 8,
+      "acc": 1.0,
+      "ci": [
+        0.6755843804891231,
+        1.0
+      ],
+      "n_truncated": 3,
+      "n_think_closed": 5,
+      "mean_new_tokens": 17306.875
+    },
+    {
+      "proposal_id": 32,
+      "domain": "certify",
+      "task": "constraint_satisfaction",
+      "verifier_kind": "constraint_checker",
+      "n": 8,
+      "correct": 6,
+      "acc": 0.75,
+      "ci": [
+        0.40926987910258916,
+        0.9285223111419724
+      ],
+      "n_truncated": 5,
+      "n_think_closed": 3,
+      "mean_new_tokens": 24134.125
+    },
+    {
+      "proposal_id": 33,
+      "domain": "grid",
+      "task": "constraint_satisfaction",
+      "verifier_kind": "truth_table_or_model_check",
+      "n": 8,
+      "correct": 8,
+      "acc": 1.0,
+      "ci": [
+        0.6755843804891231,
+        1.0
+      ],
+      "n_truncated": 0,
+      "n_think_closed": 8,
+      "mean_new_tokens": 12766.75
+    },
+    {
+      "proposal_id": 34,
+      "domain": "grid",
+      "task": "constraint_satisfaction",
+      "verifier_kind": "truth_table_or_model_check",
+      "n": 8,
+      "correct": 5,
+      "acc": 0.625,
+      "ci": [
+        0.30573785458380187,
+        0.863158240538479
+      ],
+      "n_truncated": 3,
+      "n_think_closed": 6,
+      "mean_new_tokens": 23412.5
+    },
+    {
+      "proposal_id": 35,
+      "domain": "grid",
+      "task": "constraint_satisfaction",
+      "verifier_kind": "truth_table_or_model_check",
+      "n": 8,
+      "correct": 7,
+      "acc": 0.875,
+      "ci": [
+        0.5291051942301386,
+        0.9775830911367038
+      ],
+      "n_truncated": 1,
+      "n_think_closed": 7,
+      "mean_new_tokens": 19966.75
+    },
+    {
+      "proposal_id": 36,
+      "domain": "grid",
+      "task": "constraint_satisfaction",
+      "verifier_kind": "truth_table_or_model_check",
+      "n": 8,
+      "correct": 6,
+      "acc": 0.75,
+      "ci": [
+        0.40926987910258916,
+        0.9285223111419724
+      ],
+      "n_truncated": 2,
+      "n_think_closed": 6,
+      "mean_new_tokens": 20636.125
+    },
+    {
+      "proposal_id": 37,
+      "domain": "grid",
+      "task": "constraint_satisfaction",
+      "verifier_kind": "truth_table_or_model_check",
+      "n": 8,
+      "correct": 8,
+      "acc": 1.0,
+      "ci": [
+        0.6755843804891231,
+        1.0
+      ],
+      "n_truncated": 0,
+      "n_think_closed": 8,
+      "mean_new_tokens": 10076.375
+    },
+    {
+      "proposal_id": 38,
+      "domain": "grid",
+      "task": "constraint_satisfaction",
+      "verifier_kind": "truth_table_or_model_check",
+      "n": 8,
+      "correct": 6,
+      "acc": 0.75,
+      "ci": [
+        0.40926987910258916,
+        0.9285223111419724
+      ],
+      "n_truncated": 1,
+      "n_think_closed": 7,
+      "mean_new_tokens": 15035.0
+    },
+    {
+      "proposal_id": 39,
+      "domain": "grid",
+      "task": "constraint_satisfaction",
+      "verifier_kind": "truth_table_or_model_check",
+      "n": 8,
+      "correct": 7,
+      "acc": 0.875,
+      "ci": [
+        0.5291051942301386,
+        0.9775830911367038
+      ],
+      "n_truncated": 1,
+      "n_think_closed": 8,
+      "mean_new_tokens": 19745.0
+    },
+    {
+      "proposal_id": 40,
+      "domain": "grid",
+      "task": "constraint_satisfaction",
+      "verifier_kind": "truth_table_or_model_check",
+      "n": 8,
+      "correct": 8,
+      "acc": 1.0,
+      "ci": [
+        0.6755843804891231,
+        1.0
+      ],
+      "n_truncated": 0,
+      "n_think_closed": 8,
+      "mean_new_tokens": 12357.625
+    },
+    {
+      "proposal_id": 41,
+      "domain": "hypothesis",
+      "task": "evidence_reconciliation",
+      "verifier_kind": "hypothesis_elimination",
+      "n": 8,
+      "correct": 7,
+      "acc": 0.875,
+      "ci": [
+        0.5291051942301386,
+        0.9775830911367038
+      ],
+      "n_truncated": 1,
+      "n_think_closed": 7,
+      "mean_new_tokens": 15371.125
+    },
+    {
+      "proposal_id": 42,
+      "domain": "hypothesis",
+      "task": "evidence_reconciliation",
+      "verifier_kind": "hypothesis_elimination",
+      "n": 8,
+      "correct": 8,
+      "acc": 1.0,
+      "ci": [
+        0.6755843804891231,
+        1.0
+      ],
+      "n_truncated": 0,
+      "n_think_closed": 8,
+      "mean_new_tokens": 15672.875
+    },
+    {
+      "proposal_id": 43,
+      "domain": "hypothesis",
+      "task": "evidence_reconciliation",
+      "verifier_kind": "hypothesis_elimination",
+      "n": 8,
+      "correct": 7,
+      "acc": 0.875,
+      "ci": [
+        0.5291051942301386,
+        0.9775830911367038
+      ],
+      "n_truncated": 1,
+      "n_think_closed": 7,
+      "mean_new_tokens": 16955.625
+    },
+    {
+      "proposal_id": 44,
+      "domain": "hypothesis",
+      "task": "evidence_reconciliation",
+      "verifier_kind": "hypothesis_elimination",
+      "n": 8,
+      "correct": 8,
+      "acc": 1.0,
+      "ci": [
+        0.6755843804891231,
+        1.0
+      ],
+      "n_truncated": 0,
+      "n_think_closed": 8,
+      "mean_new_tokens": 11773.125
+    },
+    {
+      "proposal_id": 45,
+      "domain": "hypothesis",
+      "task": "evidence_reconciliation",
+      "verifier_kind": "hypothesis_elimination",
+      "n": 8,
+      "correct": 8,
+      "acc": 1.0,
+      "ci": [
+        0.6755843804891231,
+        1.0
+      ],
+      "n_truncated": 0,
+      "n_think_closed": 8,
+      "mean_new_tokens": 11967.25
+    },
+    {
+      "proposal_id": 46,
+      "domain": "hypothesis",
+      "task": "evidence_reconciliation",
+      "verifier_kind": "hypothesis_elimination",
+      "n": 8,
+      "correct": 8,
+      "acc": 1.0,
+      "ci": [
+        0.6755843804891231,
+        1.0
+      ],
+      "n_truncated": 0,
+      "n_think_closed": 8,
+      "mean_new_tokens": 12080.625
+    },
+    {
+      "proposal_id": 47,
+      "domain": "hypothesis",
+      "task": "evidence_reconciliation",
+      "verifier_kind": "hypothesis_elimination",
+      "n": 8,
+      "correct": 7,
+      "acc": 0.875,
+      "ci": [
+        0.5291051942301386,
+        0.9775830911367038
+      ],
+      "n_truncated": 0,
+      "n_think_closed": 8,
+      "mean_new_tokens": 12472.875
+    },
+    {
+      "proposal_id": 48,
+      "domain": "hypothesis",
+      "task": "evidence_reconciliation",
+      "verifier_kind": "hypothesis_elimination",
+      "n": 8,
+      "correct": 8,
+      "acc": 1.0,
+      "ci": [
+        0.6755843804891231,
+        1.0
+      ],
+      "n_truncated": 0,
+      "n_think_closed": 8,
+      "mean_new_tokens": 13715.625
+    }
+  ]
+}

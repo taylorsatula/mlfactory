@@ -1,0 +1,18 @@
+{
+  "name": "scan_b1",
+  "title": "Teacher-forced scan captures (b1)",
+  "description": "128 .npz captures from the single-layer scan (layer-15 hook + chunked full-vocab entropy). One npz per trace: entropy arrays, layer-15 hidden states @ stride 4, onset token offsets. Run via analysis/entropy_scan.py --shard 0:2 / 1:2. (128 npz files)",
+  "format": "npz-collection",
+  "tags": [
+    "scan",
+    "b1",
+    "teacher-forced"
+  ],
+  "caveats": null,
+  "sensitivity": null,
+  "data_schema": null,
+  "path": "/home/admin/mlfactory/mlfactory/experiments/ace/data/scan_b1",
+  "sha256": null,
+  "size_bytes": null,
+  "created_at": "2026-08-24T07:06:24.460694+00:00"
+}

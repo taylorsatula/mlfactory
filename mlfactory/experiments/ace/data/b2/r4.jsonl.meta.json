@@ -1,0 +1,19 @@
+{
+  "name": "b2_r4_candidates",
+  "title": "ACE b2 round-4 probe candidates",
+  "description": "3 grid candidates p121-123 at n_pos=6 + new max_at=1 knob (cap direct at-clues; difficulty via relational inference).",
+  "format": "jsonl",
+  "tags": [
+    "acegen",
+    "b2",
+    "r4",
+    "candidates"
+  ],
+  "caveats": null,
+  "sensitivity": null,
+  "data_schema": null,
+  "path": "/home/admin/mlfactory/mlfactory/experiments/ace/data/b2/r4.jsonl",
+  "sha256": "f05ff85858f61753ff7040a95e8adab8a67ee06489f0e49ba4991593baf4fcc1",
+  "size_bytes": 5770,
+  "created_at": "2026-08-25T08:06:44.094396+00:00"
+}

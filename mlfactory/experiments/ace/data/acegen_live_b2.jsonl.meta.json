@@ -1,0 +1,20 @@
+{
+  "name": "acegen_live_b2",
+  "title": "ACE accepted LIVE pool b2 (q8_0+MTP, locked hard designs)",
+  "description": "46 LIVE prompts after b2 iterative honing (rounds r1-r4 + pool expansion, 504 rollouts total on q8_0+MTP). Per family: adversary 8 (default, b1-calibrated design), machine 8 (ll=17, ~5 traps), assign 6 (n_items=8, n_bins=5, delayed), certify 11 (n_nodes=9, no-spoiler trap, incl. NONE instances; spread 1/8-7/8), grid 7 (n_pos=6, max_at=1 relational lattices), hypothesis 6 (VOIDED-record trap across sales+payouts). Band spread 1/8..7/8.",
+  "format": "jsonl",
+  "tags": [
+    "acegen",
+    "live-pool",
+    "b2",
+    "calibration",
+    "q8-mtp"
+  ],
+  "caveats": "ALL 46 prompts are q8_0+MTP-banded and owe bf16 re-verification by REGENERATION (fresh bf16 rollouts, same strict check) before controller training \u2014 OPERATIONS.md Substrate policy condition 3. 13 rows fold in from earlier b2 rounds (machine p97-99/certify p103-105 pre-skin prose; assign p118-119, hypothesis p115-117, grid p121/p123 skinned); same substrate and locked designs.",
+  "sensitivity": null,
+  "data_schema": null,
+  "path": "/home/admin/mlfactory/mlfactory/experiments/ace/data/acegen_live_b2.jsonl",
+  "sha256": "b86fe6d4910f2c40b0fabe0e98acf749d447ce4874e7c3a747b771e000a2a8a4",
+  "size_bytes": 71639,
+  "created_at": "2026-08-25T15:11:17.901635+00:00"
+}

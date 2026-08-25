@@ -1,0 +1,14 @@
+# Large binary artifacts — regenerable from code + seeds, not version-controlled
+map_b1/
+scan_b1/
+controller_train/
+
+# Large rollout JSONLs — evidence on disk, not in git
+probe_rollouts_b1.jsonl
+acegen_probe_b1_gpu*.jsonl
+acegen_b2_r*_gpu*.jsonl
+acegen_b2_pool_gpu*.jsonl
+frontier_rollouts_pass*.jsonl
+
+# Keep: acegen_live_b2.jsonl (the pool), .meta.json sidecars, summaries,
+#        b2/ candidate files, frontier_authored.jsonl, acegen_probe_b2.jsonl

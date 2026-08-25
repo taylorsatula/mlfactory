@@ -1,0 +1,20 @@
+{
+  "name": "b2_r4_gpu0",
+  "title": "ACE b2 round-4 rollouts GPU0",
+  "description": "16 rollouts on llama.cpp q8_0+MTP port 3091. Substrate Q8_0-MTP; owes bf16 re-verification before training.",
+  "format": "jsonl",
+  "tags": [
+    "acegen",
+    "b2",
+    "r4",
+    "rollouts",
+    "q8-mtp"
+  ],
+  "caveats": null,
+  "sensitivity": null,
+  "data_schema": null,
+  "path": "/home/admin/mlfactory/mlfactory/experiments/ace/data/acegen_b2_r4_gpu0.jsonl",
+  "sha256": "351b641aeefd57b00d6d6eb4e295e8c000158726ea3c22a3225b7f4dbc505947",
+  "size_bytes": 913389,
+  "created_at": "2026-08-25T08:06:44.097860+00:00"
+}
