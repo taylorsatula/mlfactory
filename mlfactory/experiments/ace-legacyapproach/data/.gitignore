@@ -1,0 +1,7 @@
+# Legacy-approach trace dumps and corpora — superseded workstream.
+# Evidence on disk, not in git (~40 MB of generated traces; the
+# classifier_outputs/ siblings were committed when that workstream was
+# live). *.log is already ignored by the repo-root .gitignore.
+*
+
+!.gitignore

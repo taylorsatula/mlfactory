@@ -1,0 +1,6 @@
+# Private voice corpus (real business threads + synthetic reviews).
+# NEVER commit: contains private data, regardless of pseudonymization
+# status. Stays on disk only.
+*
+
+!.gitignore
