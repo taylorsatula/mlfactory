@@ -59,10 +59,25 @@ gradients fits a ≤8k-token window (111.6 GB peak at cap 8192; OOM at
 16384; memory linear in window). Pool traces median 22.3k tokens, and
 the hypothesis locates the learnable decision points (reheat, durable
 pruning) mid-to-late trace (`HYPOTHESIS.md`) — so a single-prefix
-window is structurally insufficient and **segmented (windowed) replay
-is required by the hypothesis, with the 8k measurement setting the
-window size**. Gradient path verified finite; frozen-base fingerprint
-holds through backward.
+window is structurally insufficient.
+
+**2026-08-25, refined same day (Step 1, R10/R11):** gradient-checkpointed
+**full-trace replay** replaces segmented (windowed) replay. Windowed
+cache-continuation replay is KILLED, two independent reasons: (1)
+numerical — with a zero-init controller (exact no-op), continuing a
+cached prefix corrupts the first ~50 tokens after every split boundary by
+up to 11.8 nats (likelihood ratios off >1e5; drift mean grows with split
+depth 0.14 → 0.46); the cache object itself is bit-exact, the split is
+the poison; (2) mechanical — the FLA gated-delta-rule chunk backward
+crashes on the continued cache state, so gradients cannot complete. Full
+replay (checkpointed layers + `_TokenLogprobs` custom autograd fn) is
+bit-exact vs a single-pass reference at 3k AND 26k completion tokens,
+backward finite, peak well inside the 140 GB card. Full-mode OOM is
+guard trip exit 8 — there is no windowed fallback to degrade to.
+Rollout generation additionally requires a deterministic SDPA backend
+(default backend is call-to-call non-deterministic — R11).
+Refined by: `lab_notes/2026-08-25-step1-replay-engine-windowed-killed.md`,
+`...-2026-08-26-step1-sdpa-generation-nondeterminism-identity-gate.md`
 
 ## Phase 3 — fork causality gate
 
@@ -72,9 +87,13 @@ controller line is killed.
 **2026-08-25 attempt prep:** first serious attempt standing up on the
 Vast H200 — thinking-on (ruling: the earlier thinking-off/short-cap
 script shape was the wrong regime for this gate), b2 46-prompt pool,
-segmented replay, 2-GPU rollout parallelism. The bar is Q10's: beat a
-well-tuned constant λ on the pre-allocated reasoning-length axis on
-forked outcomes.
+gradient-checkpointed full-trace replay (windowed killed, R10), rollout
+generation pinned to a deterministic SDPA backend (R11), 2-GPU rollout
+parallelism. The bar is Q10's: beat a well-tuned constant-λ baseline —
+one that steers along the pre-allocated (length-derived) fixed
+direction — judged on forked terminal-verified outcomes (length is the
+baseline's intervention axis, never a reward or metric —
+`REWARD_POLICY.md`).
 
 **Gate:** the passenger test (`COUNTERFACTUAL_FRAMEWORK.md`). Same prefix,
 steered vs no-op, both run to terminal verification. Correlation between

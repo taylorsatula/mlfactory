@@ -12,7 +12,7 @@
 | Concurrency | **one sample at a time** (HF collectors on the 24 GB 3090s); llama-server API collection uses parallel slots (`--parallel N`, KV pooled); **same-prompt group batches are fine on the H200 training box** (140 GB; smoke ran batch-4 thinking-on groups at 26k caps) | 24 GB VRAM; an 8-wide batch of 32k-token reasoning traces OOMs a 24 GB card in HF; a GGUF quant leaves room for slot concurrency; the H200 changes the arithmetic (R9) |
 | Thinking | **enabled** (`enable_thinking=True`) | native reasoning mode; the phenomenon of interest |
 | Precision | **substrate identity between measurement and consumer** (bf16 HF for anything the bf16 training stack or hidden-state access consumes; q8_0 GGUF + MTP accepted for text-level collection/calibration, user ruling 2026-08-24) | q8 lands near-identically but fails differently — bands are substrate-flexible with re-verification by regeneration; failure-mode observables and training are not. See "Substrate policy" below |
-| Per-sample seed | `seed_base + 17*proposal_id + sample_i` | bit-stable resume for unfinished samples |
+| Per-sample seed | `seed_base + 17*proposal_id + sample_i` | bit-stable resume for unfinished samples (llama-server collection; **not** bit-stable across regenerations on the H200 training substrate — see §NEVER regenerate) |
 | Backstop cap | **26000 tokens** | reduced from 32000 — terminal loops do not contribute to identical-conditions comparison; a trace needing >26k to be right is a recorded model flaw |
 | Sampling | temperature 0.8, top-p 0.95 | default for reasoning rollouts |
 
@@ -26,8 +26,13 @@ collection-only for this phase (user ruling 2026-08-25). Box lifecycle
 the container filesystem, so stopping during local code work is safe.
 Standing
 conditions there: template inference services stopped before training;
-results rsynced home (no persistent volume); replay windows ≤8k
-(measured ceiling, `STATUS.md` R9); per-group cap-hit rate reported
+results rsynced home (no persistent volume); **replay = gradient-
+checkpointed full-trace** (`STATUS.md` R10 — windowed replay killed
+2026-08-25; full-mode OOM is guard trip exit 8, never silent fallback);
+**rollout generation runs under a deterministic SDPA backend** (default
+backend is call-to-call non-deterministic on this substrate — `STATUS.md`
+R11; MATH backend verified bit-stable, FLASH untested); per-group cap-hit
+rate reported
 with every batch (`REWARD_POLICY.md` §backdoor). The first unsteered
 rollout batch is the pool's bf16 re-verification (Substrate policy,
 condition 3).
@@ -93,6 +98,15 @@ Existing rows are immutable. Chop analytically at analysis time if needed
 (e.g. mixed-cap rows — see below). Resume skips done `(proposal_id,
 sample_i)` pairs via `already_done()`; in-flight samples discarded on
 restart are redone bit-identically (deterministic seeds).
+
+**H200 training-substrate exception (2026-08-26, R11):** seeded HF
+generation is deterministic within one `generate()` call but NOT
+reproducible across calls/processes on the default SDPA backend (first
+flip 422–1764 tokens — see
+`lab_notes/2026-08-26-step1-sdpa-generation-nondeterminism-identity-gate.md`).
+Resume evidence on this substrate = persisted rows + seqs; partial groups
+are frozen from disk, never regenerated (`train/grpo.py` resume
+semantics).
 
 ## Data-quality covariates on record
 

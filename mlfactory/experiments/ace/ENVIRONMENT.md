@@ -42,7 +42,7 @@ uv pip install --python .venv/bin/python -e /home/admin/mlfactory
 
 ## Remote training stack (Vast H200, 2026-08-25)
 
-GRPO runs on Vast instance #46911241: 2× H200 140 GB (PCIe 5.0
+GRPO runs on Vast instance #48673764: 2× H200 140 GB (PCIe 5.0
 interconnect — no NVLink), driver 590.48.01, vLLM-template image.
 Repo at `/workspace/mlfactory` (git archive + rsync, `pip install -e .`),
 weights at `/workspace/models/hub/models--Qwen--Qwen3.5-9B` (bf16,
@@ -74,6 +74,27 @@ tmux sessions `smoke`/`flashbuild`-style with named logs under
 `/workspace/`. The vLLM/model-ui/ray template services must be stopped
 before training (they hold the GPUs); `supervisorctl start vllm`
 restores them.
+
+### Remote-stack traps (measured, dated)
+
+- **Default-SDPA generation is call-to-call non-deterministic (2026-08-26,
+  R11):** two identical `generate()` calls (same seed/weights/code,
+  proven-equal RNG draw counts) diverge mid-trace at 422–1764 tokens.
+  Rollout generation must force a deterministic backend:
+  `sdpa_kernel([SDPBackend.MATH])` verified bit-stable (0/8 flips);
+  FLASH backend untested. Root cause of the Step-1 identity-gate failure
+  and of `probe_determinism`'s cross-process flips.
+- **Hybrid-cache continuation corrupts boundary tokens (2026-08-25,
+  R10):** up to 11.8 nats for ~50 tokens after every split point under a
+  zero-init no-op (likelihood ratios off >1e5); the cache object is
+  bit-exact — the split/continuation is the poison — and the FLA chunk
+  backward crashes on the continued cache state. Windowed replay on cache
+  continuation is dead; do not rebuild it.
+- **Naive float32 vocab-chunked logprob extraction under grad** retains
+  ~52 GB of autograd intermediates at 26k tokens and OOMs the 140 GB
+  card. `completion_logprobs` uses `_TokenLogprobs` (custom autograd fn:
+  saves the bf16 logits reference + targets, recomputes softmax in
+  backward). Evidence: `lab_notes/2026-08-25-step1-replay-engine-windowed-killed.md`.
 
 ## Validation
 
