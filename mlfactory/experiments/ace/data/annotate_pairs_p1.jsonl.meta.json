@@ -1,0 +1,18 @@
+{
+  "name": "annotate_pairs_p1",
+  "title": "Annotation pair manifest pass 1",
+  "description": "Same-prompt success/failure pairs (kind=pair) and cap-hit loop targets (kind=loop) drawn from probe_b1, frontier pass1, and b2 pools for the span-annotation workstream. Pointer rows only \u2014 join to source by sample_id. hf-bf16 pairs first, then q8-mtp.",
+  "format": "jsonl",
+  "tags": [
+    "annotate",
+    "pairs",
+    "pass1"
+  ],
+  "caveats": "q8-mtp pairs are off-policy tokens for the bf16 capture model",
+  "sensitivity": null,
+  "data_schema": null,
+  "path": "/home/admin/mlfactory/mlfactory/experiments/ace/data/annotate_pairs_p1.jsonl",
+  "sha256": "5991015dfae2794b566c4a63f28fd2f2341a55f1bd75ac9b38b6a5fc91f5149b",
+  "size_bytes": 100217,
+  "created_at": "2026-08-26T14:32:01.006466+00:00"
+}
