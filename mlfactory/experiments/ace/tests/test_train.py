@@ -78,16 +78,21 @@ def model():
     torch.cuda.empty_cache()
 
 
-def test_one_iteration_moves_controller_not_qwen(model, tok):
+def test_one_iteration_moves_controller_not_qwen(model, tok, tmp_path):
     from argparse import Namespace
     from mlfactory.experiments.ace.core.steering_controller import SteeringController
+    from mlfactory.experiments.ace.train.grpo import Replay, RowWriter
     snap = snapshot_base(model)
     ctrl = SteeringController().to(device="cuda", dtype=torch.float32)
     before = {k: v.detach().clone() for k, v in ctrl.state_dict().items()}
     opt = torch.optim.AdamW(ctrl.parameters(), lr=1e-3, weight_decay=0.0)
     cfg = Namespace(group_size=2, max_new=64, temperature=0.9, top_p=0.95,
-                    seed=0, beta_kl=0.02, lambda_mag=0.1)
-    row = train_iteration(model, tok, TRAIN[:2], ctrl, opt, cfg, iter_i=0)
+                    seed=0, beta_kl=0.02, lambda_mag=0.1, thinking=False,
+                    stop_on_zero_var=False)
+    rows = RowWriter(tmp_path / "rows.jsonl")
+    eng = Replay(model, "full", window=8192)  # exercises the checkpoint path
+    row = train_iteration(model, tok, TRAIN[:2], ctrl, opt, cfg, iter_i=0,
+                          rows=rows, eng=eng)
     after = ctrl.state_dict()
     moved = any(not torch.equal(before[k], after[k]) for k in before)
     print(f"\n[train-smoke] controller moved={moved}  "
