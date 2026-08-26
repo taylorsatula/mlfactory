@@ -1,0 +1,85 @@
+{
+  "created_at": "2026-08-26T16:46:13.009131+00:00",
+  "candidates": "mlfactory/experiments/ace/data/xsub_candidates.jsonl",
+  "artifact": "mlfactory/experiments/ace/data/xsub_q8.jsonl",
+  "backend": "llama.cpp",
+  "quant": "Q8_0-MTP",
+  "n_rows": 48,
+  "n_correct": 24,
+  "acc": 0.5,
+  "n_truncated": 13,
+  "per_proposal": [
+    {
+      "proposal_id": 53,
+      "domain": "adversary",
+      "n": 8,
+      "correct": 6,
+      "acc": 0.75,
+      "ci": [
+        0.40926987910258916,
+        0.9285223111419724
+      ],
+      "n_truncated": 2
+    },
+    {
+      "proposal_id": 56,
+      "domain": "adversary",
+      "n": 8,
+      "correct": 5,
+      "acc": 0.625,
+      "ci": [
+        0.30573785458380187,
+        0.863158240538479
+      ],
+      "n_truncated": 2
+    },
+    {
+      "proposal_id": 140,
+      "domain": "certify",
+      "n": 8,
+      "correct": 2,
+      "acc": 0.25,
+      "ci": [
+        0.07147768885802763,
+        0.5907301208974108
+      ],
+      "n_truncated": 2
+    },
+    {
+      "proposal_id": 145,
+      "domain": "certify",
+      "n": 8,
+      "correct": 0,
+      "acc": 0.0,
+      "ci": [
+        0.0,
+        0.3244156195108769
+      ],
+      "n_truncated": 3
+    },
+    {
+      "proposal_id": 150,
+      "domain": "grid",
+      "n": 8,
+      "correct": 5,
+      "acc": 0.625,
+      "ci": [
+        0.30573785458380187,
+        0.863158240538479
+      ],
+      "n_truncated": 3
+    },
+    {
+      "proposal_id": 152,
+      "domain": "grid",
+      "n": 8,
+      "correct": 6,
+      "acc": 0.75,
+      "ci": [
+        0.40926987910258916,
+        0.9285223111419724
+      ],
+      "n_truncated": 1
+    }
+  ]
+}

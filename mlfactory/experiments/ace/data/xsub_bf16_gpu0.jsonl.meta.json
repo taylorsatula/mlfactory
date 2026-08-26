@@ -1,0 +1,19 @@
+{
+  "name": "xsub_bf16_gpu0",
+  "title": "X-substrate rollouts GPU0 \u2014 BF16-MTP",
+  "description": "24 rollouts (6 mid-band prompts adversary 53/56, certify 140/145, grid 150/152 x samples 0-3), llama.cpp BF16 GGUF + draft-mtp on rented Vast RTX PRO 6000 Blackwell. Paired seeds with q8 arm (seed_sample=72000+17*pid+si, same across substrates). For same-prompt q8-vs-bf16 comparison + annotation corpus. Substrate tag BF16-MTP.",
+  "format": "jsonl",
+  "tags": [
+    "xsub",
+    "bf16-mtp",
+    "rollouts",
+    "gpu0"
+  ],
+  "caveats": null,
+  "sensitivity": null,
+  "data_schema": null,
+  "path": "/home/admin/mlfactory/mlfactory/experiments/ace/data/xsub_bf16_gpu0.jsonl",
+  "sha256": "85f06aa61b77ce5093b09c8ca3047931eebe644db4133e6255bc2d25694f90aa",
+  "size_bytes": 1432455,
+  "created_at": "2026-08-26T16:25:27.103457+00:00"
+}

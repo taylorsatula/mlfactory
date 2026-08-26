@@ -1,0 +1,36 @@
+{
+  "experiment": "ace-xsub-dual-collect",
+  "description": "Cross-substrate collection: 6 prompts x 8 samples on q8+MTP (local 3090) and BF16-GGUF+MTP (Vast Blackwell). Paired seeds 72000. Target: 48 rows per substrate.",
+  "refresh": 10,
+  "log_file": "/home/admin/mlfactory/mlfactory/experiments/ace/data/xsub_q8.log",
+  "probes": [
+    {"id": "all_rows", "type": "shell_command", "parser": "int", "label": "Rows total",
+     "command": "echo $(( $(wc -l < /home/admin/mlfactory/mlfactory/experiments/ace/data/xsub_q8.jsonl) + $(ssh -o ConnectTimeout=8 -i /home/admin/.ssh/id_vast -p 36867 root@154.59.156.23 'cat /workspace/mlfactory/mlfactory/experiments/ace/data/xsub_bf16_gpu0.jsonl /workspace/mlfactory/mlfactory/experiments/ace/data/xsub_bf16_gpu1.jsonl | wc -l') ))"},
+    {"id": "target_rows", "type": "const", "params": {"value": 96}, "label": "Target total"},
+    {"id": "q8_rows", "type": "file_line_count", "file": "/home/admin/mlfactory/mlfactory/experiments/ace/data/xsub_q8.jsonl", "label": "q8 rows"},
+    {"id": "q8_target", "type": "const", "params": {"value": 48}, "label": "q8 target"},
+    {"id": "q8_collector", "type": "shell_command", "parser": "int", "label": "q8 collector procs", "danger_if_below": 1,
+     "command": "pgrep -fc 'collect_rollouts_[a]pi'"},
+    {"id": "q8_server", "type": "shell_command", "parser": "int", "label": "q8 llama-server", "danger_if_below": 1,
+     "command": "pgrep -fc 'llama-server.*port 309[1]'"},
+    {"id": "q8_last_pid", "type": "regex_last_match", "file": "/home/admin/mlfactory/mlfactory/experiments/ace/data/xsub_q8.log", "regex": "\\\"proposal_id\\\": ([0-9]+)", "label": "q8 last prompt"},
+    {"id": "q8_last_sample", "type": "regex_last_match", "file": "/home/admin/mlfactory/mlfactory/experiments/ace/data/xsub_q8.log", "regex": "\\\"sample_i\\\": ([0-9]+)", "label": "q8 last sample"},
+    {"id": "q8_last_nnew", "type": "regex_last_match", "file": "/home/admin/mlfactory/mlfactory/experiments/ace/data/xsub_q8.log", "regex": "\\\"n_new\\\": ([0-9]+)", "label": "q8 last n_new"},
+    {"id": "q8_last_correct", "type": "regex_last_match", "file": "/home/admin/mlfactory/mlfactory/experiments/ace/data/xsub_q8.log", "regex": "\\\"correct\\\": (true|false)", "label": "q8 last correct"},
+    {"id": "q8_last_trunc", "type": "regex_last_match", "file": "/home/admin/mlfactory/mlfactory/experiments/ace/data/xsub_q8.log", "regex": "\\\"truncated\\\": (true|false)", "label": "q8 last truncated"},
+    {"id": "q8_last_dt", "type": "regex_last_match", "file": "/home/admin/mlfactory/mlfactory/experiments/ace/data/xsub_q8.log", "regex": "\\\"dt_s\\\": ([0-9.]+)", "label": "q8 last dt (s)"},
+    {"id": "vast_detail", "type": "shell_command", "parser": "raw", "label": "Vast arms",
+     "command": "ssh -o ConnectTimeout=8 -i /home/admin/.ssh/id_vast -p 36867 root@154.59.156.23 'echo g0=$(wc -l < /workspace/mlfactory/mlfactory/experiments/ace/data/xsub_bf16_gpu0.jsonl)/24 g1=$(wc -l < /workspace/mlfactory/mlfactory/experiments/ace/data/xsub_bf16_gpu1.jsonl)/24 gpu=$(nvidia-smi --query-gpu=utilization.gpu --format=csv,noheader,nounits | paste -sd/)'"},
+    {"id": "vast_last", "type": "shell_command", "parser": "raw", "label": "Vast gpu0 last row",
+     "command": "ssh -o ConnectTimeout=8 -i /home/admin/.ssh/id_vast -p 36867 root@154.59.156.23 'tail -c 230 /workspace/mlfactory/mlfactory/experiments/ace/data/xsub_bf16_gpu0.log | tail -1'"},
+    {"id": "gpu_local", "type": "gpu_status", "label": "Local GPUs"},
+    {"id": "disk", "type": "disk_usage", "label": "Disk /"}
+  ],
+  "progress": {"numerator_probe": "all_rows", "denominator_probe": "target_rows", "denominator_label": "of 96 rows", "show_eta": true},
+  "panes": [
+    {"title": "Overall", "type": "overview", "probes": ["q8_collector", "q8_server", "vast_detail", "gpu_local", "disk"]},
+    {"title": "Local q8+MTP arm (3090)", "type": "metrics_table", "probes": ["q8_rows", "q8_target", "q8_last_pid", "q8_last_sample", "q8_last_nnew", "q8_last_correct", "q8_last_trunc", "q8_last_dt"]},
+    {"title": "Vast BF16+MTP arms (Blackwell)", "type": "overview", "probes": ["vast_detail", "vast_last"]},
+    {"title": "Recent activity (local q8 log)", "type": "recent_log", "config": {"lines": 12}}
+  ]
+}

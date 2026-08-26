@@ -1,0 +1,19 @@
+{
+  "name": "xsub_bf16_gpu1",
+  "title": "X-substrate rollouts GPU1 \u2014 BF16-MTP",
+  "description": "24 rollouts (same 6 prompts x samples 4-7), same arm as xsub_bf16_gpu0. Paired seeds with q8 arm. Substrate tag BF16-MTP.",
+  "format": "jsonl",
+  "tags": [
+    "xsub",
+    "bf16-mtp",
+    "rollouts",
+    "gpu1"
+  ],
+  "caveats": null,
+  "sensitivity": null,
+  "data_schema": null,
+  "path": "/home/admin/mlfactory/mlfactory/experiments/ace/data/xsub_bf16_gpu1.jsonl",
+  "sha256": "48d9c22a3ed6963a296ab6c419b329efe8135c74d09464fe5faaf4f9b38e33fe",
+  "size_bytes": 1351059,
+  "created_at": "2026-08-26T16:25:27.103457+00:00"
+}
