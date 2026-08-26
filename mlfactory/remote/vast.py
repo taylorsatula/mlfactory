@@ -28,7 +28,13 @@ from typing import Any
 from mlfactory.remote.ssh_runner import SSHConfig, SSHRunner
 
 
-DEFAULT_IMAGE = "nvidia/cuda:12.9.0-devel-ubuntu26.04"
+# Image tags drift on Vast hosts — verify the tag before renting
+# (docs/VAST_REMOTE.md §image-choice). The previous default
+# (nvidia/cuda:12.9.0-devel-ubuntu26.04) 404'd on 2026-08-26; this one is
+# verified working that date. Note it starts a preinstalled llama
+# supervisor service: stop it before GPU work. Torch training stacks
+# install their own venv regardless of this image.
+DEFAULT_IMAGE = "vastai/llama-cpp:b10182-cuda-12.9"
 DEFAULT_REMOTE_WORKDIR = "/workspace/mlfactory"
 
 

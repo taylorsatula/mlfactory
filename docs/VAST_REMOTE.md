@@ -91,6 +91,43 @@ installing `cuda`, `cuda-drivers`, `nvidia-driver-*`, or replacement
 `libcuda*` packages can break the container's connection to the host kernel
 driver.
 
+**Image tags drift — verify before renting.** The house default
+`nvidia/cuda:12.9.0-devel-ubuntu26.04` 404'd (manifest unknown) on a
+2026-08-26 host. Verified working then: `vastai/llama-cpp:b10182-cuda-12.9`
+(see §fast-path below). If creation fails on the image, destroy and
+recreate — `update instance --image` on a still-loading instance 404s.
+
+## Fast path: llama.cpp serving template (collection, not training)
+
+For rollout collection / API-endpoint serving (no backward pass), the
+official `vastai/llama-cpp` template is the fastest bootstrap. Measured
+2026-08-26 on 2× RTX PRO 6000 Blackwell (sm_120), Qwen3.5-9B:
+
+- **The Hopper kernel-maturity warning (§GPU architecture) applies to the
+  torch/FLA training stack, not llama.cpp serving.** The prebuilt binaries
+  cover the full set of compute capabilities; BF16-GGUF + draft-mtp served
+  ~125 tok/s on Blackwell with zero kernel drama. A collection job on a
+  new-architecture box skips the torch smoke ladder entirely.
+- **Recipe:** (1) `supervisorctl stop llama` (the template service idles
+  without a model; stop it to keep the GPUs clean). (2) Download the GGUF
+  with `hf_xet` (~18 GB in ~40 s — HF CDN throttles single-stream curl to
+  15–22 MB/s). (3) Launch one `llama-server` per GPU via
+  `CUDA_VISIBLE_DEVICES`, ports 3091/3092, `--parallel 1`,
+  `--spec-type draft-mtp` for MTP variants. (4) The collector side needs
+  only a light venv — `torch==<ver>+cpu`, `transformers`, `numpy` satisfy
+  `collect_rollouts_api`'s import chain; no GPU torch required. (5) rsync
+  the project and run with `PYTHONPATH=<project>` — no `pip install -e`
+  needed.
+- **llama-server gotcha (measured):** `--parallel N` partitions
+  `--ctx-size` across slots — ctx 32768 with `--parallel 4` gives
+  8192-token slots and silently truncates long traces at the slot ceiling
+  (collector rows show `truncated=True` at n_new ≈ slot size). Use
+  `--parallel 1` for sequential collection; always verify `n_ctx_slot` in
+  the startup log. Local /opt builds may need `LD_LIBRARY_PATH` pointing
+  at the build's bin dir — read the systemd unit before launching by hand.
+- **CLI syntax:** `vastai create instance <offer_id> --image <tag> --disk
+  <GB>` (verb before noun); `vastai ssh-url <id>` for the address.
+
 ## Connect from the local machine
 
 Set temporary shell variables so every command uses one source of truth.
@@ -175,6 +212,10 @@ secrets into the repository** — keep API/HF tokens outside tracked files.
 ## Configure HF cache and authentication
 
 Use one explicit cache location so model downloads don't scatter.
+**Download with `hf_xet`** (`pip install hf_xet`, then `hf download`):
+parallel chunked fetch, measured ~450 MB/s where single-stream curl from
+the same HF CDN measured 15–22 MB/s. See `AGENTS.md` §model-downloads
+for the standing directive.
 
 ```bash
 # REMOTE
