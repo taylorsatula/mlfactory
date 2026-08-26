@@ -1,0 +1,4 @@
+===== C =====
+model=glm-5.2-vision dt_s=1088.4 out_tokens=65536 finish=length
+
+!! NO FLAGS: thinking ran to the token budget (finish_reason=length)

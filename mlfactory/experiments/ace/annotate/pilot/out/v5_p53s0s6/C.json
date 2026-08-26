@@ -1,0 +1,16 @@
+{
+  "meta": {
+    "model": "glm-5.2-vision",
+    "framing": "C",
+    "task": "C",
+    "trace_labels": {
+      "1": "p53s6",
+      "2": "p53s0"
+    },
+    "dt_s": 1088.4219348430634,
+    "finish_reason": "length",
+    "out_tokens": 65536,
+    "in_tokens": 49284
+  },
+  "text": ""
+}

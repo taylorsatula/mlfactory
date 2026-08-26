@@ -1,0 +1,16 @@
+{
+  "meta": {
+    "model": "glm-5.2-vision",
+    "framing": "B",
+    "task": "B",
+    "trace_labels": {
+      "1": "p140s7",
+      "2": "p140s1"
+    },
+    "dt_s": 994.0273752212524,
+    "finish_reason": "length",
+    "out_tokens": 65536,
+    "in_tokens": 44026
+  },
+  "text": null
+}
