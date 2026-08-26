@@ -103,6 +103,92 @@ the doc over the code.
 - **Set `self.manifest.summary = <dict>`** yourself when you save the
   summary via `datasave` (this is what the legacy `save_summary()` did).
 
+## Shell discipline (every command, every agent)
+
+Commands are executed against live state, not against what you believe
+the state is. The failure mode this section exists to prevent: issuing
+a command that encodes an unverified assumption (a guessed CLI syntax,
+a guessed process name, a guessed flag interaction), having it fail or
+half-apply, and then compounding the guess with a cleanup command that
+hits the wrong target. Measured costs: a `pkill` pattern that matched
+its own wrapper shell killed the fix block mid-execution and left the
+system half-restarted; an unverified llama-server `--parallel`/
+`--ctx-size` combination silently capped every trace at a quarter of
+its intended length.
+
+- **Verify before you speculate.** Check that a process, port, path,
+  file, or CLI subcommand exists *before* embedding it in a command
+  (`ps`/`ss`/`ls`/`--help`). Do not spend a mutating command to find
+  out whether an assumption was right when a read-only check answers
+  the same question.
+- **Kill by explicit PID.** Never `pkill`/`pgrep -f` with a pattern
+  broad enough to match the calling shell or an unrelated process.
+  Find the PID with `ps` first; kill that PID; verify it is gone.
+- **One concern per command.** Avoid long `&&`-chained blocks where a
+  failure mid-chain silently skips the remaining steps. When a block
+  must be long, make each step self-verifying.
+- **Verify effects, not intentions.** After stop/kill/start commands,
+  re-check live state (`systemctl is-active`, `ss -tlnp`, `ps`, the
+  service's health endpoint) before building on the result.
+- **Reproduce a service's environment from its unit, not from memory.**
+  Before launching a binary that a systemd unit normally runs, read the
+  unit (`systemctl cat`) for `Environment=`, `WorkingDirectory=`, and
+  library paths — local builds may need an `LD_LIBRARY_PATH` that the
+  unit sets and the bare shell does not.
+- **Long-running remote commands detach cleanly.** `nohup ... </dev/null
+  > log 2>&1 &`, or an SSH session waits on the child and local
+  timeouts fire on jobs that are actually fine.
+
+## Code and prompt hygiene
+
+- **No "harmless" dead code.** Unused imports, unreachable branches,
+  commented-out blocks, compat shims that no longer guard anything —
+  delete them when you see them. "It's harmless" trades a moment of
+  cleanup for every future reader re-deriving whether the code is
+  live; if you know it should go, it goes.
+- **No stale meta-text in anything sent to a model.** Prompts are
+  artifacts with one reader that has no memory: changelogs,
+  rationales, and "what changed since last time" blocks stay out of
+  prompt files; they live in the log next to the prompt, not inside
+  it.
+
+## Model downloads and transfers
+
+- **Use `hf_xet` for all Hugging Face transfers.** `pip install
+  hf_xet`, then `hf download <repo>`. Xet's parallel chunked fetch
+  measured ~450 MB/s on a rented box where single-stream curl from the
+  same HF CDN measured 15–22 MB/s (~30× on the same link, same file).
+  curl from HF is the fallback, not the default.
+- **Prefer MTP-enabled model variants.** When downloading a model,
+  choose the MTP-enabled variant unless something specifically requires
+  otherwise (e.g. the non-MTP build is itself the experimental
+  variable): `*-MTP-GGUF` repos (unsloth), HF repos shipping `mtp.*`
+  weights. MTP self-speculation is lossless — draft verification
+  preserves the target token distribution — and the throughput gain is
+  large (measured 152–161 tok/s for Q8_0+MTP vs 37 tok/s HF bf16 on the
+  same 3090; ~125 tok/s for BF16-GGUF+MTP on a Blackwell RTX PRO 6000).
+  No quality downside; the constraint is serving-stack support
+  (llama.cpp `--spec-type draft-mtp` — HF transformers ignores
+  Qwen3.5's `mtp.*` weights as of 5.14.1, so the speedup currently
+  rides with llama.cpp).
+
+## Subagents (delegation discipline)
+
+- **Spawn subagents on `qwen/qwen3.7-plus`** (the Agent tool's `model`
+  parameter) unless a task specifically needs another model.
+- **Parallelize and background them.** Independent tasks go in one
+  message as several Agent calls, each `run_in_background: true`;
+  collect the results after. Don't serialize what can run at once.
+- **Nearly all work stays in the main thread.** Subagents are for work
+  whose *content* would pollute the main context long-term without
+  belonging to the main task: reviewing full 20k-token traces,
+  auditing large batches, reading zipbomb-sized files, side-analyses.
+  The subagent absorbs the bulk; the main thread receives a terse
+  verdict.
+- **Ask for compact reports.** Give the subagent an exact output
+  format (one line per item: verdict + short reason) so the result
+  lands small.
+
 ## Start here (reference implementation)
 
 `mlfactory/experiments/sample/` is a full-featured 4-stage pipeline
@@ -118,6 +204,29 @@ README and its four plugins before writing a new experiment.
   only if no ballast variant exists. On first use in a session, query
   `GET /v1/models` to get the list of currently active model names — the
   available set can change between sessions.
+- **Lunaroute billing:** not pay-per-token. Long generations, thinking
+  runs that hit the token wall, and outright duds cost nothing beyond
+  wallclock time — don't engineer around token spend, and don't treat
+  `finish_reason=length` as a budget incident. Retry once; keep
+  whatever lands.
+- **Prompting GLM (via Lunaroute):** GLM is a big thinker. Leave it
+  room (large `max_tokens`; thinking tokens count toward it) and leave
+  `temperature` at the provider default — the models are tuned for a
+  specific temperature target, so override only with a reason. Lessons
+  from hillclimbing an annotation prompt on `glm-5.2-vision`:
+  - Clear direct instructions beat clever ones; keep secondary
+    information out of instruction lines.
+  - **Rewrite a rule line instead of appending edge-case clauses.**
+    GLM shares the ACE meander problem: accumulated edge-case
+    handling feeds wandering thinking traces and can blow the
+    thinking budget entirely.
+  - Never put meta-commentary in a prompt ("what changed since last
+    time") — the model has no memory of last time; it only sees the
+    current forward pass. Version provenance lives in the log beside
+    the prompt file, never inside it.
+  - For judgment tasks prefer recall over false restraint: extra
+    low-confidence output is droppable later; output withheld by an
+    over-strict "only flag if certain" rule is lost forever.
 
 ## CLI
 
