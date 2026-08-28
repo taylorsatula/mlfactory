@@ -1,0 +1,20 @@
+{
+  "name": "annotations_xsub_pass1",
+  "title": "Pass-1 span annotations over the xsub corpus (v5 prompt, framing C)",
+  "description": "glm-5.2-vision framing-C annotations of all 48 plan pairs. 469 flag rows (CYCLE 228, LOOP 208, MUSE 20); 251 resolved to char offsets (start_char/end_char), unresolved rows keep quotes for review. Fields: pair_id, substrate, pid, sample_i, class, conf (clear/probable), span offsets, basis. Instrumentation noise: region agreement 0.54 on the double subset (default-temp segmentation variance).",
+  "format": "jsonl",
+  "tags": [
+    "annotation",
+    "xsub",
+    "pass1",
+    "v5",
+    "framing-C"
+  ],
+  "caveats": "sample_i bug fixed 2026-08-26 before this consolidation (trace numbers had leaked into sample_i); auroc-era readers unaffected. Pass2 is the independent re-annotation of the double subset.",
+  "sensitivity": null,
+  "data_schema": null,
+  "path": "/home/admin/mlfactory/mlfactory/experiments/ace/data/annotations_xsub_pass1.jsonl",
+  "sha256": "7b25d4f6ba1b2230b72e7de34e37cb25fbda706af01d4d08c0a8b81f4c1b2cd3",
+  "size_bytes": 227980,
+  "created_at": "2026-08-26T23:35:45.803807+00:00"
+}

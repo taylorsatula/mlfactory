@@ -1,0 +1,20 @@
+{
+  "name": "annotations_xsub_pass2",
+  "title": "Pass-2 double-annotation subset (R0 label-noise measurement)",
+  "description": "Independent re-annotation of the 5 double-annotated pairs (10 traces) with identical v5/framing-C conditions. 43 flag rows. Used by annotate/r0_agreement.py: span Jaccard 0.26, region agreement 0.54, onset agreement 0.23@500ch / 0.54@8kch \u2014 noisy-but-usable instrumentation.",
+  "format": "jsonl",
+  "tags": [
+    "annotation",
+    "xsub",
+    "pass2",
+    "double-annotation",
+    "r0"
+  ],
+  "caveats": null,
+  "sensitivity": null,
+  "data_schema": null,
+  "path": "/home/admin/mlfactory/mlfactory/experiments/ace/data/annotations_xsub_pass2.jsonl",
+  "sha256": "3bf90c5eef9e1b6adb4cd2e632e35db267d6a73d6ed854bd651e718419327cd3",
+  "size_bytes": 20545,
+  "created_at": "2026-08-26T23:35:45.803807+00:00"
+}

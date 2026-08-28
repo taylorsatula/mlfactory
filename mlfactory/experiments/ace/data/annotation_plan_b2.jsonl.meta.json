@@ -1,0 +1,19 @@
+{
+  "name": "annotation_plan_b2",
+  "title": "Trace-centric annotation plan - b2 corpus",
+  "description": "92 sibling pairs covering all 184 b2 q8 traces (46 prompts x 4 samples, contrast-priority deterministic pairing: correct<->cap, correct<->wrong, cap<->wrong, within-class). 42/92 mixed-outcome. 'double' marks the 6-pair R0 double-annotation subset, one per domain (adversary p49, machine p98, certify p103, hypothesis p115, grid p123, assign p138). Consumed by annotate/run_batch.py.",
+  "format": "jsonl",
+  "tags": [
+    "annotation",
+    "plan",
+    "b2",
+    "trace-centric"
+  ],
+  "caveats": null,
+  "sensitivity": null,
+  "data_schema": null,
+  "path": "/home/admin/mlfactory/mlfactory/experiments/ace/data/annotation_plan_b2.jsonl",
+  "sha256": "b792c554f5850075828d145b625705f45a2ea5e68b29d78c0b9b00ec55d29f86",
+  "size_bytes": 25761,
+  "created_at": "2026-08-27T06:55:01.074213+00:00"
+}

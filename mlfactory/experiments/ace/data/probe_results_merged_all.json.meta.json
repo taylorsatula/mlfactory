@@ -1,0 +1,22 @@
+{
+  "name": "probe_results_merged_all",
+  "title": "R2 probe results on merged xsub+b2 corpus (conf=all)",
+  "description": "Same as probe_results_merged but including probable-tier annotations. Muse onset n=29 LOO 0.967-0.968; muse escape-vs-reheat L17 0.957 (23v6). Cycle onset 0.990, loop 0.979.",
+  "format": "json",
+  "tags": [
+    "probe",
+    "position-level",
+    "r2",
+    "annotation",
+    "merged",
+    "b2",
+    "conf-all"
+  ],
+  "caveats": "Observational (teacher-forced); probable-tier labels noisier than clear.",
+  "sensitivity": null,
+  "data_schema": null,
+  "path": "/home/admin/mlfactory/mlfactory/experiments/ace/data/probe_results_merged_all.json",
+  "sha256": "95bc8a4e8766f383c8c743fea7fb78572f4424ac9ef65972117e7904387da8cb",
+  "size_bytes": 63611,
+  "created_at": "2026-08-27T14:03:51.903829+00:00"
+}

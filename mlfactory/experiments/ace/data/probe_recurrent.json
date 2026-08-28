@@ -1,0 +1,223 @@
+{
+ "pooled": {
+  "muse:L2": {
+   "auroc": 0.896,
+   "n_pos": 13,
+   "n_neg": 124
+  },
+  "cycle:L2": {
+   "auroc": 0.901,
+   "n_pos": 291,
+   "n_neg": 1732
+  },
+  "loop:L2": {
+   "auroc": 0.87,
+   "n_pos": 285,
+   "n_neg": 1832
+  },
+  "muse:L8": {
+   "auroc": 0.726,
+   "n_pos": 13,
+   "n_neg": 124
+  },
+  "cycle:L8": {
+   "auroc": 0.726,
+   "n_pos": 291,
+   "n_neg": 1732
+  },
+  "loop:L8": {
+   "auroc": 0.737,
+   "n_pos": 285,
+   "n_neg": 1832
+  },
+  "muse:L9": {
+   "auroc": 0.928,
+   "n_pos": 13,
+   "n_neg": 124
+  },
+  "cycle:L9": {
+   "auroc": 0.844,
+   "n_pos": 291,
+   "n_neg": 1732
+  },
+  "loop:L9": {
+   "auroc": 0.866,
+   "n_pos": 285,
+   "n_neg": 1832
+  },
+  "muse:L12": {
+   "auroc": 0.938,
+   "n_pos": 13,
+   "n_neg": 124
+  },
+  "cycle:L12": {
+   "auroc": 0.808,
+   "n_pos": 291,
+   "n_neg": 1732
+  },
+  "loop:L12": {
+   "auroc": 0.827,
+   "n_pos": 285,
+   "n_neg": 1832
+  },
+  "muse:L20": {
+   "auroc": 0.826,
+   "n_pos": 13,
+   "n_neg": 124
+  },
+  "cycle:L20": {
+   "auroc": 0.74,
+   "n_pos": 291,
+   "n_neg": 1732
+  },
+  "loop:L20": {
+   "auroc": 0.809,
+   "n_pos": 285,
+   "n_neg": 1832
+  }
+ },
+ "within": {
+  "muse:L2": {
+   "median": 1.0,
+   "n_traces": 9,
+   "frac_above_0.5": 1.0
+  },
+  "cycle:L2": {
+   "median": 1.0,
+   "n_traces": 142,
+   "frac_above_0.5": 1.0
+  },
+  "loop:L2": {
+   "median": 1.0,
+   "n_traces": 149,
+   "frac_above_0.5": 1.0
+  },
+  "muse:L8": {
+   "median": 1.0,
+   "n_traces": 9,
+   "frac_above_0.5": 1.0
+  },
+  "cycle:L8": {
+   "median": 1.0,
+   "n_traces": 142,
+   "frac_above_0.5": 1.0
+  },
+  "loop:L8": {
+   "median": 1.0,
+   "n_traces": 149,
+   "frac_above_0.5": 1.0
+  },
+  "muse:L9": {
+   "median": 1.0,
+   "n_traces": 9,
+   "frac_above_0.5": 1.0
+  },
+  "cycle:L9": {
+   "median": 1.0,
+   "n_traces": 142,
+   "frac_above_0.5": 1.0
+  },
+  "loop:L9": {
+   "median": 1.0,
+   "n_traces": 149,
+   "frac_above_0.5": 1.0
+  },
+  "muse:L12": {
+   "median": 1.0,
+   "n_traces": 9,
+   "frac_above_0.5": 1.0
+  },
+  "cycle:L12": {
+   "median": 1.0,
+   "n_traces": 142,
+   "frac_above_0.5": 1.0
+  },
+  "loop:L12": {
+   "median": 1.0,
+   "n_traces": 149,
+   "frac_above_0.5": 1.0
+  },
+  "muse:L20": {
+   "median": 1.0,
+   "n_traces": 9,
+   "frac_above_0.5": 1.0
+  },
+  "cycle:L20": {
+   "median": 1.0,
+   "n_traces": 142,
+   "frac_above_0.5": 1.0
+  },
+  "loop:L20": {
+   "median": 1.0,
+   "n_traces": 149,
+   "frac_above_0.5": 1.0
+  }
+ },
+ "loo": {
+  "muse:L2": {
+   "auroc": 0.71,
+   "n_traces": 9
+  },
+  "cycle:L2": {
+   "auroc": 0.892,
+   "n_traces": 142
+  },
+  "loop:L2": {
+   "auroc": 0.859,
+   "n_traces": 149
+  },
+  "muse:L8": {
+   "auroc": 0.468,
+   "n_traces": 9
+  },
+  "cycle:L8": {
+   "auroc": 0.711,
+   "n_traces": 142
+  },
+  "loop:L8": {
+   "auroc": 0.709,
+   "n_traces": 149
+  },
+  "muse:L9": {
+   "auroc": 0.536,
+   "n_traces": 9
+  },
+  "cycle:L9": {
+   "auroc": 0.83,
+   "n_traces": 142
+  },
+  "loop:L9": {
+   "auroc": 0.852,
+   "n_traces": 149
+  },
+  "muse:L12": {
+   "auroc": 0.593,
+   "n_traces": 9
+  },
+  "cycle:L12": {
+   "auroc": 0.793,
+   "n_traces": 142
+  },
+  "loop:L12": {
+   "auroc": 0.807,
+   "n_traces": 149
+  },
+  "muse:L20": {
+   "auroc": 0.509,
+   "n_traces": 9
+  },
+  "cycle:L20": {
+   "auroc": 0.724,
+   "n_traces": 142
+  },
+  "loop:L20": {
+   "auroc": 0.781,
+   "n_traces": 149
+  }
+ },
+ "conf": "clear",
+ "cap_dirs": [
+  "mlfactory/experiments/ace/data/annot_captures",
+  "mlfactory/experiments/ace/data/annot_captures_b2"
+ ]
+}

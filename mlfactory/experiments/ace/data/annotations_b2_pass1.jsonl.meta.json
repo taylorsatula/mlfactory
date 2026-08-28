@@ -1,0 +1,20 @@
+{
+  "name": "annotations_b2_pass1",
+  "title": "Pass-1 span annotations over the b2 corpus (v5 prompt, framing C)",
+  "description": "glm-5.2-vision framing-C annotations of all 92 b2 plan pairs. 879 flag rows (CYCLE 344, LOOP 504, MUSE 31); 505 resolved to char offsets (57.5%), unresolved rows keep quotes. conf: clear 660, probable 219. 167/184 traces flagged. MUSE per family: assign 12, certify 8, adversary 4, hypothesis 4, machine 2, grid 1 - the batch's purpose was the MUSE gap into new families. Two pairs hit the thinking wall (p117, p142) and used the A-fallback (framing A per trace).",
+  "format": "jsonl",
+  "tags": [
+    "annotation",
+    "b2",
+    "pass1",
+    "v5",
+    "framing-C"
+  ],
+  "caveats": "Two pairs (p117, p142) triggered A-fallback after framing-C hit finish=length with no usable flags; A-framing rows are included. R0 agreement on the double subset: span Jaccard 0.417 (borderline-usable, above xsub's 0.26).",
+  "sensitivity": null,
+  "data_schema": null,
+  "path": "/home/admin/mlfactory/mlfactory/experiments/ace/data/annotations_b2_pass1.jsonl",
+  "sha256": "ff861a0ac1f66d90ada7cb159e64bee5c48d6327af4240dce9b0cd06b3b95c80",
+  "size_bytes": 445556,
+  "created_at": "2026-08-27T08:50:32.728291+00:00"
+}

@@ -1,0 +1,21 @@
+{
+  "name": "probe_results_merged",
+  "title": "R2 probe results on merged xsub+b2 corpus (conf=clear)",
+  "description": "231 teacher-forced captures (81 xsub + 150 b2). Per (class x kind x layer): pooled + leave-one-trace-out AUROC of annotated positions vs depth-matched within-trace controls; escape-vs-reheat. Headline: cycle onset LOO 0.989-0.992 L16-19 (n=291), loop 0.975-0.978 L2-6 (n=285), muse 0.947-0.952 L16-19 (n=13). Escape-vs-reheat: loop 0.86, cycle 0.72, muse 1.0 (8v5, fragile).",
+  "format": "json",
+  "tags": [
+    "probe",
+    "position-level",
+    "r2",
+    "annotation",
+    "merged",
+    "b2"
+  ],
+  "caveats": "Observational (teacher-forced); muse escape-vs-reheat perfect separation at n=13 is statistically weak; onset AUROCs broad across layers.",
+  "sensitivity": null,
+  "data_schema": null,
+  "path": "/home/admin/mlfactory/mlfactory/experiments/ace/data/probe_results_merged.json",
+  "sha256": "413f7b2a39affca2925d1300f2bee83faf5e43d71de26eddbded9c191b9d77b5",
+  "size_bytes": 63551,
+  "created_at": "2026-08-27T14:03:07.615278+00:00"
+}

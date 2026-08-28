@@ -1,0 +1,20 @@
+{
+  "name": "annot_b2_q8",
+  "title": "b2 annotation corpus rollouts - Q8_0-MTP (local)",
+  "description": "184 rollouts (46 LIVE-b2 prompts x 4 samples) on llama.cpp Q8_0+MTP, local RTX 3090 GPU1, fp16 KV, parallel-1 ctx 32768, backstop cap 26000. Six b2 families: adversary 8, machine 8, assign 6, certify 11, grid 7, hypothesis 6 prompts. Outcome mix: 121 correct, 47 cap (truncated), 16 wrong; acc 0.658. Strict gen_strict_v2 verifier. Paired seeds seed_base 84000 (seed_sample=84000+17*pid+si). Substrate tag Q8_0-MTP. Built for annotation; machine/assign/hypothesis new to the annotation corpus.",
+  "format": "jsonl",
+  "tags": [
+    "b2",
+    "q8-mtp",
+    "rollouts",
+    "local",
+    "annotation-corpus"
+  ],
+  "caveats": null,
+  "sensitivity": null,
+  "data_schema": null,
+  "path": "/home/admin/mlfactory/mlfactory/experiments/ace/data/annot_b2_q8.jsonl",
+  "sha256": "2937277ec87a8728323b044b3b4c05f3ce3ec40a30c222a01428ba9e62322ad6",
+  "size_bytes": 10078123,
+  "created_at": "2026-08-27T06:50:54.662499+00:00"
+}

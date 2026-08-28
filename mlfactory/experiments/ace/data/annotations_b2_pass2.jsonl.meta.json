@@ -1,0 +1,20 @@
+{
+  "name": "annotations_b2_pass2",
+  "title": "Pass-2 double-annotation subset (R0 label-noise measurement) - b2",
+  "description": "Independent re-annotation of the 6 double-annotated pairs (12 traces) with identical v5/framing-C conditions. 43 flag rows (CYCLE 21, LOOP 21, MUSE 1); 21 resolved (48.8%). Used by annotate/r0_agreement.py: pooled span Jaccard 0.417, matched=10, class-confused=1, pass1-only=7, pass2-only=7, boundary drift median=449 / p90=22478 chars.",
+  "format": "jsonl",
+  "tags": [
+    "annotation",
+    "b2",
+    "pass2",
+    "double-annotation",
+    "r0"
+  ],
+  "caveats": null,
+  "sensitivity": null,
+  "data_schema": null,
+  "path": "/home/admin/mlfactory/mlfactory/experiments/ace/data/annotations_b2_pass2.jsonl",
+  "sha256": "da4a13b73b9b9e60c93d4a6335378a857c15bc0baab2d6895c8a5b52ea2b21d6",
+  "size_bytes": 22035,
+  "created_at": "2026-08-27T08:58:05.209663+00:00"
+}

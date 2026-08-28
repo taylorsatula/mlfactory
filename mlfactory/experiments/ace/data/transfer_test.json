@@ -1,0 +1,949 @@
+{
+ "within": {
+  "muse:q8:L0": {
+   "auroc": 0.903
+  },
+  "muse:q8:L1": {
+   "auroc": 0.976
+  },
+  "muse:q8:L2": {
+   "auroc": 0.985
+  },
+  "muse:q8:L3": {
+   "auroc": 0.974
+  },
+  "muse:q8:L4": {
+   "auroc": 0.986
+  },
+  "muse:q8:L5": {
+   "auroc": 0.983
+  },
+  "muse:q8:L6": {
+   "auroc": 0.985
+  },
+  "muse:q8:L7": {
+   "auroc": 0.984
+  },
+  "muse:q8:L8": {
+   "auroc": 0.984
+  },
+  "muse:q8:L9": {
+   "auroc": 0.985
+  },
+  "muse:q8:L10": {
+   "auroc": 0.983
+  },
+  "muse:q8:L11": {
+   "auroc": 0.983
+  },
+  "muse:q8:L12": {
+   "auroc": 0.986
+  },
+  "muse:q8:L13": {
+   "auroc": 0.986
+  },
+  "muse:q8:L14": {
+   "auroc": 0.988
+  },
+  "muse:q8:L15": {
+   "auroc": 0.988
+  },
+  "muse:q8:L16": {
+   "auroc": 0.988
+  },
+  "muse:q8:L17": {
+   "auroc": 0.988
+  },
+  "muse:q8:L18": {
+   "auroc": 0.988
+  },
+  "muse:q8:L19": {
+   "auroc": 0.987
+  },
+  "muse:q8:L20": {
+   "auroc": 0.988
+  },
+  "muse:q8:L21": {
+   "auroc": 0.987
+  },
+  "muse:q8:L22": {
+   "auroc": 0.987
+  },
+  "muse:q8:L23": {
+   "auroc": 0.985
+  },
+  "muse:q8:L24": {
+   "auroc": 0.985
+  },
+  "muse:q8:L25": {
+   "auroc": 0.986
+  },
+  "muse:q8:L26": {
+   "auroc": 0.988
+  },
+  "muse:q8:L27": {
+   "auroc": 0.985
+  },
+  "muse:q8:L28": {
+   "auroc": 0.985
+  },
+  "muse:q8:L29": {
+   "auroc": 0.988
+  },
+  "muse:q8:L30": {
+   "auroc": 0.985
+  },
+  "muse:q8:L31": {
+   "auroc": 0.998
+  },
+  "cycle:bf16:L0": {
+   "auroc": 0.93
+  },
+  "cycle:q8:L0": {
+   "auroc": 0.895
+  },
+  "cycle:bf16:L1": {
+   "auroc": 0.948
+  },
+  "cycle:q8:L1": {
+   "auroc": 0.921
+  },
+  "cycle:bf16:L2": {
+   "auroc": 0.985
+  },
+  "cycle:q8:L2": {
+   "auroc": 0.98
+  },
+  "cycle:bf16:L3": {
+   "auroc": 0.988
+  },
+  "cycle:q8:L3": {
+   "auroc": 0.98
+  },
+  "cycle:bf16:L4": {
+   "auroc": 0.989
+  },
+  "cycle:q8:L4": {
+   "auroc": 0.984
+  },
+  "cycle:bf16:L5": {
+   "auroc": 0.985
+  },
+  "cycle:q8:L5": {
+   "auroc": 0.981
+  },
+  "cycle:bf16:L6": {
+   "auroc": 0.992
+  },
+  "cycle:q8:L6": {
+   "auroc": 0.988
+  },
+  "cycle:bf16:L7": {
+   "auroc": 0.989
+  },
+  "cycle:q8:L7": {
+   "auroc": 0.985
+  },
+  "cycle:bf16:L8": {
+   "auroc": 0.99
+  },
+  "cycle:q8:L8": {
+   "auroc": 0.986
+  },
+  "cycle:bf16:L9": {
+   "auroc": 0.991
+  },
+  "cycle:q8:L9": {
+   "auroc": 0.987
+  },
+  "cycle:bf16:L10": {
+   "auroc": 0.99
+  },
+  "cycle:q8:L10": {
+   "auroc": 0.986
+  },
+  "cycle:bf16:L11": {
+   "auroc": 0.992
+  },
+  "cycle:q8:L11": {
+   "auroc": 0.985
+  },
+  "cycle:bf16:L12": {
+   "auroc": 0.992
+  },
+  "cycle:q8:L12": {
+   "auroc": 0.986
+  },
+  "cycle:bf16:L13": {
+   "auroc": 0.992
+  },
+  "cycle:q8:L13": {
+   "auroc": 0.987
+  },
+  "cycle:bf16:L14": {
+   "auroc": 0.992
+  },
+  "cycle:q8:L14": {
+   "auroc": 0.988
+  },
+  "cycle:bf16:L15": {
+   "auroc": 0.993
+  },
+  "cycle:q8:L15": {
+   "auroc": 0.986
+  },
+  "cycle:bf16:L16": {
+   "auroc": 0.994
+  },
+  "cycle:q8:L16": {
+   "auroc": 0.989
+  },
+  "cycle:bf16:L17": {
+   "auroc": 0.994
+  },
+  "cycle:q8:L17": {
+   "auroc": 0.989
+  },
+  "cycle:bf16:L18": {
+   "auroc": 0.995
+  },
+  "cycle:q8:L18": {
+   "auroc": 0.992
+  },
+  "cycle:bf16:L19": {
+   "auroc": 0.995
+  },
+  "cycle:q8:L19": {
+   "auroc": 0.989
+  },
+  "cycle:bf16:L20": {
+   "auroc": 0.995
+  },
+  "cycle:q8:L20": {
+   "auroc": 0.989
+  },
+  "cycle:bf16:L21": {
+   "auroc": 0.994
+  },
+  "cycle:q8:L21": {
+   "auroc": 0.988
+  },
+  "cycle:bf16:L22": {
+   "auroc": 0.994
+  },
+  "cycle:q8:L22": {
+   "auroc": 0.987
+  },
+  "cycle:bf16:L23": {
+   "auroc": 0.993
+  },
+  "cycle:q8:L23": {
+   "auroc": 0.985
+  },
+  "cycle:bf16:L24": {
+   "auroc": 0.992
+  },
+  "cycle:q8:L24": {
+   "auroc": 0.984
+  },
+  "cycle:bf16:L25": {
+   "auroc": 0.992
+  },
+  "cycle:q8:L25": {
+   "auroc": 0.984
+  },
+  "cycle:bf16:L26": {
+   "auroc": 0.993
+  },
+  "cycle:q8:L26": {
+   "auroc": 0.984
+  },
+  "cycle:bf16:L27": {
+   "auroc": 0.991
+  },
+  "cycle:q8:L27": {
+   "auroc": 0.981
+  },
+  "cycle:bf16:L28": {
+   "auroc": 0.988
+  },
+  "cycle:q8:L28": {
+   "auroc": 0.977
+  },
+  "cycle:bf16:L29": {
+   "auroc": 0.988
+  },
+  "cycle:q8:L29": {
+   "auroc": 0.977
+  },
+  "cycle:bf16:L30": {
+   "auroc": 0.99
+  },
+  "cycle:q8:L30": {
+   "auroc": 0.979
+  },
+  "cycle:bf16:L31": {
+   "auroc": 0.984
+  },
+  "cycle:q8:L31": {
+   "auroc": 0.963
+  },
+  "loop:bf16:L0": {
+   "auroc": 0.958
+  },
+  "loop:q8:L0": {
+   "auroc": 0.918
+  },
+  "loop:bf16:L1": {
+   "auroc": 0.982
+  },
+  "loop:q8:L1": {
+   "auroc": 0.968
+  },
+  "loop:bf16:L2": {
+   "auroc": 0.989
+  },
+  "loop:q8:L2": {
+   "auroc": 0.979
+  },
+  "loop:bf16:L3": {
+   "auroc": 0.983
+  },
+  "loop:q8:L3": {
+   "auroc": 0.979
+  },
+  "loop:bf16:L4": {
+   "auroc": 0.979
+  },
+  "loop:q8:L4": {
+   "auroc": 0.976
+  },
+  "loop:bf16:L5": {
+   "auroc": 0.974
+  },
+  "loop:q8:L5": {
+   "auroc": 0.978
+  },
+  "loop:bf16:L6": {
+   "auroc": 0.975
+  },
+  "loop:q8:L6": {
+   "auroc": 0.978
+  },
+  "loop:bf16:L7": {
+   "auroc": 0.975
+  },
+  "loop:q8:L7": {
+   "auroc": 0.976
+  },
+  "loop:bf16:L8": {
+   "auroc": 0.976
+  },
+  "loop:q8:L8": {
+   "auroc": 0.974
+  },
+  "loop:bf16:L9": {
+   "auroc": 0.974
+  },
+  "loop:q8:L9": {
+   "auroc": 0.973
+  },
+  "loop:bf16:L10": {
+   "auroc": 0.972
+  },
+  "loop:q8:L10": {
+   "auroc": 0.967
+  },
+  "loop:bf16:L11": {
+   "auroc": 0.972
+  },
+  "loop:q8:L11": {
+   "auroc": 0.966
+  },
+  "loop:bf16:L12": {
+   "auroc": 0.973
+  },
+  "loop:q8:L12": {
+   "auroc": 0.969
+  },
+  "loop:bf16:L13": {
+   "auroc": 0.972
+  },
+  "loop:q8:L13": {
+   "auroc": 0.967
+  },
+  "loop:bf16:L14": {
+   "auroc": 0.974
+  },
+  "loop:q8:L14": {
+   "auroc": 0.966
+  },
+  "loop:bf16:L15": {
+   "auroc": 0.968
+  },
+  "loop:q8:L15": {
+   "auroc": 0.967
+  },
+  "loop:bf16:L16": {
+   "auroc": 0.972
+  },
+  "loop:q8:L16": {
+   "auroc": 0.974
+  },
+  "loop:bf16:L17": {
+   "auroc": 0.974
+  },
+  "loop:q8:L17": {
+   "auroc": 0.977
+  },
+  "loop:bf16:L18": {
+   "auroc": 0.978
+  },
+  "loop:q8:L18": {
+   "auroc": 0.976
+  },
+  "loop:bf16:L19": {
+   "auroc": 0.977
+  },
+  "loop:q8:L19": {
+   "auroc": 0.975
+  },
+  "loop:bf16:L20": {
+   "auroc": 0.976
+  },
+  "loop:q8:L20": {
+   "auroc": 0.973
+  },
+  "loop:bf16:L21": {
+   "auroc": 0.976
+  },
+  "loop:q8:L21": {
+   "auroc": 0.974
+  },
+  "loop:bf16:L22": {
+   "auroc": 0.975
+  },
+  "loop:q8:L22": {
+   "auroc": 0.972
+  },
+  "loop:bf16:L23": {
+   "auroc": 0.974
+  },
+  "loop:q8:L23": {
+   "auroc": 0.974
+  },
+  "loop:bf16:L24": {
+   "auroc": 0.973
+  },
+  "loop:q8:L24": {
+   "auroc": 0.973
+  },
+  "loop:bf16:L25": {
+   "auroc": 0.974
+  },
+  "loop:q8:L25": {
+   "auroc": 0.972
+  },
+  "loop:bf16:L26": {
+   "auroc": 0.975
+  },
+  "loop:q8:L26": {
+   "auroc": 0.969
+  },
+  "loop:bf16:L27": {
+   "auroc": 0.974
+  },
+  "loop:q8:L27": {
+   "auroc": 0.972
+  },
+  "loop:bf16:L28": {
+   "auroc": 0.971
+  },
+  "loop:q8:L28": {
+   "auroc": 0.971
+  },
+  "loop:bf16:L29": {
+   "auroc": 0.976
+  },
+  "loop:q8:L29": {
+   "auroc": 0.971
+  },
+  "loop:bf16:L30": {
+   "auroc": 0.968
+  },
+  "loop:q8:L30": {
+   "auroc": 0.963
+  },
+  "loop:bf16:L31": {
+   "auroc": 0.979
+  },
+  "loop:q8:L31": {
+   "auroc": 0.964
+  }
+ },
+ "cross": {
+  "cycle:bf16->q8:L0": {
+   "auroc": 0.887
+  },
+  "cycle:q8->bf16:L0": {
+   "auroc": 0.931
+  },
+  "cycle:bf16->q8:L1": {
+   "auroc": 0.917
+  },
+  "cycle:q8->bf16:L1": {
+   "auroc": 0.942
+  },
+  "cycle:bf16->q8:L2": {
+   "auroc": 0.979
+  },
+  "cycle:q8->bf16:L2": {
+   "auroc": 0.98
+  },
+  "cycle:bf16->q8:L3": {
+   "auroc": 0.983
+  },
+  "cycle:q8->bf16:L3": {
+   "auroc": 0.981
+  },
+  "cycle:bf16->q8:L4": {
+   "auroc": 0.987
+  },
+  "cycle:q8->bf16:L4": {
+   "auroc": 0.983
+  },
+  "cycle:bf16->q8:L5": {
+   "auroc": 0.984
+  },
+  "cycle:q8->bf16:L5": {
+   "auroc": 0.977
+  },
+  "cycle:bf16->q8:L6": {
+   "auroc": 0.987
+  },
+  "cycle:q8->bf16:L6": {
+   "auroc": 0.989
+  },
+  "cycle:bf16->q8:L7": {
+   "auroc": 0.985
+  },
+  "cycle:q8->bf16:L7": {
+   "auroc": 0.985
+  },
+  "cycle:bf16->q8:L8": {
+   "auroc": 0.986
+  },
+  "cycle:q8->bf16:L8": {
+   "auroc": 0.987
+  },
+  "cycle:bf16->q8:L9": {
+   "auroc": 0.986
+  },
+  "cycle:q8->bf16:L9": {
+   "auroc": 0.988
+  },
+  "cycle:bf16->q8:L10": {
+   "auroc": 0.985
+  },
+  "cycle:q8->bf16:L10": {
+   "auroc": 0.987
+  },
+  "cycle:bf16->q8:L11": {
+   "auroc": 0.982
+  },
+  "cycle:q8->bf16:L11": {
+   "auroc": 0.989
+  },
+  "cycle:bf16->q8:L12": {
+   "auroc": 0.984
+  },
+  "cycle:q8->bf16:L12": {
+   "auroc": 0.99
+  },
+  "cycle:bf16->q8:L13": {
+   "auroc": 0.985
+  },
+  "cycle:q8->bf16:L13": {
+   "auroc": 0.991
+  },
+  "cycle:bf16->q8:L14": {
+   "auroc": 0.985
+  },
+  "cycle:q8->bf16:L14": {
+   "auroc": 0.99
+  },
+  "cycle:bf16->q8:L15": {
+   "auroc": 0.983
+  },
+  "cycle:q8->bf16:L15": {
+   "auroc": 0.992
+  },
+  "cycle:bf16->q8:L16": {
+   "auroc": 0.987
+  },
+  "cycle:q8->bf16:L16": {
+   "auroc": 0.993
+  },
+  "cycle:bf16->q8:L17": {
+   "auroc": 0.986
+  },
+  "cycle:q8->bf16:L17": {
+   "auroc": 0.993
+  },
+  "cycle:bf16->q8:L18": {
+   "auroc": 0.99
+  },
+  "cycle:q8->bf16:L18": {
+   "auroc": 0.995
+  },
+  "cycle:bf16->q8:L19": {
+   "auroc": 0.986
+  },
+  "cycle:q8->bf16:L19": {
+   "auroc": 0.994
+  },
+  "cycle:bf16->q8:L20": {
+   "auroc": 0.986
+  },
+  "cycle:q8->bf16:L20": {
+   "auroc": 0.994
+  },
+  "cycle:bf16->q8:L21": {
+   "auroc": 0.984
+  },
+  "cycle:q8->bf16:L21": {
+   "auroc": 0.994
+  },
+  "cycle:bf16->q8:L22": {
+   "auroc": 0.984
+  },
+  "cycle:q8->bf16:L22": {
+   "auroc": 0.994
+  },
+  "cycle:bf16->q8:L23": {
+   "auroc": 0.981
+  },
+  "cycle:q8->bf16:L23": {
+   "auroc": 0.993
+  },
+  "cycle:bf16->q8:L24": {
+   "auroc": 0.979
+  },
+  "cycle:q8->bf16:L24": {
+   "auroc": 0.992
+  },
+  "cycle:bf16->q8:L25": {
+   "auroc": 0.979
+  },
+  "cycle:q8->bf16:L25": {
+   "auroc": 0.991
+  },
+  "cycle:bf16->q8:L26": {
+   "auroc": 0.979
+  },
+  "cycle:q8->bf16:L26": {
+   "auroc": 0.992
+  },
+  "cycle:bf16->q8:L27": {
+   "auroc": 0.975
+  },
+  "cycle:q8->bf16:L27": {
+   "auroc": 0.989
+  },
+  "cycle:bf16->q8:L28": {
+   "auroc": 0.969
+  },
+  "cycle:q8->bf16:L28": {
+   "auroc": 0.986
+  },
+  "cycle:bf16->q8:L29": {
+   "auroc": 0.97
+  },
+  "cycle:q8->bf16:L29": {
+   "auroc": 0.985
+  },
+  "cycle:bf16->q8:L30": {
+   "auroc": 0.969
+  },
+  "cycle:q8->bf16:L30": {
+   "auroc": 0.987
+  },
+  "cycle:bf16->q8:L31": {
+   "auroc": 0.95
+  },
+  "cycle:q8->bf16:L31": {
+   "auroc": 0.98
+  },
+  "loop:bf16->q8:L0": {
+   "auroc": 0.876
+  },
+  "loop:q8->bf16:L0": {
+   "auroc": 0.974
+  },
+  "loop:bf16->q8:L1": {
+   "auroc": 0.944
+  },
+  "loop:q8->bf16:L1": {
+   "auroc": 0.984
+  },
+  "loop:bf16->q8:L2": {
+   "auroc": 0.971
+  },
+  "loop:q8->bf16:L2": {
+   "auroc": 0.985
+  },
+  "loop:bf16->q8:L3": {
+   "auroc": 0.974
+  },
+  "loop:q8->bf16:L3": {
+   "auroc": 0.972
+  },
+  "loop:bf16->q8:L4": {
+   "auroc": 0.974
+  },
+  "loop:q8->bf16:L4": {
+   "auroc": 0.975
+  },
+  "loop:bf16->q8:L5": {
+   "auroc": 0.974
+  },
+  "loop:q8->bf16:L5": {
+   "auroc": 0.971
+  },
+  "loop:bf16->q8:L6": {
+   "auroc": 0.973
+  },
+  "loop:q8->bf16:L6": {
+   "auroc": 0.969
+  },
+  "loop:bf16->q8:L7": {
+   "auroc": 0.972
+  },
+  "loop:q8->bf16:L7": {
+   "auroc": 0.969
+  },
+  "loop:bf16->q8:L8": {
+   "auroc": 0.97
+  },
+  "loop:q8->bf16:L8": {
+   "auroc": 0.97
+  },
+  "loop:bf16->q8:L9": {
+   "auroc": 0.969
+  },
+  "loop:q8->bf16:L9": {
+   "auroc": 0.97
+  },
+  "loop:bf16->q8:L10": {
+   "auroc": 0.961
+  },
+  "loop:q8->bf16:L10": {
+   "auroc": 0.968
+  },
+  "loop:bf16->q8:L11": {
+   "auroc": 0.961
+  },
+  "loop:q8->bf16:L11": {
+   "auroc": 0.965
+  },
+  "loop:bf16->q8:L12": {
+   "auroc": 0.964
+  },
+  "loop:q8->bf16:L12": {
+   "auroc": 0.966
+  },
+  "loop:bf16->q8:L13": {
+   "auroc": 0.964
+  },
+  "loop:q8->bf16:L13": {
+   "auroc": 0.964
+  },
+  "loop:bf16->q8:L14": {
+   "auroc": 0.961
+  },
+  "loop:q8->bf16:L14": {
+   "auroc": 0.964
+  },
+  "loop:bf16->q8:L15": {
+   "auroc": 0.964
+  },
+  "loop:q8->bf16:L15": {
+   "auroc": 0.963
+  },
+  "loop:bf16->q8:L16": {
+   "auroc": 0.971
+  },
+  "loop:q8->bf16:L16": {
+   "auroc": 0.965
+  },
+  "loop:bf16->q8:L17": {
+   "auroc": 0.974
+  },
+  "loop:q8->bf16:L17": {
+   "auroc": 0.968
+  },
+  "loop:bf16->q8:L18": {
+   "auroc": 0.972
+  },
+  "loop:q8->bf16:L18": {
+   "auroc": 0.968
+  },
+  "loop:bf16->q8:L19": {
+   "auroc": 0.971
+  },
+  "loop:q8->bf16:L19": {
+   "auroc": 0.969
+  },
+  "loop:bf16->q8:L20": {
+   "auroc": 0.968
+  },
+  "loop:q8->bf16:L20": {
+   "auroc": 0.969
+  },
+  "loop:bf16->q8:L21": {
+   "auroc": 0.97
+  },
+  "loop:q8->bf16:L21": {
+   "auroc": 0.969
+  },
+  "loop:bf16->q8:L22": {
+   "auroc": 0.968
+  },
+  "loop:q8->bf16:L22": {
+   "auroc": 0.966
+  },
+  "loop:bf16->q8:L23": {
+   "auroc": 0.97
+  },
+  "loop:q8->bf16:L23": {
+   "auroc": 0.961
+  },
+  "loop:bf16->q8:L24": {
+   "auroc": 0.969
+  },
+  "loop:q8->bf16:L24": {
+   "auroc": 0.961
+  },
+  "loop:bf16->q8:L25": {
+   "auroc": 0.968
+  },
+  "loop:q8->bf16:L25": {
+   "auroc": 0.962
+  },
+  "loop:bf16->q8:L26": {
+   "auroc": 0.967
+  },
+  "loop:q8->bf16:L26": {
+   "auroc": 0.968
+  },
+  "loop:bf16->q8:L27": {
+   "auroc": 0.968
+  },
+  "loop:q8->bf16:L27": {
+   "auroc": 0.963
+  },
+  "loop:bf16->q8:L28": {
+   "auroc": 0.968
+  },
+  "loop:q8->bf16:L28": {
+   "auroc": 0.958
+  },
+  "loop:bf16->q8:L29": {
+   "auroc": 0.968
+  },
+  "loop:q8->bf16:L29": {
+   "auroc": 0.963
+  },
+  "loop:bf16->q8:L30": {
+   "auroc": 0.961
+  },
+  "loop:q8->bf16:L30": {
+   "auroc": 0.948
+  },
+  "loop:bf16->q8:L31": {
+   "auroc": 0.958
+  },
+  "loop:q8->bf16:L31": {
+   "auroc": 0.969
+  }
+ },
+ "direction_cosine": {
+  "cycle:bf16xq8:L0": 0.986,
+  "cycle:bf16xq8:L1": 0.984,
+  "cycle:bf16xq8:L2": 0.982,
+  "cycle:bf16xq8:L3": 0.978,
+  "cycle:bf16xq8:L4": 0.979,
+  "cycle:bf16xq8:L5": 0.979,
+  "cycle:bf16xq8:L6": 0.976,
+  "cycle:bf16xq8:L7": 0.974,
+  "cycle:bf16xq8:L8": 0.976,
+  "cycle:bf16xq8:L9": 0.974,
+  "cycle:bf16xq8:L10": 0.975,
+  "cycle:bf16xq8:L11": 0.974,
+  "cycle:bf16xq8:L12": 0.974,
+  "cycle:bf16xq8:L13": 0.975,
+  "cycle:bf16xq8:L14": 0.974,
+  "cycle:bf16xq8:L15": 0.975,
+  "cycle:bf16xq8:L16": 0.976,
+  "cycle:bf16xq8:L17": 0.976,
+  "cycle:bf16xq8:L18": 0.973,
+  "cycle:bf16xq8:L19": 0.973,
+  "cycle:bf16xq8:L20": 0.973,
+  "cycle:bf16xq8:L21": 0.973,
+  "cycle:bf16xq8:L22": 0.971,
+  "cycle:bf16xq8:L23": 0.968,
+  "cycle:bf16xq8:L24": 0.967,
+  "cycle:bf16xq8:L25": 0.966,
+  "cycle:bf16xq8:L26": 0.966,
+  "cycle:bf16xq8:L27": 0.962,
+  "cycle:bf16xq8:L28": 0.961,
+  "cycle:bf16xq8:L29": 0.96,
+  "cycle:bf16xq8:L30": 0.953,
+  "cycle:bf16xq8:L31": 0.95,
+  "loop:bf16xq8:L0": 0.966,
+  "loop:bf16xq8:L1": 0.964,
+  "loop:bf16xq8:L2": 0.962,
+  "loop:bf16xq8:L3": 0.946,
+  "loop:bf16xq8:L4": 0.962,
+  "loop:bf16xq8:L5": 0.964,
+  "loop:bf16xq8:L6": 0.963,
+  "loop:bf16xq8:L7": 0.955,
+  "loop:bf16xq8:L8": 0.957,
+  "loop:bf16xq8:L9": 0.956,
+  "loop:bf16xq8:L10": 0.953,
+  "loop:bf16xq8:L11": 0.95,
+  "loop:bf16xq8:L12": 0.952,
+  "loop:bf16xq8:L13": 0.954,
+  "loop:bf16xq8:L14": 0.949,
+  "loop:bf16xq8:L15": 0.951,
+  "loop:bf16xq8:L16": 0.952,
+  "loop:bf16xq8:L17": 0.954,
+  "loop:bf16xq8:L18": 0.957,
+  "loop:bf16xq8:L19": 0.954,
+  "loop:bf16xq8:L20": 0.954,
+  "loop:bf16xq8:L21": 0.957,
+  "loop:bf16xq8:L22": 0.958,
+  "loop:bf16xq8:L23": 0.951,
+  "loop:bf16xq8:L24": 0.952,
+  "loop:bf16xq8:L25": 0.951,
+  "loop:bf16xq8:L26": 0.958,
+  "loop:bf16xq8:L27": 0.947,
+  "loop:bf16xq8:L28": 0.948,
+  "loop:bf16xq8:L29": 0.944,
+  "loop:bf16xq8:L30": 0.952,
+  "loop:bf16xq8:L31": 0.946
+ },
+ "conf": "clear",
+ "cap_dirs": [
+  "mlfactory/experiments/ace/data/annot_captures",
+  "mlfactory/experiments/ace/data/annot_captures_b2"
+ ],
+ "best_cross_cycle": {
+  "key": "cycle:q8->bf16:L18",
+  "auroc": 0.995
+ },
+ "best_cross_loop": {
+  "key": "loop:q8->bf16:L2",
+  "auroc": 0.985
+ }
+}

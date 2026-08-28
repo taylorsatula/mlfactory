@@ -1,0 +1,19 @@
+{
+  "name": "annotation_plan_xsub",
+  "title": "Trace-centric annotation plan \u2014 xsub corpus",
+  "description": "48 sibling pairs covering all 96 xsub traces (24 q8 + 24 bf16, 16 per domain). Contrast-priority deterministic pairing (correct<->cap, correct<->wrong, cap<->wrong, within-class); 28/48 mixed-outcome. 'double' marks the 5-pair R0 double-annotation subset. Consumed by annotate/run_batch.py.",
+  "format": "jsonl",
+  "tags": [
+    "annotation",
+    "plan",
+    "xsub",
+    "trace-centric"
+  ],
+  "caveats": null,
+  "sensitivity": null,
+  "data_schema": null,
+  "path": "/home/admin/mlfactory/mlfactory/experiments/ace/data/annotation_plan_xsub.jsonl",
+  "sha256": "8d28dbd65b47682c8cab516f817a83dabf0ab9cc74a4e920a951fcabfaada42b",
+  "size_bytes": 13539,
+  "created_at": "2026-08-26T23:35:45.803807+00:00"
+}

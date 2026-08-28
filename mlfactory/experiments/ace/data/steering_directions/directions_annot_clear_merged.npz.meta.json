@@ -1,0 +1,21 @@
+{
+  "name": "directions_annot_clear_merged",
+  "title": "R3 mean-difference steering directions, merged corpus (conf=clear)",
+  "description": "96 unit directions dir_<class>_L<layer> = mean(controls) - mean(onsets), from 231 captures across xsub+b2. Supersedes directions_annot_clear.npz (xsub-only) as the constant-lambda baseline of TERMINAL_FORK_COMPUTE constraint 7. Gated by merged probe AUROC.",
+  "format": "npz",
+  "tags": [
+    "steering",
+    "directions",
+    "r3",
+    "annotation",
+    "merged",
+    "b2"
+  ],
+  "caveats": "Observational origin; fixed-direction baseline only \u2014 a learned controller must beat it.",
+  "sensitivity": null,
+  "data_schema": null,
+  "path": "/home/admin/mlfactory/mlfactory/experiments/ace/data/steering_directions/directions_annot_clear_merged.npz",
+  "sha256": "cf2bfa752075d6a399f566196443af325629a4374a487b71459b54a1f6ab23c3",
+  "size_bytes": 1612673,
+  "created_at": "2026-08-27T14:03:53.961808+00:00"
+}
