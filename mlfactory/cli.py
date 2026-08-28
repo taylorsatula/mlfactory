@@ -214,6 +214,92 @@ def ingest(ctx: click.Context, manifest: Path, parent: tuple[str, ...]) -> None:
     click.echo(f"Ingested {m.run_id}")
 
 
+@main.command("ask-human")
+@click.argument("message")
+@click.option(
+    "--to", "target", default=None,
+    help=(
+        "hermes send target for the escalation chat. Defaults to "
+        "$MLFACTORY_ESCALATION_TARGET. Use 'discord:<channel-id>' for a "
+        "Discord DM/channel (recommended)."
+    ),
+)
+@click.option("--timeout", default=86400.0, show_default=True,
+              help="Max seconds to wait for a reply (0 = wait forever).")
+@click.option("--poll-interval", default=5.0, show_default=True,
+              help="Seconds between reply polls.")
+@click.option("--state-db", default=None,
+              help="Override Hermes state.db path.")
+@click.option("--subject", default="[mlfactory escalation]",
+              help="Subject line prepended to the message.")
+@click.option("--json", "as_json", is_flag=True,
+              help="Emit a JSON result on stdout instead of bare reply text.")
+@click.pass_context
+def ask_human(
+    ctx: click.Context,
+    message: str,
+    target: str | None,
+    timeout: float,
+    poll_interval: float,
+    state_db: str | None,
+    subject: str | None,
+    as_json: bool,
+) -> None:
+    """Send an escalation to a human via Hermes and block until the human replies.
+
+    For autonomous overseers that hit a condition needing a human decision.
+    The message is delivered to your Discord through `hermes send`; the
+    command then blocks on the intake-only FIFO (with a state.db poll
+    fallback) for the first reply on the same chat, and prints that reply on
+    stdout. Wrap with `timeout <s>` as a hard kill switch (this command
+    already exits 124 on its own timeout).
+
+    One-time setup: see docs/HUMAN_ESCALATION.md (configure Discord, make the
+    escalation chat intake-only, start the gateway, set
+    MLFACTORY_ESCALATION_TARGET).
+    """
+    from mlfactory.core.human_escalation import (
+        EscalationError,
+        EscalationTimeout,
+        escalate_to_human,
+    )
+
+    if message == "-":
+        import sys
+        message = sys.stdin.read()
+
+    wait = float("inf") if float(timeout) <= 0 else float(timeout)
+
+    def _emit(payload: dict, code: int) -> None:
+        if as_json:
+            click.echo(json.dumps(payload))
+        else:
+            for line in payload.get("stderr", []) or []:
+                click.echo(line, err=True)
+            if "reply" in payload:
+                click.echo(payload["reply"])
+        ctx.exit(code)
+
+    try:
+        reply = escalate_to_human(
+            message,
+            target=target,
+            timeout=wait,
+            poll_interval=poll_interval,
+            state_db=state_db,
+            subject=subject,
+        )
+    except EscalationTimeout as exc:
+        _emit({"status": "timeout", "timeout": exc.timeout,
+               "stderr": [f"mlfactory ask-human: timed out after {exc.timeout:g}s"]}, 124)
+        return
+    except EscalationError as exc:
+        _emit({"status": "error", "error": str(exc),
+               "stderr": [f"mlfactory ask-human: {exc}"]}, 1)
+        return
+    _emit({"status": "ok", "reply": reply}, 0)
+
+
 @main.command("dashboard")
 @click.option("--watch-run", default=None)
 @click.option("--stage", default=None)

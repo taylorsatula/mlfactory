@@ -48,6 +48,7 @@ pyproject.toml
 | GPU memory, smoke ladder, OOM, objective safety | `docs/TRAINING_STACK.md` |
 | Debugging method (any failure) | `docs/DEBUGGING_METHOD.md` |
 | Lab notes + session notes protocols | `docs/NOTES.md` |
+| Text a human on Discord and block until reply (training overseer escalation) | `docs/HUMAN_ESCALATION.md` → `ask-human` / `escalate_to_human()` |
 
 If a task needs an import path or signature, the cheat sheet's "source of
 truth" column points to the module — read the module docstring; don't trust
@@ -240,6 +241,7 @@ mlfactory notes <run_id> | --grep <term>        # read / search notes
 mlfactory dashboard [--watch-run <id>] [--config <path>]
 mlfactory registry merge <remote.db>          # merge a remote registry
 mlfactory remote run <spec>                    # run on a provisioned Vast instance
+mlfactory ask-human "<message>"              # escalate to a human on Discord, block until reply (24h default)
 mlfactory secrets set|get|list|delete ...
 ```
 
