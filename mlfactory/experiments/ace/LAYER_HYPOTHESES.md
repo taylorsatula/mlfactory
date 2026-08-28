@@ -27,9 +27,10 @@ criteria.
 | Phenomenon | Candidate layers | Status | Evidence |
 |---|---|---|---|
 | Globally integrated working state | L15, L19 | **L15 killed** as measurement site (+0.149 pooled, weakest mid-layer); L19 not separately tested | b1 map |
-| Branch open/close change-points | L11, L15, L19 | prior (untested) | — |
+| Branch open/close change-points | L6, L16–L19 | **supported (position-level)** — cycle-onset separability, merged LOO AUROC 0.989–0.992 L16–L19 (best L18), n=291 onsets | annotation probe 2026-08-26, merged corpus 2026-08-27 |
+| Idle-muse onset | L16–L19 (merged), L23–L29 (xsub-only) | **supported (position-level, small n)** — merged n=13 clear / 29 all onsets, LOO AUROC 0.947–0.952 clear / 0.967–0.968 all; best-layer set not settled | annotation probe 2026-08-26, merged corpus 2026-08-27 |
 | Return-after-elimination / thrash | L19, L23; DeltaNet recurrent state | prior (untested); semantic return-after-elimination instrument not yet built | — |
-| Loop-onset early warning | L7, L11; DeltaNet state before L15 | **underpowered** — probe AUROC≈0.25, only 4 loop traces vs 128 healthy | b1 map |
+| Loop-onset early warning | L2, L17–L20 | **supported (position-level)** — merged n=285 loop onsets vs depth-matched controls, LOO AUROC 0.975–0.978 (best L2); pre-onset (one token before the span) also ~0.98. The b1 probe's AUROC≈0.25 reading was deflated by the auroc() normalization bug (2026-08-26); its n=4 shortage was real, that number is not | b1 map (flawed number) + annotation probe 2026-08-26, merged corpus 2026-08-27 |
 | Solution consolidated but emission blocked | L19, L23, L27; final layer | prior (untested) | — |
 
 The table above is the **prior** (from architecture + interpretability).
@@ -82,6 +83,55 @@ wrong, clean finishes) by layer. Top layers:
   is a separate decision; this pass deliberately does not make it.
 - **Generalization.** Three families only (assign/machine/certify). Any
   layer finding is provisional until grid/hypothesis/adversary land.
+- **AUROC numbers from the b1 era.** `analyze_map.py`'s `auroc()` divided
+  by len(pos) twice, deflating every AUROC it printed by a factor of
+  len(pos) (fixed 2026-08-26). Any b1-era AUROC reading — including the
+  loop-onset probe's ≈0.25 — is unreliable by that factor; rank-biserial
+  readings were unaffected.
+
+## What the position-level annotation probe established (2026-08-26, re-scored 2026-08-27)
+
+The annotation sidestep (`ANNOTATION_SIDESTEP.md`) moved both sides of
+the separation to the position level: LLM-flagged spans (classes
+muse/cycle/loop) over the merged xsub+b2 corpus (280 traces, 231
+captured), teacher-forced through bf16, onset positions vs
+depth-matched within-trace controls, scored with leave-one-trace-out
+AUROC (direction fit on all other traces).
+
+| Class | n onsets (clear) | LOO AUROC | Layers |
+|---|---|---|---|
+| cycle | 291 | 0.989–0.992 | L16–L19, best L18 (xsub-only: n=128, same) |
+| loop | 285 | 0.975–0.978 | L2–L6, best L2 (xsub-only: n=78, same) |
+| muse | 13 (29 with probable) | 0.947–0.952 (0.967–0.968 all) | L16–L19 merged; xsub-only said L23–L29 — best-layer set unsettled at this n |
+
+- **Pre-onset is separable too (0.95–0.99)**: the state one token
+  before the episode's first token already encodes it. Divergence is a
+  property of state dynamics, not (only) of the tokens that follow.
+- **Escape vs reheat at onset**: same-class onsets in eventually-
+  correct vs eventually-failed traces separate at AUROC 0.86 (loop,
+  stable across corpora), 0.72 (cycle — deflated from xsub's 0.78 by
+  the larger corpus), 0.957 (muse, conf=all, 23v6) — a nudge policy
+  can in principle distinguish productive from dead-end excursions at
+  onset.
+- **Lookback (2026-08-27):** the pre-onset signal concentrates in the
+  last ~8–16 tokens (LOO 0.97 at 2 tokens before onset, chance from 32),
+  and rides mid-to-high layers (best L17–L30 at 2–4 tokens out) — the
+  layer that carries "about to diverge" is not necessarily the layer
+  that carries "diverging" (loop: L30 for lb_2 vs L2 at onset).
+- **Recurrent channel (2026-08-27):** DeltaNet onset-vs-control LOO is
+  real but weaker than residual — best rec_L2 (cycle 0.892, loop 0.859,
+  muse 0.710 n=9); confirms the b1-era rec_2 hint; residual stream
+  stays the primary steering substrate. **K5 transfer** (q8→bf16)
+  passes at the focal layers (cycle L18 0.995, loop L2 0.985). Record:
+  `lab_notes/2026-08-27-lookback-k5-rec-results.md`.
+- **Scope honesty**: onset AUROCs are broadly high across most layers,
+  which is either genuinely distributed signal or residual position/
+  texture confound the depth-matching did not fully remove; the
+  escape-vs-reheat comparison (annotated vs annotated) is the cleaner
+  reading. All of this is observational — causal leverage is still
+  the forks' question. Records: `lab_notes/2026-08-26-scale-annotation-
+  to-r3.md` (xsub), `lab_notes/2026-08-27-b2-merge-capture-probe.md`
+  (merged; STATUS.md R12).
 
 ## Recurrent vs residual: complementary channels
 

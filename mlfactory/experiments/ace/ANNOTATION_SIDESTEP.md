@@ -248,8 +248,14 @@ different failure species.
   fixed-direction baseline that `TERMINAL_FORK_COMPUTE.md` constraint 7
   requires the controller to beat — produced from the same data.
 - **R4 — concentrated forks.** Forks on O(10) detector-nominated states.
-  The only rung that spends rental money; ~2 orders of magnitude smaller
-  than scenario B by construction.
+  R4 v1 (2026-08-27) spent rented compute on terminal-rollout readout
+  and was halted by the principal at 117/1944 rows: terminal
+  correctness over the post-fork horizon cannot attribute the
+  intervention's effect. **R4v2** reads the same nominated states with
+  a windowed readout — 2048-token rollouts + pre-fork tail, three
+  branches judged blind (`COUNTERFACTUAL_FRAMEWORK.md` §instrument
+  choice, `TERMINAL_FORK_COMPUTE.md` scenario G); runs on local GPUs,
+  no rental money.
 
 ## 8. Operational state at writing (drifts — verify)
 
@@ -271,10 +277,62 @@ different failure species.
   redraws trajectories, kill condition 5 is live).
 - **Not built (decision waits for R2):** TeaLeaves capture adaptations;
   manifest restructure from pair-centric to trace-centric.
-- **Next (waits for user decision):** trace-centric annotation manifest
-  over the 96 rows, then R0 (annotation model pick: lunaroute
-  `-ballast` per provider preference). Also pending: destroy-or-keep
-  for Vast instance 48783410 (stopped, not destroyed).
+- **Done (2026-08-26, R0–R3):** the full detection side is built and
+  scored — trace-centric plan (`annotate/build_plan.py`, 48 pairs over
+  all 96 traces), framing-C annotation pass (`annotate/run_batch.py`,
+  469 flags; 251 resolved spans) + pass2 double-annotation subset;
+  R0 agreement adjudicated noisy-but-usable (span Jaccard 0.26, region
+  agreement 0.54 — segmentation variance at default temp, not label
+  mush); R1 capture (`annotate/capture_activations.py`, 81 traces,
+  residuals all 32 layers + recurrent states at REC_LAYERS);
+  R2 probes (`annotate/probe_positions.py`): onset-vs-controls LOO
+  AUROC 0.983–0.991 (cycle L6/L16–19, loop L2/L17–20), pre_onset
+  ~0.97–0.98 (divergence encoded before the span's tokens),
+  escape-vs-reheat at onset 0.78–0.86 → K1/K2/K3 do not fire;
+  R3 directions (`annotate/compute_directions.py`, 96 unit directions
+  in `data/steering_directions/`). Full record:
+  `lab_notes/2026-08-26-scale-annotation-to-r3.md`. Caveats there:
+  observational (teacher-forced), broad-layer signal, muse n=5.
+- **Done (2026-08-27):** corpus extended to all six b2 families —
+  overnight collect of the 46-prompt LIVE pool × 4 samples (q8 local,
+  184 rows, `data/annot_b2_q8.jsonl`; acc 0.658, 47 caps) + framing-C
+  annotation (879 flags, 505 resolved; 167/184 traces flagged; 2
+  framing-A fallbacks p117/p142 where C hit the token wall). MUSE n
+  grows 20→31 flags (5→19 traces) and now covers machine/assign/
+  hypothesis. b2 double-subset agreement (6 pairs): span Jaccard 0.417
+  vs xsub's 0.26 — still under the 0.5 line, so K4 stays
+  noisy-but-usable; different corpus, so not evidence the rubric
+  changed. Pipeline generalized for multi-corpus use
+  (`build_plan --corpus/--out`, `run_batch --tag/--plan/--corpus`,
+  `capture_activations --corpus/--candidates/--tag`, probes
+  `--cap-dirs`); captures are per-tag dirs because xsub is a prompt
+  subset of b2 (shared pids collide on (pid, sample_i)). Full record:
+  `lab_notes/2026-08-27-overnight-b2-collect-annotate.md`.
+- **Done (2026-08-27, R1–R3 re-scored on merged corpus):** 150 b2
+  captures → 231 total; onset LOO AUROC cycle L18 0.992 (n=291), loop
+  L2 0.978 (n=285), muse L16–19 0.947–0.952 clear / 0.967–0.968 all
+  (n=13/29 — muse upgraded underpowered→supported); escape-vs-reheat
+  loop 0.86 stable, cycle deflated 0.78→0.72. K1/K2/K3 still not
+  fired. Merged R3 baseline: `directions_annot_clear_merged.npz`.
+  Record: `lab_notes/2026-08-27-b2-merge-capture-probe.md`.
+- **Done (2026-08-27, lookback + K5 + rec channel):** lead-time curves
+  from lb_<k> positions (k = 2–64, decile-matched controls, recaptured
+  corpus in `annot_captures_xsub_lb`/`annot_captures_b2_lb`): LOO 0.97
+  at 2 tokens pre-onset, 0.86 at 4, 0.74 at 8, chance from 32 — sharp
+  flip over the last ~8–16 tokens; **fork placement should nominate the
+  4–8 token pre-onset window**. K5 transfer passes for cycle (q8→bf16
+  L18 0.995) and loop (L2 0.985); muse-K5 untested (STATUS Q12). Rec
+  channel scored at last: real but auxiliary (LOO best rec_L2, cycle
+  0.89 / loop 0.86). Record:
+  `lab_notes/2026-08-27-lookback-k5-rec-results.md`.
+- **R4 state (2026-08-28):** v1 run launched 2026-08-27 on 2× Vast
+  A6000, halted by the principal at ~8h (117 rows preserved locally,
+  boxes destroyed — full record in
+  `lab_notes/2026-08-28-r4-attendance-stopped-design-change.md`).
+  Redesigned as the windowed readout (R4v2): harness, judge, and
+  calibration in `lab_notes/2026-08-28-r4v2-build-judge-hillclimb.md`;
+  attendance runbook `annotate/runbook_r4v2_local.md`. Vast 48783410
+  no longer listed in the account as of 2026-08-28.
 
 ## 9. Why this may be bedrock
 

@@ -34,51 +34,119 @@ temporary until an off-box checksum matches.**
 Commands marked **LOCAL** run from this machine; **REMOTE** run after SSHing
 in. Do not paste local paths into the remote shell or vice versa.
 
-## Choosing a Vast offer
+## Choosing a Vast offer — agent-driven search, never the Web UI picker
 
-### GPU architecture
+> **Directive:** the agent selects the server with structured
+> `vastai search offers` sweeps over the full market. Do not ask the
+> principal to pick from the Web UI, and do not pick from it yourself:
+> the picker shows one page of offers with no per-GPU math, no
+> architecture provenance, and no workload-fit reasoning. The Web UI is
+> a sanity check that a selected offer exists, not a selection tool.
+> Measured cost of the old habit: a 2× H200 box rented at ~$9/hr ran at
+> ~30% utilization on a workload a single $0.43/hr RTX A6000 serves
+> (§measured reference).
 
-The newest GPU is not automatically the easiest training GPU. For ordinary
-dense transformers, B200 may be excellent. For hybrid linear-attention
-stacks (Qwen3.5's Gated DeltaNet), the surrounding Triton/FLA kernels may
-be much more mature on Hopper. **Architecture compatibility beats
-advertised VRAM** — see `TRAINING_STACK.md` for the failure mode.
+### Step 1 — derive the minimum from the workload, not from the last phase
 
-Do not conclude a newer GPU is safe because the model loads, a forward pass
-works, it has more VRAM, or another standard-attention model trains on it.
-A tiny real backward-pass smoke must have already proven the exact package
-versions (see `TRAINING_STACK.md` §smoke-ladder).
+Three independent questions; each can shrink the box by an order of
+magnitude:
 
-### Number and size of GPUs
+- **Memory inventory — training and generation peaks differ.**
+  Gradient-checkpointed full-trace replay (GRPO) needed the 140 GB card;
+  generation-only regimes (rollout collection, R4 forks: weights +
+  batch KV + activations + hooks) fit a 40–48 GB card. Do the inventory
+  for the phase being rented (`TRAINING_STACK.md` §where-memory-goes);
+  never carry the previous phase's box forward by reflex.
+- **Throughput model — bandwidth-bound or latency-bound?** Don't pay
+  for bandwidth the workload doesn't use. Measured: HF decode at
+  batch ≤ 4 is latency-bound — ~37 tok/s per stream on a 3090
+  (936 GB/s) and ~37.5 tok/s per stream on an H200 (4,800 GB/s). 5×
+  the bandwidth bought nothing; that is the ~30% utilization. For
+  latency-bound serving, pick for $/hr and VRAM, not GB/s.
+- **Architecture provenance.** Proven torch/FLA classes: sm_86 Ampere
+  (local 3090 stack), sm_90 Hopper (GRPO H200 box). sm_89 Ada:
+  flash-attn/Triton mature but unproven with this repo's FLA kernels —
+  rentable only behind a shakedown first. sm_120 Blackwell: verified
+  for llama.cpp serving only (§fast path), not the torch stack. sm_75
+  Turing: excluded (no flash-attn). The standing warning holds inside
+  any proven class: a GPU is not safe because the model loads and a
+  forward pass works — a tiny real backward-pass smoke must have proven
+  the exact package versions before a training run (`TRAINING_STACK.md`
+  §smoke-ladder).
 
-For the known 4B configuration: 2× H100 80 GB, prefer NVLink/SXM when
-price/availability are sensible. Two GPUs are useful even when the trainable
-model fits on one — the second can hold a frozen reference, reward model,
-embedder, or verifier. For a different experiment, make a memory inventory
-first (`TRAINING_STACK.md` §where-memory-goes); don't assume parameter
-counts give peak memory.
+### Step 2 — sweep the market with the CLI
 
-### Host RAM
+Query-field gotchas (each one has already cost a wasted search):
 
-Model loading and quantization can temporarily use far more CPU RAM than
-steady-state GPU training. Guidelines: 4B/8B ≥ 64 GB; 27B QLoRA ≥ 128 GB;
-very large loading/optimizer offload/multiple models → 256 GB may be
-prudent. `bitsandbytes` stages high-precision weights in CPU RAM before
-quantization — a 27B model can briefly need ~60+ GB just for staging.
+- `gpu_ram` is in **GB in queries**, **MB in `--raw` output**, and is
+  the **total across all of the machine's GPUs** in both. Per-GPU VRAM
+  is `gpu_ram / num_gpus` — post-filter on that, never on the raw
+  field. A 2×24 GB box passes `gpu_ram>=40`.
+- `gpu_name` takes underscores: `gpu_name=RTX_4090`.
+- Default query filters `external=false rentable=true verified=true`;
+  `-n` disables, `--type bid` searches interruptible pricing.
+- Always sweep with `--raw` (parse it), `--limit 500` (one page is not
+  the market), `--storage <GB>` (prices in the storage allocation),
+  `-o dph_total`.
 
-### Disk
+Canonical sweep (≥40 GB total VRAM; adjust the floor per Step 1):
 
-Disk must cover more than the final model: base + reference + embedding/reward
-model caches, venv + compiled extensions, datasets, checkpoints, failed-run
-archives, temp files. Recommendations: 4B + 8B reward/embed ≥ 200 GB
-minimum, 300 GB comfortable; 27B + multiple checkpoints 400–600 GB.
+```bash
+vastai search offers 'gpu_ram>=40 rentable=true' -o 'dph_total' \
+  --storage 120 --limit 500 --raw
+```
 
-### Host reliability and networking
+Post-filter: per-GPU VRAM ≥ requirement; `compute_cap` in the
+proven/acceptable set (Step 1); `reliability >= 0.98`; `disk_space` ≥
+allocation + headroom; `cpu_ram` ≥ 32 GB (loading/quantization staging
+spikes — `bitsandbytes` can briefly need 60+ GB for large models);
+`inet_down` adequate for the model pull (prefer ≥ 500 Mbps for an 18 GB
+checkpoint even with `hf_xet`, or price the download time).
 
-Prefer offers with high reliability, good download bandwidth, adequate disk
-throughput, sufficient contract duration or on-demand availability, and SSH
-through a mapped port. A cheaper unstable host can cost more after repeated
-setup and interrupted runs.
+### Step 3 — interpret the specs
+
+- `compute_cap`: 750 Turing (exclude) · 800/860 Ampere (proven) ·
+  890 Ada (shakedown first) · 900 Hopper (proven) · 1200 Blackwell
+  (llama.cpp only).
+- `dph_total_adj`: $/hr **including the requested storage** — rank on
+  this, not `dph_total`.
+- `gpu_ids`: count physical GPUs when a listing looks wrong. The market
+  carries real modded cards (48 GB RTX 4090 — sm_89, one physical GPU,
+  common on CN hosts). Verify with `gpu_ids`/`num_gpus` before
+  dismissing or trusting a listing; a strange VRAM figure is a fact to
+  check, not a filter artifact.
+- `gpu_mem_bw`: only ranks offers for bandwidth-bound workloads.
+- `reliability`/`reliability2`, `geolocation`, `duration` (offer
+  expiry): a cheap unstable host costs more after interrupted runs.
+- Bid/interruptible offers: cheaper but preemptible (instance →
+  `stopped`, storage still bills; resume by raising `--bid_price`).
+  Acceptable for resumable collection, not for a run that must finish
+  on schedule. If renting a bid offer, always pass `--bid_price` —
+  `create instance` defaults to on-demand pricing without it.
+
+### Step 4 — shortlist, shakedown, then rent
+
+Present a shortlist — cheapest ~3 offers per acceptable class with
+$/hr (disk-adjusted), arch, per-GPU VRAM, reliability, `inet_down`,
+region — and a one-line cost/wall estimate for the planned workload
+(tokens ÷ measured throughput; `TERMINAL_FORK_COMPUTE.md` §7 for fork
+shapes). The winner gets the smoke ladder before the real run launches:
+the shakedown is part of selection, not a step after it.
+
+### Measured reference (2026-08-27, ACE R4 right-sizing)
+
+- Full-market sweep: 172 offers ≥ 40 GB total VRAM; 65 passed
+  per-GPU ≥ 40 GB + acceptable arch.
+- Cheapest suitable: 1× RTX A6000 48 GB $0.43/hr (sm_86 — same family
+  as the locally-proven stack); 48 GB Ada-class from $0.40/hr;
+  A100-40 from $0.70/hr; cheapest 2× H200 box $8.45/hr.
+- R4 (fork regime, generation-only): ~105 GPU-h on one 48 GB GPU at
+  m = 32 → ~$45 on the A6000; two parallel single-GPU boxes halve wall
+  at ~$90; vs ~$363 and 1.8 days on 2× H200.
+- Superseded box: 2× H200 at ~$9/hr, ~30% utilization — bandwidth
+  premium unused (latency-bound decode), memory premium unused (no
+  replay in the fork phase). Re-rent H200-class only for a phase whose
+  inventory actually needs it.
 
 ### Image choice
 

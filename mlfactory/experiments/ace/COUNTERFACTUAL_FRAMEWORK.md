@@ -30,6 +30,33 @@ beat a locally elegant intervention that forces premature commitment. The
 controller is *not* trained to minimize entropy, recurrence, tortuosity, or
 length (`REWARD_POLICY.md`).
 
+### Instrument choice: terminal distributions vs windowed readout
+
+Comparing terminal outcome distributions is the right instrument for
+**advantage estimation** — asking whether intervening at a state changes
+where the trace lands. It is the wrong instrument for **detecting what
+an intervention does at the point of contact**: over an 8–20k-token
+horizon the model's own long-horizon dynamics (thrashing, cap
+truncation, emission noise) dominate the terminal score, and the
+intervention's local effect drowns. Measured (R4 v1 partial run,
+117 rows, `lab_notes/2026-08-28-r4-partial-trace-report.md`): the
+steered branches diverge from noop within ~24–80 tokens of the fork,
+but terminal correctness on 25 matched pairs was permutation noise
+(noop 12/25 vs toward_healthy 13/25).
+
+R4v2 (principal ruling 2026-08-28) therefore reads forks with a
+**windowed readout**: each branch rolls out 2048 tokens from the fork
+point, and a blind LLM judge compares the three branches' windows
+(plus the pre-fork tail for context) to assess what the intervention
+changed. The judge is a measurement instrument over yielded tokens,
+not a training reward (`REWARD_POLICY.md` scope note). Position bias
+in the judge is cancelled by a rotation ensemble
+(`lab_notes/2026-08-28-r4v2-build-judge-hillclimb.md`). The windowed
+design is also ~5–10× cheaper per row than terminal rollouts
+(`TERMINAL_FORK_COMPUTE.md` scenario G). Terminal-distribution forks
+remain the instrument for advantage estimation when the controller
+line reaches that rung.
+
 ### The passenger test (binding)
 
 > Correlation between intervention and outcome proves nothing. A

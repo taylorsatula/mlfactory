@@ -294,6 +294,39 @@ these by the iteration count (E). A ×2–5 engineering constant (§6) moves
 the table entries; it does not move any exponent, and it leaves every
 entry beyond hobbyist budget except A.
 
+**Detector-nominated forks (added 2026-08-27 — scenario F, the shape of
+R4).** The annotation sidestep changes the coverage term: fork states
+are no longer blind candidates but detector-nominated onsets, and the
+lead-time curve nominates the fork point 4–8 tokens pre-onset
+(`ANNOTATION_SIDESTEP.md`, `lab_notes/2026-08-27-lookback-k5-rec-results.md`).
+Measured from the 758 onset positions in the 231-capture corpus: mean
+remaining horizon from the fork point is CYCLE 13.5k / LOOP 12.1k /
+MUSE 10.4k tokens (ALL median 12.3k). Unit figure ≈ 3.0 GPU-h per fork
+state at m = 32 (63 continuations), ≈ 7.6 at m = 80; 10 nominated
+states per class → **~86 GPU-h at m = 32 (~1.8 days on 2× H200), ~218
+at m = 80** — a powered-class snapshot for ~1/7 the cost of scenario B
+at 4× the per-state sample, the direct payoff of nominated placement.
+A 2 GPU-h shakedown (3 states, m = 8) validates the harness first. Depth
+stays 1; interaction resolution is still scenario D's ~125 GPU-h/trace,
+and 30-state designs must pre-register family-level error control (§9.5).
+
+**Windowed fork readout (added 2026-08-28 — scenario G, the shape of
+R4v2).** The R4 v1 run spent scenario-F compute and falsified its own
+readout: terminal correctness over the 8–20k post-fork horizon is
+permutation noise relative to the intervention's effect, which lives in
+the first ~150–2048 tokens after the fork
+(`COUNTERFACTUAL_FRAMEWORK.md` §instrument choice). R4v2 caps every
+continuation at 2048 generated tokens and reads the three branches'
+windows with a judge, so unit cost no longer scales with the remaining
+horizon at all. Measured on RTX 3090 @ 280 W: 55–63 s per row incl.
+prefill of forks up to 17.6k (~52 s average). The full R4v2 design —
+27 states × 3 arms × m = 24 = 1944 rows — is **~28 GPU-h total, ~15 h
+wall on 2× 3090**, vs scenario F's ~86 GPU-h at m = 32 for a
+terminal-rollout readout that could not answer the detection question.
+Judge cost is wallclock-only (provider is not pay-per-token): a
+3-pass rotation ensemble ≈ 60–90 s/triplet ≈ 16 GPU-free hours for
+the full 648 triplets, parallelizable.
+
 ## 8. Containment in the current design (description, not proposals)
 
 The existing framework already concentrates fork demand rather than

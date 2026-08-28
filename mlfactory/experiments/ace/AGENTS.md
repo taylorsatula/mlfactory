@@ -27,6 +27,7 @@ rewards how a trace looks instead of where it lands is poison.**
 | `core/` | shared foundation: steering controller, problem set, trace diagnostics | — |
 | `frontier/` | author + collect the verifiable-30 problem set | `.venv/bin/python -m mlfactory.experiments.ace.frontier.collect_rollouts` |
 | `analysis/` | teacher-forced mapping + Phase-1 kill tests | — |
+| `annotate/` | annotation sidestep: LLM span annotation → teacher-forced capture → position probes → steering directions (`ANNOTATION_SIDESTEP.md`) | `.venv/bin/python -m mlfactory.experiments.ace.annotate.run_batch --pass pass1` |
 | `train/` | controller training (GRPO) | `.venv/bin/python -m mlfactory.experiments.ace.train.grpo` |
 | `tests/` | smoke tests | `.venv/bin/python -m pytest tests/test_steering.py -s -v` |
 | `scratch/` | one-off recon, kept for provenance — **nothing imports these** | — |
@@ -45,7 +46,7 @@ doc(s) to write back to on resolve.
 
 | Tier | Docs | Update when |
 |---|---|---|
-| **Concept** | `HYPOTHESIS` `APPROACH_HISTORY` `COUNTERFACTUAL_FRAMEWORK` `REWARD_POLICY` `PHASES` `CALIBRATION` | methodology shifts; a lab note sharpens a claim (write back with `Refined by:`) |
+| **Concept** | `HYPOTHESIS` `APPROACH_HISTORY` `COUNTERFACTUAL_FRAMEWORK` `REWARD_POLICY` `PHASES` `CALIBRATION` `ANNOTATION_SIDESTEP` `TERMINAL_FORK_COMPUTE` | methodology shifts; a lab note sharpens a claim (write back with `Refined by:`) |
 | **Living** | `FAILURE_MODES` `OBSERVABLES` `LAYER_HYPOTHESES` `STATUS` | evidence lands — failure modes, kill-test results, layer maps, resolved questions |
 | **Reference** | `QWEN35_ARCHITECTURE` `OPERATIONS` `ENVIRONMENT` `LEGACY` `TRAJECTORY_VOCABULARY` | config changes only |
 | **Evidence** | `lab_notes/*.md` | a session produces durable knowledge (parent protocol) |
@@ -57,7 +58,7 @@ Living docs carry a **status column** (`candidate`/`supported`/`killed`/`underpo
 | Ruling | Value | Why | Doc |
 |---|---|---|---|
 | Reward | **terminal verified outcome only** | rewards how a trace looks instead of where it lands is poison | `REWARD_POLICY.md` |
-| Forbidden as rewards | entropy, tortuosity, recurrence, length, RLAIF/judge, PRM step scorers | local-proxy trap; destroys productive exploration | `REWARD_POLICY.md` |
+| Forbidden as rewards | entropy, tortuosity, recurrence, length, PRM step scorers | local-proxy trap; destroys productive exploration | `REWARD_POLICY.md` |
 | Precision | **bf16** | q8 is a different model; all seeds are bf16-calibrated | `OPERATIONS.md` |
 | Backstop cap | **26000 tokens** | terminal loops contribute nothing to identical-conditions comparison | `OPERATIONS.md` |
 | Thinking | **enabled** | the phenomenon of interest | `OPERATIONS.md` |

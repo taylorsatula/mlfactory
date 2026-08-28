@@ -57,6 +57,17 @@ outcomes, never optimized:
 - RLAIF / judge scores
 - any PRM-style step scorer
 
+**Scope of the ban:** it governs what the controller is *trained
+against* — reward and optimization targets. A judge that reads forked
+windows to interpret what an intervention did (R4v2) is a measurement
+instrument over yielded tokens, not a training signal, and is not
+banned by this section (principal rulings 2026-08-28:
+`lab_notes/2026-08-28-r4-attendance-stopped-design-change.md`,
+redesign rationale, and the R4v2 build note in this week's lab notes).
+What remains
+forbidden: judge verdicts entering controller gradients, or replacing
+terminal verified reward anywhere in training.
+
 ## The local-proxy trap
 
 Any step-level scorer trained on what good reasoning *looks like* will
