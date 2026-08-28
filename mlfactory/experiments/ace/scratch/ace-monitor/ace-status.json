@@ -1,0 +1,290 @@
+{
+  "generated_at": "2026-08-28T12:12:23Z",
+  "version": "r4v2",
+  "total_rows": 470,
+  "target_rows": 1944,
+  "pct_complete": 24.2,
+  "total_tokens": 962560,
+  "tokens": {
+    "total": 962560,
+    "mean": 2048,
+    "fixed_window": 2048
+  },
+  "elapsed": {
+    "mean_s": 58,
+    "min_s": 54,
+    "max_s": 63
+  },
+  "by_arm": {
+    "noop": {
+      "rows": 181,
+      "target": 648,
+      "avg_elapsed_s": 57
+    },
+    "toward_healthy": {
+      "rows": 145,
+      "target": 648,
+      "avg_elapsed_s": 58
+    },
+    "toward_diverge": {
+      "rows": 144,
+      "target": 648,
+      "avg_elapsed_s": 58
+    }
+  },
+  "by_state": {
+    "r4_cycle_00": {
+      "rows": 72,
+      "target": 72,
+      "class": "CYCLE",
+      "seeds_started": 24,
+      "complete_triples": 24
+    },
+    "r4_cycle_01": {
+      "rows": 72,
+      "target": 72,
+      "class": "CYCLE",
+      "seeds_started": 24,
+      "complete_triples": 24
+    },
+    "r4_cycle_02": {
+      "rows": 72,
+      "target": 72,
+      "class": "CYCLE",
+      "seeds_started": 24,
+      "complete_triples": 24
+    },
+    "r4_cycle_03": {
+      "rows": 72,
+      "target": 72,
+      "class": "CYCLE",
+      "seeds_started": 24,
+      "complete_triples": 24
+    },
+    "r4_cycle_04": {
+      "rows": 72,
+      "target": 72,
+      "class": "CYCLE",
+      "seeds_started": 24,
+      "complete_triples": 24
+    },
+    "r4_cycle_05": {
+      "rows": 72,
+      "target": 72,
+      "class": "CYCLE",
+      "seeds_started": 24,
+      "complete_triples": 24
+    },
+    "r4_cycle_06": {
+      "rows": 13,
+      "target": 72,
+      "class": "CYCLE",
+      "seeds_started": 13,
+      "complete_triples": 0
+    },
+    "r4_cycle_07": {
+      "rows": 25,
+      "target": 72,
+      "class": "CYCLE",
+      "seeds_started": 24,
+      "complete_triples": 0
+    },
+    "r4_cycle_08": {
+      "rows": 0,
+      "target": 72,
+      "class": "CYCLE",
+      "seeds_started": 0,
+      "complete_triples": 0
+    },
+    "r4_cycle_09": {
+      "rows": 0,
+      "target": 72,
+      "class": "CYCLE",
+      "seeds_started": 0,
+      "complete_triples": 0
+    },
+    "r4_loop_00": {
+      "rows": 0,
+      "target": 72,
+      "class": "LOOP",
+      "seeds_started": 0,
+      "complete_triples": 0
+    },
+    "r4_loop_01": {
+      "rows": 0,
+      "target": 72,
+      "class": "LOOP",
+      "seeds_started": 0,
+      "complete_triples": 0
+    },
+    "r4_loop_02": {
+      "rows": 0,
+      "target": 72,
+      "class": "LOOP",
+      "seeds_started": 0,
+      "complete_triples": 0
+    },
+    "r4_loop_03": {
+      "rows": 0,
+      "target": 72,
+      "class": "LOOP",
+      "seeds_started": 0,
+      "complete_triples": 0
+    },
+    "r4_loop_04": {
+      "rows": 0,
+      "target": 72,
+      "class": "LOOP",
+      "seeds_started": 0,
+      "complete_triples": 0
+    },
+    "r4_loop_05": {
+      "rows": 0,
+      "target": 72,
+      "class": "LOOP",
+      "seeds_started": 0,
+      "complete_triples": 0
+    },
+    "r4_loop_06": {
+      "rows": 0,
+      "target": 72,
+      "class": "LOOP",
+      "seeds_started": 0,
+      "complete_triples": 0
+    },
+    "r4_loop_07": {
+      "rows": 0,
+      "target": 72,
+      "class": "LOOP",
+      "seeds_started": 0,
+      "complete_triples": 0
+    },
+    "r4_loop_08": {
+      "rows": 0,
+      "target": 72,
+      "class": "LOOP",
+      "seeds_started": 0,
+      "complete_triples": 0
+    },
+    "r4_loop_09": {
+      "rows": 0,
+      "target": 72,
+      "class": "LOOP",
+      "seeds_started": 0,
+      "complete_triples": 0
+    },
+    "r4_muse_00": {
+      "rows": 0,
+      "target": 72,
+      "class": "MUSE",
+      "seeds_started": 0,
+      "complete_triples": 0
+    },
+    "r4_muse_01": {
+      "rows": 0,
+      "target": 72,
+      "class": "MUSE",
+      "seeds_started": 0,
+      "complete_triples": 0
+    },
+    "r4_muse_02": {
+      "rows": 0,
+      "target": 72,
+      "class": "MUSE",
+      "seeds_started": 0,
+      "complete_triples": 0
+    },
+    "r4_muse_03": {
+      "rows": 0,
+      "target": 72,
+      "class": "MUSE",
+      "seeds_started": 0,
+      "complete_triples": 0
+    },
+    "r4_muse_04": {
+      "rows": 0,
+      "target": 72,
+      "class": "MUSE",
+      "seeds_started": 0,
+      "complete_triples": 0
+    },
+    "r4_muse_05": {
+      "rows": 0,
+      "target": 72,
+      "class": "MUSE",
+      "seeds_started": 0,
+      "complete_triples": 0
+    },
+    "r4_muse_06": {
+      "rows": 0,
+      "target": 72,
+      "class": "MUSE",
+      "seeds_started": 0,
+      "complete_triples": 0
+    }
+  },
+  "by_class": {
+    "CYCLE": {
+      "rows": 470,
+      "target": 720,
+      "states": 10,
+      "states_started": 8
+    },
+    "LOOP": {
+      "rows": 0,
+      "target": 720,
+      "states": 10,
+      "states_started": 0
+    },
+    "MUSE": {
+      "rows": 0,
+      "target": 504,
+      "states": 7,
+      "states_started": 0
+    }
+  },
+  "processes": {
+    "active": true,
+    "gpu0": true,
+    "gpu1": true,
+    "process_count": 2
+  },
+  "judge": {
+    "pairs_judged": 24,
+    "total_verdicts": 517,
+    "winners": {
+      "toward_healthy": 9,
+      "toward_diverge": 8,
+      "noop": 7
+    },
+    "arm_stats": {
+      "noop": {
+        "avg_rank": 1.13,
+        "wins": 7,
+        "modes": {
+          "spinning": 48,
+          "mixed": 72,
+          "progress": 54
+        }
+      },
+      "toward_healthy": {
+        "avg_rank": 0.98,
+        "wins": 9,
+        "modes": {
+          "progress": 52,
+          "mixed": 88,
+          "spinning": 33
+        }
+      },
+      "toward_diverge": {
+        "avg_rank": 0.76,
+        "wins": 8,
+        "modes": {
+          "mixed": 71,
+          "spinning": 24,
+          "progress": 75
+        }
+      }
+    }
+  }
+}
