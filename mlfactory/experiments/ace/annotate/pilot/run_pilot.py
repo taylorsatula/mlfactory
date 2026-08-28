@@ -130,6 +130,7 @@ def parse_flags(text: str, trace_texts: dict[int, str], trace_labels: dict[int, 
             t = trace_texts.get(tnum, "")
             stat, s0, e1 = resolve_span(t, row["start"], row["end"])
             row["span_res"] = stat
+            row["span_s0"], row["span_e1"] = s0, e1
             if stat.startswith("OK") and e1 > s0:
                 row["span_chars"] = e1 - s0
                 span = t[s0:e1]

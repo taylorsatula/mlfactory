@@ -50,7 +50,10 @@ def auroc(pos_scores, neg_scores):
         return float("nan")
     pos = np.array(pos_scores)
     neg = np.array(neg_scores)
-    return float(np.mean([np.sum(neg < p) + 0.5 * np.sum(neg == p) for p in pos]) /
+    # Mann-Whitney: win counts over all pairs, normalized once. (Previously
+    # divided by len(pos) twice, deflating every AUROC by a factor of
+    # len(pos) — caught 2026-08-26.)
+    return float(np.sum([np.sum(neg < p) + 0.5 * np.sum(neg == p) for p in pos]) /
                  (len(pos) * len(neg)))
 
 
