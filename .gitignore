@@ -18,9 +18,16 @@ outputs/
 *.pth
 *.ckpt
 
+# ACE large activation captures (35 GB — too big for git)
+mlfactory/experiments/ace/data/annot_captures/
+mlfactory/experiments/ace/data/annot_captures_b2/
+mlfactory/experiments/ace/data/annot_captures_b2_lb/
+mlfactory/experiments/ace/data/annot_captures_xsub_lb/
+
 # Logs
 *.log
 logs/
+*.pid
 
 # Secrets
 *.pem
@@ -33,5 +40,3 @@ token
 .idea/
 .DS_Store
 *.swp
-
-
