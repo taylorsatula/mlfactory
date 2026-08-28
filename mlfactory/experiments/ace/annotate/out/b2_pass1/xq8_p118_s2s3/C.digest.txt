@@ -1,0 +1,8 @@
+===== xq8_p118_s2s3 =====
+model=glm-5.2-vision dt_s=675.6 out_tokens=45215 finish=stop
+
+flags=1 fully-resolved=1 MUSE=0 CYCLE=1 LOOP=0 NONE=0
+  ⟦CYCLE trace=1 (s2) conf=clear [RESOLVED] span=205ch
+    head: Let's test Case 1: $X = C$ (Cy). If $X = C$, then $S2=S3=S5=S6=C$. Rule 7 says C
+    tail: essions (S2, S3, S5, S6). This violates Rule 7. Therefore, Case 1 is impossible.
+    basis: The alternative X=Cy is explored and then explicitly eliminated because Cy would lead 4 sessions, violating Rule 7; the downstream effect is that X=Bo is selected.

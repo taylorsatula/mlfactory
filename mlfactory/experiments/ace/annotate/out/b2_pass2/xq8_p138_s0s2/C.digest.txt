@@ -1,0 +1,36 @@
+===== xq8_p138_s0s2 =====
+model=glm-5.2-vision dt_s=189.7 out_tokens=13855 finish=stop
+
+flags=8 fully-resolved=3 MUSE=0 CYCLE=6 LOOP=2 NONE=0
+  ⟦CYCLE trace=1 (s0) conf=clear [RESOLVED-NORM] span=1042ch
+    head: Let's see if S8=Cy is forced even without the certification rules. Suppose S8 is
+    tail: .   So S8 cannot be Ed.   Same for S8 not being Ana, Bo, Di.   So S8 must be Cy.
+    basis: The solver opens a hypothetical branch where S8 is Ed (ignoring certification), explores the downstream assignments, and eliminates it because it violates Rule 3 and breaks the puzzle's uniqueness.
+  ⟦CYCLE trace=1 (s0) conf=probable [RESOLVED-NORM] span=223ch
+    head: Is it possible that S1 is NOT Ana? If S8=Cy -> R7 is true. R7 says "If Cy leads 
+    tail: rue. Therefore, the consequent "Ana must lead S1" must be true. So Ana leads S1.
+    basis: The solver briefly explores the alternative that S1 is not Ana and eliminates it by re-affirming the antecedent of Rule 7 is true.
+  ⟦LOOP trace=1 (s0) conf=clear [RESOLVED] span=479ch
+    head: Suppose I made a mistake in the implications. R7: If Cy leads S8, then Ana must 
+    tail: R9: If Ed leads S5, then Di must lead S2. (Ed=S5 -> Di=S2).  The logic holds up.
+    basis: The solver re-executes the entire chain of implications from S8 to S2 verbatim, adding no new information or constraints beyond verifying the previous work.
+  ⟦CYCLE trace=2 (s2) conf=clear [UNRESOLVED]
+    start-quote: Is it possible that S8 is led by someone who is 'not certified' but leads anyway?
+    end-quote:   So S8=Cy is the intended starting point.
+    basis: The solver explores the branch where certification is just a fact and S8=Ed, finds it yields a valid but non-unique assignment, and explicitly eliminates this branch to maintain standard logic puzzle 
+  ⟦CYCLE trace=2 (s2) conf=clear [UNRESOLVED]
+    start-quote: What if S7 was not Ed? If S7 was not Ed, then Rule 4's antecedent is false
+    end-quote:   So S7 must be Ed. There is no alternative.
+    basis: The solver explores the alternative that S7 is not Ed, traces it back to show it contradicts the established fact that S8 is Cy, and eliminates it.
+  ⟦CYCLE trace=2 (s2) conf=probable [UNRESOLVED]
+    start-quote: Is it possible that S1 is NOT Ana? If S8=Cy -> R7 is true.
+    end-quote:   So Ana leads S1.
+    basis: The solver explores the alternative that S1 is not Ana and eliminates it by re-affirming the implication of Rule 7.
+  ⟦CYCLE trace=2 (s2) conf=probable [UNRESOLVED]
+    start-quote: What if S4 was not Bo? If Bo does not lead S4, then Rule 2 doesn't trigger.
+    end-quote:   So Bo leads S4 is a necessary consequence.
+    basis: The solver explores the alternative that S4 is not Bo and eliminates it by re-affirming the implication of Rule 10.
+  ⟦LOOP trace=2 (s2) conf=clear [UNRESOLVED]
+    start-quote: Is it possible that S8 is not Cy? If S8 is not Cy, then rule 7's antecedent is false.
+    end-quote:   So S8=Cy is a hard deduction.
+    basis: The solver re-executes the S8 candidacy check already performed in the long CYCLE above, restating the same exclusions and conclusion without adding new constraints.

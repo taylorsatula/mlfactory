@@ -1,0 +1,29 @@
+{
+  "item": "adversary-p49",
+  "gen": {
+    "reused_trace": true,
+    "n_new": 26000
+  },
+  "eq_full_zeroinit": {
+    "max_abs_diff": 0.0,
+    "mean_abs_diff": 0.0
+  },
+  "eq_window_zeroinit": {
+    "max_abs_diff": 0.25,
+    "mean_abs_diff": 0.007511970587074757,
+    "dt_s": 4.1,
+    "peak_mem": 112.1
+  },
+  "replay_full": {
+    "pg": 0.32480835914611816,
+    "kl": 0.0,
+    "mag": 0.0,
+    "n_tok": 26000,
+    "mode": "full",
+    "grad_norm": 0.00611142348498106,
+    "dt_s": 15.9,
+    "peak_mem": 125.2,
+    "max_abs_diff_vs_ref_poststep": 0.3727283477783203
+  },
+  "fingerprint_ok": true
+}

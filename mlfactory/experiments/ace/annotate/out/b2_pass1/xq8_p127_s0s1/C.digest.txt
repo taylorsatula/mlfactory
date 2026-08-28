@@ -1,0 +1,68 @@
+===== xq8_p127_s0s1 =====
+model=glm-5.2-vision dt_s=183.5 out_tokens=11584 finish=stop
+
+flags=16 fully-resolved=8 MUSE=0 CYCLE=0 LOOP=16 NONE=0
+  ⟦LOOP trace=1 (s0) conf=clear [RESOLVED] span=1862ch
+    head: Let's re-check the logic for Event 12 (HELLO).         *   State after 11: INIT.
+    tail: +2 (0+2=2), go ACTIVE.         *   State after 17: ACTIVE. A=true. T=false. n=2.
+    basis: Re-executes the simulation of events 12-17, verbatim restating states and effects already computed in the main simulation section.
+  ⟦LOOP trace=1 (s0) conf=clear [RESOLVED] span=343ch
+    head: Wait, let me re-verify the effect of AUTH on A.         "Effects: A=true, T=true
+    tail:   In step 15 (AUTH), A becomes true (it was already true).         So A is true.
+    basis: Re-checks the effect of AUTH on register A by restating values already established in the main simulation.
+  ⟦LOOP trace=1 (s0) conf=clear [RESOLVED] span=17100ch
+    head: Let me re-verify the effect of HELLO on T.         "Effects: T=false, go INIT." 
+    tail: n>=1. n=0. Rejected.     17: OPEN. Guard T. T=T (from 15). Accepted. Effect T=F.
+    basis: Re-executes the logic for HELLO events 5, 6, 7, 12, 16, and 17 regarding register T, adding no new constraints.
+  ⟦LOOP trace=1 (s0) conf=clear [RESOLVED] span=115ch
+    head: Let me re-verify the effect of OPEN on n.         "Effects: T=false, n + 2, go A
+    tail:  on n.         "Effects: T=false, n + 2, go ACTIVE."         n was 0. Becomes 2.
+    basis: Re-calculates the effect of OPEN on n, a step already completed in event 17.
+  ⟦LOOP trace=1 (s0) conf=clear [RESOLVED] span=106ch
+    head: Let me re-verify the effect of RESUME on n.         "Effects: n + 2, go INIT."  
+    tail: t of RESUME on n.         "Effects: n + 2, go INIT."         n was 0. Becomes 2.
+    basis: Re-calculates the effect of RESUME on n, restating the result of event 2.
+  ⟦LOOP trace=1 (s0) conf=clear [RESOLVED] span=128ch
+    head: Let me re-verify the effect of AUTH on n.         "Effects: ... n - 1 ..."      
+    tail:   "Effects: ... n - 1 ..."         Step 11: n=2 -> 1.         Step 15: n=1 -> 0.
+    basis: Re-calculates the effect of AUTH on n for steps 11 and 15, adding no new information.
+  ⟦LOOP trace=1 (s0) conf=clear [RESOLVED] span=106ch
+    head: Let me re-verify the effect of CLOSE on A.         "Effects: A=true, go PAUSED."
+    tail: t of CLOSE on A.         "Effects: A=true, go PAUSED."         Step 9: A=F -> T.
+    basis: Re-calculates the effect of CLOSE on A for step 9, a step already completed.
+  ⟦LOOP trace=1 (s0) conf=clear [RESOLVED] span=3417ch
+    head: Wait, did I miss any state transitions?         Let's run through the state mach
+    tail:  - Action: T=false, n=n+2 (2), State = ACTIVE.     - New: ACTIVE, A:T, T:F, n:2.
+    basis: A complete re-execution of the entire 17-event simulation, verbatim restating all states and effects.
+  ⟦LOOP trace=2 (s1) conf=clear [UNRESOLVED]
+    start-quote: Let's double check the
+    end-quote:   So T sequence is correct.
+    basis: Re-simulates the value of register T for all 17 events, restating values already computed in the main simulation.
+  ⟦LOOP trace=2 (s1) conf=clear [UNRESOLVED]
+    start-quote: Timeline of A:
+    end-quote:   So A is T at end.
+    basis: Re-simulates the value of register A for all 17 events, restating values already computed.
+  ⟦LOOP trace=2 (s1) conf=clear [UNRESOLVED]
+    start-quote: Timeline of n:
+    end-quote:   So n is 2 at end.
+    basis: Re-simulates the value of register n for all 17 events, restating values already computed.
+  ⟦LOOP trace=2 (s1) conf=clear [UNRESOLVED]
+    start-quote: Timeline of State:
+    end-quote:   First Rejected: 3.
+    basis: Re-simulates the state transitions for all 17 events, restating the sequence already computed.
+  ⟦LOOP trace=2 (s1) conf=clear [UNRESOLVED]
+    start-quote: One small check: `HELLO` effect.
+    end-quote:   Accepted. Effect T=F.
+    basis: Re-executes the logic for HELLO events 5, 6, 7, 12, 16, and 17, adding no new information.
+  ⟦LOOP trace=2 (s1) conf=clear [UNRESOLVED]
+    start-quote: Wait, I need to be careful about the state of T before 15.
+    end-quote:   17: OPEN (T=T).
+    basis: Re-checks the state of T for events 11-17, restating values already established.
+  ⟦LOOP trace=2 (s1) conf=clear [UNRESOLVED]
+    start-quote: Wait, check Event 15 again.
+    end-quote:   Accepted.
+    basis: Re-executes the logic for events 15, 16, and 17, restating states and guards already computed.
+  ⟦LOOP trace=2 (s1) conf=clear [UNRESOLVED]
+    start-quote: Final check on rejected count.
+    end-quote:   First rejected index: 3.
+    basis: Re-executes the acceptance/rejection logic for all 17 events, restating the count already established.

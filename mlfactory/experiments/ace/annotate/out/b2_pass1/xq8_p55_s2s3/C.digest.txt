@@ -1,0 +1,12 @@
+===== xq8_p55_s2s3 =====
+model=glm-5.2-vision dt_s=96.9 out_tokens=6153 finish=stop
+
+flags=2 fully-resolved=2 MUSE=0 CYCLE=2 LOOP=0 NONE=0
+  ⟦CYCLE trace=1 (s2) conf=clear [RESOLVED] span=1979ch
+    head: Let's check if there's any other sequence of length 3 that works. This would imp
+    tail:  cannot execute $A$ to get $-1$ at step 3. This confirms length 3 is impossible.
+    basis: Opens the alternative that a length-3 sequence could drive c negative, explores the requirement (need (M1,c) with c≤0 at step 2), finds the minimum reachable c in M1 at step 2 is 1, and eliminates the
+  ⟦CYCLE trace=2 (s3) conf=clear [RESOLVED] span=297ch
+    head: Let's check if there's any other sequence.      `AAAA` works.      `BAAA` works.
+    tail: M1 -> M1 (A, c=-1).      Sequence `CAAAAA` length 6.      So `AAAA` is shortest.
+    basis: Opens the alternative of sequences starting with C, traces the path CA to CAAAAA finding length 6, and eliminates the branch with downstream confirmation that AAAA (length 4) remains the shortest.

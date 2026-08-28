@@ -1,0 +1,17 @@
+===== xq8_p131_s2s3 =====
+model=glm-5.2-vision dt_s=184.6 out_tokens=11993 finish=stop
+
+flags=3 fully-resolved=2 MUSE=0 CYCLE=0 LOOP=3 NONE=1
+  ⟦NONE trace=1 (s2) reason="The trace is empty and contains no reasoning to annotate."
+  ⟦LOOP trace=2 (s3) conf=clear [RESOLVED] span=15471ch
+    head: Double Check the Simulation:**      *   **Start:** INIT, A=F, T=F, n=0.     *   
+    tail:          Guard n >= 1. n is 8.         Pass.      *   Final result seems robust.
+    basis: "Re-runs all 17 events step by step, duplicating the initial simulation without adding new information."
+  ⟦LOOP trace=2 (s3) conf=clear [RESOLVED] span=9477ch
+    head: Wait, let me double check the PAUSE guard.**         Rule: "PAUSE: allowed in IN
+    tail: VE.         17. ACTIVE -> (AUTH) -> FAULT.          Everything looks consistent.
+    basis: "Re-checks individual rules and events already verified in the simulation, adding no new constraints."
+  ⟦LOOP trace=2 (s3) conf=clear [UNRESOLVED]
+    start-quote: Let's re-verify the \"Rejected\" count logic.
+    end-quote:   Seems complete and verified.
+    basis: "Re-verifies all rules, counts, and register histories one final time, repeating prior work."

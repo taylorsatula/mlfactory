@@ -1,0 +1,19 @@
+{
+  "n_iters": 2,
+  "base_fingerprints_unchanged": true,
+  "train_batch_acc_first": 0.5833333333333334,
+  "train_batch_acc_last": 0.5833333333333334,
+  "train_batch_base_acc_last": 0.5,
+  "mean_within_rollout_gate_std": 0.0,
+  "std_across_prompt_gate_mean": 0.0,
+  "mean_rel_norm": 0.002154913362270842,
+  "max_rel_norm_seen": 0.005104336887598038,
+  "alpha": 0.1,
+  "final_kl": 0.0008809862144213789,
+  "final_grad_norm": 0.00993464607745409,
+  "cap_hit_rate_last": 0.16666666666666666,
+  "replay_oom_fallbacks": 0,
+  "holdout_init": null,
+  "holdout_final": null,
+  "train_eval_final": null
+}

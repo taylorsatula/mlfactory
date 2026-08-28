@@ -1,0 +1,28 @@
+===== xq8_p53_s0s2 =====
+model=glm-5.2-vision dt_s=400.5 out_tokens=24783 finish=stop
+
+flags=6 fully-resolved=4 MUSE=0 CYCLE=1 LOOP=5 NONE=0
+  ⟦CYCLE trace=1 (s0) conf=clear [RESOLVED] span=11678ch
+    head: Also A, C, C, B?    1. A: $M0 \to M2, c=1$.    2. C: $M2 \to M3, c=1+1=2$.    3.
+    tail: 0$).    So A, C, C, B results in c=0. Not negative.    So A, C, C, B is invalid.
+    basis: The solver explores A,C,C,B as a candidate, initially misjudges it as working, then re-evaluates it and eliminates it because it results in
+  ⟦LOOP trace=1 (s0) conf=clear [RESOLVED] span=594ch
+    head: Wait, let's re-calculate the C, C, C, B path carefully.    Start: (M0, 0)       
+    tail: - 1 = -1$.    Current Credit: -1.        This works. The sequence is C, C, C, B.
+    basis: The solver re-executes the calculation for C,C,C,B which was already found and verified, adding no new information.
+  ⟦LOOP trace=1 (s0) conf=clear [UNRESOLVED]
+    start-quote: Let's check B, C, C, B again.
+    end-quote:   This works.
+    basis: The solver re-executes the calculation for B,C,C,B which was already found and verified, adding no new information.
+  ⟦LOOP trace=1 (s0) conf=probable [RESOLVED] span=596ch
+    head: Let's check if I missed any M1 reachability.    If M1 was reachable, could we do
+    tail: > M1"?    No, M3 rules: A->M0, B->M0, C->M3.        So M1 is indeed unreachable.
+    basis: The solver re-verifies the transition rules for M1 reachability, reaching the same conclusion as before without adding new constraints.
+  ⟦LOOP trace=2 (s2) conf=clear [UNRESOLVED]
+    start-quote: Let's double check the logic for B C C C.
+    end-quote:   This works.
+    basis: The solver re-executes the calculation for B,C,C,C which was already verified, adding no new information.
+  ⟦LOOP trace=2 (s2) conf=clear [RESOLVED] span=146ch
+    head: Let's double check C C C C.     Start: M0, c=0.     1. C -> M2, c=0.     2. C ->
+    tail: 0.     2. C -> M3, c=1.     3. C -> M3, c=0.     4. C -> M3, c=-1.     Negative!
+    basis: The solver re-executes the calculation for C,C,C,C which was already verified, adding no new information.

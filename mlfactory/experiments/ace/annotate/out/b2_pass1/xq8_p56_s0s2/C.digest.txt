@@ -1,0 +1,17 @@
+===== xq8_p56_s0s2 =====
+model=glm-5.2-vision dt_s=921.5 out_tokens=61792 finish=stop
+
+flags=3 fully-resolved=1 MUSE=0 CYCLE=3 LOOP=0 NONE=1
+  ⟦CYCLE trace=1 (s0) conf=clear [RESOLVED] span=658ch
+    head: Let's look for a loop that reduces credit? M1 -> A -> M2 (c-1). M2 -> C -> M2 (c
+    tail: es, M1 -> A -> M2 -> C -> M2 -> A -> M3 -> C -> M1 is a cycle with net 0 change.
+    basis: The trace explores a potential loop M1→M2→M2→M3→M1 to see if it reduces credit, calculates the net change as 0, and prunes it as unhelpful for driving c negative.
+  ⟦CYCLE trace=2 (s2) conf=clear [UNRESOLVED]
+    start-quote: Let's check if there is a cycle M0 -> M2 -> M3 -> M1 -> M2 -> M3 -> M1 ...
+    end-quote:   So length 4 is minimal.
+    basis: The trace explores longer paths to reach M1 with
+  ⟦CYCLE trace=2 (s2) conf=clear [UNRESOLVED]
+    start-quote: Let's check the cycle A C A C from M1 returning to M1 with same credit? No.
+    end-quote:   Yes, M1 -> A -> M2 -> C -> M2 -> A -> M3 -> C -> M1 is a cycle with net 0 change.
+    basis: The trace explores a cycle starting from M1 to check for net credit reduction, calculates the net change as 0, and prunes it as unhelpful.
+  ⟦NONE trace=1 (s0) reason=No MUSE or LOOP spans found; the trace's speculative branches are grounded and pruned as CYCLEs.

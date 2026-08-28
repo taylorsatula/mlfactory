@@ -1,0 +1,3 @@
+#!/bin/bash
+tmux new-session -d -s s1dry2 "export HF_HOME=/workspace/models PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True PYTHONFAULTHANDLER=1 PYTHONUNBUFFERED=1 ACE_MODEL_PATH=Qwen/Qwen3.5-9B CUDA_VISIBLE_DEVICES=0; cd /workspace/mlfactory; /venv/main/bin/python -m mlfactory.experiments.ace.train.grpo --pool /workspace/mlfactory/mlfactory/experiments/ace/data/acegen_live_b2.jsonl --only-pids 132,140,148 --iters 2 --prompts-per-iter 3 --group-size 4 --max-new 26000 --skip-eval --out /workspace/s1_dry >> /workspace/s1_dry.log 2>&1; echo EXIT-CODE:\$? >> /workspace/s1_dry.log"
+echo launched; sleep 3; tmux ls | grep s1dry2

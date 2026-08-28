@@ -1,0 +1,20 @@
+===== xbf16_p152_s2s5 =====
+model=glm-5.2-vision dt_s=252.7 out_tokens=11366 finish=stop
+
+flags=4 fully-resolved=3 MUSE=0 CYCLE=1 LOOP=3 NONE=0
+  ⟦CYCLE trace=1 (s2) conf=clear [RESOLVED] span=6459ch
+    head: Case 2: $y = 3$. (So $Pos(1716) = 3$). Then: $Pos(Cloth) = 3 - 1 = 2$. $Pos(Holl
+    tail:  led to $Pos(1713)=6$, impossible for Vellum. So $y=3$ is completely impossible.
+    basis: The solver opens an alternative branch for the position of 1716 (y=3) and systematically explores its subcases before explicitly eliminating it as impossible.
+  ⟦LOOP trace=1 (s2) conf=clear [RESOLVED] span=12312ch
+    head: Wait, earlier I checked $y=3$ and found $Pos(1713)=6$. Let's re-verify that step
+    tail:    If $x=6$: Slot 6 Ash/Rag, Slot 7 1713. Impossible.    So $y=3$ is impossible.
+    basis: The solver re-executes the
+  ⟦LOOP trace=1 (s2) conf=clear [UNRESOLVED]
+    start-quote: Let's double check the derivation of $x$ in the $y=4$ case.
+    end-quote:   So the solution is definitely correct.
+    basis: The solver re-derives the assignments for the successful
+  ⟦LOOP trace=1 (s2) conf=clear [RESOLVED] span=1732ch
+    head: Let's quickly re-read the "1715" derivation. Years used: 1713(2), 1712(3), 1716(
+    tail: s forces Linen to 6. And Leather to 2. This chain is solid.  The logic holds up.
+    basis: The solver re-verifies the remaining years, bindings, and clues for the final configuration, repeating the validation already performed in the previous loop.

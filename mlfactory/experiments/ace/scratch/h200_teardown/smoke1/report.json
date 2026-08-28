@@ -1,0 +1,237 @@
+{
+  "config": {
+    "pool": "data/acegen_live_b2.jsonl",
+    "out": "/workspace/smoke1",
+    "model_path": "Qwen/Qwen3.5-9B",
+    "device": "cuda:0",
+    "per_family": 1,
+    "pids": null,
+    "group": 4,
+    "max_new": 26000,
+    "temperature": 0.8,
+    "top_p": 0.95,
+    "replay_caps": "512,1024,2048,4096,8192,16384",
+    "torch": "2.13.0+cu130",
+    "cuda": "13.0",
+    "device_name": "NVIDIA H200"
+  },
+  "steps": [
+    {
+      "step": "load",
+      "dt_s": 8.4,
+      "mem": {
+        "alloc": 16.68,
+        "reserved": 16.7,
+        "peak_alloc": 16.68,
+        "peak_reserved": 16.7
+      },
+      "n_params": 8953803264
+    },
+    {
+      "step": "pool",
+      "n": 6,
+      "families": [
+        "adversary",
+        "assign",
+        "certify",
+        "grid",
+        "hypothesis",
+        "machine"
+      ]
+    },
+    {
+      "step": "generate",
+      "id": "adversary-p49",
+      "family": "adversary",
+      "group": 4,
+      "strict_correct": "4/4",
+      "lens": [
+        21301,
+        26000,
+        24281,
+        26000
+      ],
+      "truncated": [
+        false,
+        true,
+        false,
+        true
+      ],
+      "tok_per_s": 73.8,
+      "dt_s": 1322.9,
+      "peak_mem": 22.04,
+      "ids": "elided"
+    },
+    {
+      "step": "generate",
+      "id": "machine-p124",
+      "family": "machine",
+      "group": 4,
+      "strict_correct": "4/4",
+      "lens": [
+        22349,
+        25949,
+        24244,
+        21309
+      ],
+      "truncated": [
+        false,
+        false,
+        false,
+        false
+      ],
+      "tok_per_s": 56.4,
+      "dt_s": 1664.6,
+      "peak_mem": 22.37,
+      "ids": "elided"
+    },
+    {
+      "step": "generate",
+      "id": "assign-p132",
+      "family": "assign",
+      "group": 4,
+      "strict_correct": "3/4",
+      "lens": [
+        6296,
+        11198,
+        26000,
+        10086
+      ],
+      "truncated": [
+        false,
+        false,
+        true,
+        false
+      ],
+      "tok_per_s": 32.1,
+      "dt_s": 1669.5,
+      "peak_mem": 21.92,
+      "ids": "elided"
+    },
+    {
+      "step": "generate",
+      "id": "certify-p140",
+      "family": "certify",
+      "group": 4,
+      "strict_correct": "1/4",
+      "lens": [
+        15058,
+        26000,
+        19900,
+        24453
+      ],
+      "truncated": [
+        false,
+        true,
+        false,
+        false
+      ],
+      "tok_per_s": 124.8,
+      "dt_s": 684.5,
+      "peak_mem": 22.25,
+      "ids": "elided"
+    },
+    {
+      "step": "generate",
+      "id": "grid-p148",
+      "family": "grid",
+      "group": 4,
+      "strict_correct": "2/4",
+      "lens": [
+        21893,
+        23303,
+        25540,
+        26000
+      ],
+      "truncated": [
+        false,
+        false,
+        false,
+        true
+      ],
+      "tok_per_s": 141.3,
+      "dt_s": 684.5,
+      "peak_mem": 22.02,
+      "ids": "elided"
+    },
+    {
+      "step": "generate",
+      "id": "hypothesis-p158",
+      "family": "hypothesis",
+      "group": 4,
+      "strict_correct": "4/4",
+      "lens": [
+        18532,
+        7413,
+        8742,
+        13195
+      ],
+      "truncated": [
+        false,
+        false,
+        false,
+        false
+      ],
+      "tok_per_s": 98.0,
+      "dt_s": 488.4,
+      "peak_mem": 20.59,
+      "ids": "elided"
+    },
+    {
+      "step": "replay",
+      "cap": 512,
+      "comp_len": 25949,
+      "dt_s": 2.6,
+      "peak_mem": 26.86,
+      "grad_norm": 0.006106456276029348,
+      "grad_finite": true
+    },
+    {
+      "step": "replay",
+      "cap": 1024,
+      "comp_len": 25949,
+      "dt_s": 1.2,
+      "peak_mem": 32.56,
+      "grad_norm": 0.005889585707336664,
+      "grad_finite": true
+    },
+    {
+      "step": "replay",
+      "cap": 2048,
+      "comp_len": 25949,
+      "dt_s": 1.4,
+      "peak_mem": 43.98,
+      "grad_norm": 0.0032299356535077095,
+      "grad_finite": true
+    },
+    {
+      "step": "replay",
+      "cap": 4096,
+      "comp_len": 25949,
+      "dt_s": 2.3,
+      "peak_mem": 66.63,
+      "grad_norm": 0.002410742687061429,
+      "grad_finite": true
+    },
+    {
+      "step": "replay",
+      "cap": 8192,
+      "comp_len": 25949,
+      "dt_s": 5.1,
+      "peak_mem": 111.62,
+      "grad_norm": 0.002490243874490261,
+      "grad_finite": true
+    },
+    {
+      "step": "replay",
+      "cap": 16384,
+      "comp_len": 25949,
+      "oom": true,
+      "peak_mem": 136.59
+    },
+    {
+      "step": "fingerprint",
+      "base_unchanged": true
+    }
+  ]
+}

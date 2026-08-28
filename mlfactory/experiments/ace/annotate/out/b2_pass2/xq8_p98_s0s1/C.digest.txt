@@ -1,0 +1,8 @@
+===== xq8_p98_s0s1 =====
+model=glm-5.2-vision dt_s=452.4 out_tokens=32012 finish=stop
+
+flags=1 fully-resolved=0 MUSE=0 CYCLE=0 LOOP=1 NONE=0
+  ⟦LOOP trace=1 (s0) conf=clear [UNRESOLVED]
+    start-quote: Let me double check the
+    end-quote:   Everything looks correct.
+    basis: The solver re-simulates all 17 events verbatim after already completing a full simulation, producing identical results with no new information or constraints.

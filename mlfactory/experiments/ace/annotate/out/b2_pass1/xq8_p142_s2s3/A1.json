@@ -1,0 +1,15 @@
+{
+  "meta": {
+    "model": "glm-5.2-vision",
+    "framing": "A",
+    "pair_id": "xq8_p142_s2s3",
+    "trace_labels": {
+      "1": "s2"
+    },
+    "dt_s": 973.3639645576477,
+    "finish_reason": "length",
+    "out_tokens": 65536,
+    "in_tokens": 12855
+  },
+  "text": ""
+}

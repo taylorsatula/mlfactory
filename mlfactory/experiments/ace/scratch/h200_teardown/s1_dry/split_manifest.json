@@ -1,0 +1,36 @@
+{
+  "pool": "mlfactory/experiments/ace/data/acegen_live_b2.jsonl",
+  "rule": "deterministic stratified: sort (family, pid), hold out round(n/3) per family at evenly spaced positions",
+  "train": {
+    "n": 3,
+    "pids": [
+      132,
+      140,
+      148
+    ],
+    "ids": [
+      "assign-p132",
+      "certify-p140",
+      "grid-p148"
+    ],
+    "families": {
+      "assign": 1,
+      "certify": 1,
+      "grid": 1
+    }
+  },
+  "holdout": {
+    "n": 0,
+    "pids": [],
+    "ids": [],
+    "families": {}
+  },
+  "seed_spaces": {
+    "train": 80000,
+    "eval_hold": 90000,
+    "eval_train": 95000,
+    "revalidate": 100000
+  },
+  "replay_mode": "auto",
+  "replay_window": 8192
+}

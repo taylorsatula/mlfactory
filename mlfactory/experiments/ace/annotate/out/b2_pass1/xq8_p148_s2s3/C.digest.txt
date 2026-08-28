@@ -1,0 +1,60 @@
+===== xq8_p148_s2s3 =====
+model=glm-5.2-vision dt_s=490.9 out_tokens=31748 finish=stop
+
+flags=14 fully-resolved=12 MUSE=0 CYCLE=9 LOOP=5 NONE=0
+  ⟦CYCLE trace=1 (s2) conf=clear [UNRESOLVED]
+    start-quote: If Maple was 1714: Then 1714 is left of Cedar.
+    end-quote:   So Maple cannot be 1714.
+    basis: Opens an alternative year assignment for Maple, works through ordering and constraint implications, and eliminates it when 1712/Ash is not immediately left of Cedar. Payoff is the conclusion that Mapl
+  ⟦CYCLE trace=1 (s2) conf=probable [RESOLVED] span=236ch
+    head: If Maple was 1716.         Then [Maple, 1716] is left of Cedar.         [Ash] [M
+    tail: Ash].         Contradiction with [Ash] [Maple].         So Maple cannot be 1716.
+    basis: Opens an alternative where Maple is 1716, derives a contradiction with the Ash-Maple adjacency, and eliminates the branch. Short but complete explore→prune cycle.⟧
+  ⟦CYCLE trace=1 (s2) conf=probable [RESOLVED] span=138ch
+    head: If Maple was 1713.         Then Maple has Vellum (since 1713 is Vellum).        
+    tail: 13 is Vellum).         But Maple has Linen (from Clue 9).         Contradiction.
+    basis: Opens an alternative where Maple is 1713, finds that Maple would need both Vellum and Linen bindings, and eliminates it. Very short but complete branch.⟧
+  ⟦CYCLE trace=1 (s2) conf=clear [RESOLVED] span=2892ch
+    head: Case A: Ash is 1713 (Vellum). Then Cedar is 1714.          Bindings: Ash=Vellum,
+    tail:     6 < 4 is False.               Contradiction!               So Case A2 fails.
+    basis: Opens the branch where Ash holds 1713, explores two subcases for Rag/Cloth binding assignment, both eliminated by the Holly-left-of-Linen constraint. Payoff is the conclusion that Cedar must be 1713.⟧
+  ⟦CYCLE trace=1 (s2) conf=probable [RESOLVED] span=448ch
+    head: Order: B3, B1, B2.       Slots:       1: Holly (1715)       2: Elm (1716)       
+    tail:  1).         Rag must be at Slot < 1. Impossible.         So B3 cannot be first.
+    basis: Opens an alternative block ordering (Holly first), checks Rag-left-of-Holly, finds it impossible since no slot exists left of Holly. Eliminates the order.⟧
+  ⟦LOOP trace=1 (s2) conf=clear [RESOLVED] span=1049ch
+    head: Is there any reason Cedar cannot be 1713?       I derived it by eliminating Ash=
+    tail: ot 5).       Cedar is at Slot 6.       6 < 5 False.       So Ash cannot be 1713.
+    basis: Explicitly re-checks the Case A elimination already completed above. The phrase "I derived it by eliminating Ash=1713. Let's re-check that logic." confirms this is re-execution of a prior step with no
+  ⟦LOOP trace=1 (s2) conf=probable [RESOLVED] span=20958ch
+    head: Let's re-verify the candidates.   Labels: Ash, Birch, Cedar, Elm, Holly, Maple. 
+    tail:        Then Ash (Slot 4) must be Cloth.       Cloth < Maple (Slot 5). 4 < 5. OK.
+    basis: Re-derives Elm=Rag and Ash=Cloth in the B1-B3-B2 order, which was already derived in the "Order 1" section. Adds no new constraint.⟧
+  ⟦LOOP trace=1 (s2) conf=probable [RESOLVED] span=266ch
+    head: Let's double check the binding of Elm.       Rag is left of Holly.       In B1, 
+    tail:  Birch.       Birch is Palm.       So Elm must be Rag.       This is consistent.
+    basis: Re-derives Elm=Rag a third time, confirming a binding assignment already established twice. No new information.⟧
+  ⟦LOOP trace=2 (s3) conf=clear [RESOLVED] span=606ch
+    head: Wait, did I check if 1712 could be in Ash? If Ash was 1712, then 1712 is left of
+    tail: 12? Holly is 1715. Did I check if Maple was 1712? Yes, this was the only option.
+    basis: Re-executes the systematic elimination of 1712 candidates already completed in Step 3. Goes through each label again, reaches the same conclusion that Maple must hold 1712.⟧
+  ⟦CYCLE trace=2 (s3) conf=probable [RESOLVED] span=670ch
+    head: 3. C, A, B.    Sequence: Holly, Elm, Birch, Ash, Maple, Cedar.    Check $S_{Holl
+    tail:   Holly is at 1.    Rag must be left of 1. Impossible.    So C, A, B is invalid.
+    basis: Opens the C-A-B block ordering, checks multiple constraints including year placement and Rag-left-of-Holly, eliminates it when Rag cannot be left of Holly at slot 1.⟧
+  ⟦CYCLE trace=2 (s3) conf=probable [RESOLVED] span=221ch
+    head: 4. C, B, A.    Sequence: Holly, Ash, Maple, Cedar, Elm, Birch.    Check $S_{Holl
+    tail: {Rag} < S_{Holly}$.    Holly (1). Rag must be left of 1. Impossible.    Invalid.
+    basis: Opens the C-B-A block ordering, checks Holly-left-of-Maple and Rag-left-of-Holly, eliminates it when Rag cannot be left of Holly at slot 1.⟧
+  ⟦CYCLE trace=2 (s3) conf=probable [RESOLVED] span=153ch
+    head: Let's check B, A, C.    Sequence: Ash, Maple, Cedar, Elm, Birch, Holly.    Check
+    tail:   Check $S_{Holly} < S_{Maple}$.    Holly (6) < Maple (2). False.    So invalid.
+    basis: Opens the B-A-C block ordering, checks Holly-left-of-Maple, eliminates it when Holly at slot 6 is not left of Maple at slot 2.⟧
+  ⟦CYCLE trace=2 (s3) conf=probable [RESOLVED] span=141ch
+    head: 5. B, C, A.    Sequence: Ash, Maple, Cedar, Holly, Elm, Birch.    Check $S_{Holl
+    tail: .    Check $S_{Holly} < S_{Maple}$.    Holly (4) < Maple (2). False.    Invalid.
+    basis: Opens the B-C-A block ordering, checks Holly-left-of-Maple, eliminates it when Holly at slot 4 is not left of Maple at slot 2.⟧
+  ⟦LOOP trace=2 (s3) conf=probable [UNRESOLVED]
+    start-quote: Is it possible for Cloth to be in Slot 2 or 3?
+    end-quote:   So 1713 must be in 6 (with Vellum).
+    basis: Re-derives binding and year assignments already established in Step 4. Works through Cloth, Rag, 1716, and 1713 placements, reaching identical conclusions.⟧

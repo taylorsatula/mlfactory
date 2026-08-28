@@ -1,0 +1,20 @@
+===== xq8_p98_s2s3 =====
+model=glm-5.2-vision dt_s=517.4 out_tokens=32678 finish=stop
+
+flags=4 fully-resolved=4 MUSE=0 CYCLE=0 LOOP=4 NONE=0
+  ⟦LOOP trace=1 (s2) conf=clear [RESOLVED] span=3566ch
+    head: Let's double check everything. The rules are tricky, specifically the allowed st
+    tail: g state (FAULT vs INIT/ACTIVE). 5.  Event 13 (HELLO) - Wrong guard (n=3 vs n=0).
+    basis: The "Event Log Re-evaluation" section re-processes all 17 events already simulated in the initial "Simulation Steps" section, re-deriving identical conclusions without adding new constraints.
+  ⟦LOOP trace=1 (s2) conf=probable [RESOLVED] span=2967ch
+    head: **Detailed Step-by-Step Trace:**  **Init:** S=INIT, A=F, T=F, n=0.  **1. TICKET*
+    tail: TED**. *   Effects: T=T, n=n+1 (5), S=FAULT. *   Config: S=FAULT, A=T, T=T, n=5.
+    basis: The "Detailed Step-by-Step Trace" section re-runs all 17 events a second time after the initial simulation and the re-evaluation, arriving at the same final configuration.
+  ⟦LOOP trace=2 (s3) conf=clear [RESOLVED] span=1784ch
+    head: Let's double check the rejections. 1.  **TICKET**: State INIT. Allowed in {READY
+    tail:  (OPEN) 13. Event 13 (HELLO)  Total Rejected: 5 events. First Rejected Index: 1.
+    basis: The "Summary of Rejections" section re-derives the rejection list already established during the main simulation, adding no new information.
+  ⟦LOOP trace=2 (s3) conf=probable [RESOLVED-NORM] span=19494ch
+    head: Let's re-verify step-by-step carefully.  **Initial:** S=INIT, A=F, T=F, n=0  **1
+    tail: s happen at indices: 4, 7, 12, 15, 17. Total 5 increments. Final n = 5. Correct.
+    basis: Re-runs all 17 events after the initial simulation and the Summary of Rejections, re-deriving identical results.

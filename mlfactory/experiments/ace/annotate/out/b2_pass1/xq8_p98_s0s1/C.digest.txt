@@ -1,0 +1,24 @@
+===== xq8_p98_s0s1 =====
+model=glm-5.2-vision dt_s=124.7 out_tokens=7716 finish=stop
+
+flags=5 fully-resolved=1 MUSE=0 CYCLE=3 LOOP=2 NONE=0
+  ⟦CYCLE trace=1 (s0) conf=clear [UNRESOLVED]
+    start-quote: Wait, did I miss any event that goes to DONE?
+    end-quote:   But we were never in DONE.
+    basis: The solver explores whether the DONE state is reachable by checking all event effects, concludes it is not, and prunes the branch.
+  ⟦LOOP trace=1 (s0) conf=clear [RESOLVED] span=51419ch
+    head: Wait, let me double check the "Allowed" lists and guards. Let's re-verify the tr
+    tail: s correct. "AUTH: allowed in READY, ACTIVE, FAULT" Okay, I'll proceed with this.
+    basis: 
+  ⟦CYCLE trace=2 (s1) conf=clear [UNRESOLVED]
+    start-quote: Wait, looking at the first event.
+    end-quote:   We went INIT -> FAULT.
+    basis: The solver opens a branch considering if the machine is stuck in INIT, then resolves it by finding that CLOSE allows an exit.
+  ⟦LOOP trace=2 (s1) conf=clear [UNRESOLVED]
+    start-quote: Wait, let me double check the simulation.
+    end-quote:   S=FAULT, A=T, T=T, n=5. Correct.
+    basis: The solver re-executes the entire 17-step simulation from the beginning, paraphrasing the previous run without adding new constraints.
+  ⟦CYCLE trace=2 (s1) conf=clear [UNRESOLVED]
+    start-quote: Wait, is it possible to go to INIT via TICKET?
+    end-quote:   So my logic holds.
+    basis: The solver explores alternative paths to INIT and READY, finds them closed based on rules and trace state, and prunes the branch.

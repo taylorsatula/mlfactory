@@ -1,0 +1,8 @@
+===== xq8_p97_s0s1 =====
+model=glm-5.2-vision dt_s=605.5 out_tokens=38809 finish=stop
+
+flags=1 fully-resolved=1 MUSE=0 CYCLE=0 LOOP=1 NONE=0
+  ⟦LOOP trace=1 (s0) conf=clear [RESOLVED] span=37930ch
+    head: Let's double check step-by-step carefully.**  **Initial:** State=INIT, A=F, T=F,
+    tail: vent 16 (PAUSE) "A=T". And then for Event 17 (HELLO) "A=F". So final A is False.
+    basis: Re-processes all 17 events with identical logic and reaches identical conclusions as the first pass; no new information or constraint is added.

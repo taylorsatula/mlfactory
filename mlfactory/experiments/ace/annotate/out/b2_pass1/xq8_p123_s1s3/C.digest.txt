@@ -1,0 +1,28 @@
+===== xq8_p123_s1s3 =====
+model=glm-5.2-vision dt_s=165.2 out_tokens=11274 finish=stop
+
+flags=6 fully-resolved=3 MUSE=0 CYCLE=6 LOOP=0 NONE=0
+  ⟦CYCLE trace=1 (s1) conf=clear [RESOLVED] span=525ch
+    head: Case B: 1715 in Slot 4. Then Cedar is in Slot 5. Slot 5: Label Cedar, Binding Le
+    tail: must be Slot 1. If 1716 is Slot 1, then $H < 1$, impossible. Thus, Case B fails.
+    basis: The solver opens the alternative that Cedar is in Slot 5 (1715 in Slot 4), explores it, and explicitly eliminates it.
+  ⟦CYCLE trace=1 (s1) conf=clear [RESOLVED] span=11923ch
+    head: Case C: 1715 in Slot 5. Then Cedar is in Slot 6. Slot 6: Label Cedar, Binding Le
+    tail: ellum in Slot 3. And Vellum in Slot 3 contradicts (12). So Case C is impossible.
+    basis: The solver opens the alternative that Cedar is in Slot 6, explores it, and explicitly eliminates it.
+  ⟦CYCLE trace=1 (s1) conf=clear [RESOLVED] span=2172ch
+    head: Let's re-evaluate 1715 in Slot 4 (Case B).  Case B: 1715 in Slot 4. Cedar in Slo
+    tail: n 1 or 5. If 1712 in 1: Vellum in 0. Impossible. So 1712 in 5. So S5 Year: 1712.
+    basis: The solver re-opens the previously discarded Case B, explores the new alternative of placing 1712 in Slot 5, and finds it succeeds.
+  ⟦CYCLE trace=2 (s3) conf=clear [UNRESOLVED]
+    start-quote: Case 5: Cedar=6: $L < 6$.
+    end-quote:   So Case C (Cedar=6) is indeed impossible.
+    basis: The solver opens the alternative that Cedar is in Slot 6, explores it, and explicitly eliminates it.
+  ⟦CYCLE trace=2 (s3) conf=clear [UNRESOLVED]
+    start-quote: If 1712 is S5? (Cedar is S6).
+    end-quote:   So Case C is impossible.
+    basis: The solver opens an alternative placement for 1712 within the Cedar=6 case, explores it, and explicitly eliminates it.
+  ⟦CYCLE trace=2 (s3) conf=clear [UNRESOLVED]
+    start-quote: Let's re-evaluate 'Case B' (Cedar at S5).
+    end-quote:   So 1712 must be S5. This logic holds up.
+    basis: The solver re-opens the previously discarded Case B, explores the new alternative of placing 1712 in Slot 5, and finds it succeeds.

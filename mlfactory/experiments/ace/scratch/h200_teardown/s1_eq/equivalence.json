@@ -1,0 +1,24 @@
+{
+  "id": "adversary-p49",
+  "n_prompt": 292,
+  "n_comp": 3000,
+  "window": {
+    "max_abs_diff": 0.1865367889404297,
+    "mean_abs_diff": 0.007972409017384052,
+    "rel_weighted": 0.0,
+    "n_windows": 1
+  },
+  "ref": {
+    "n": 3000,
+    "mean": -0.3232257664203644,
+    "min": -4.354652404785156,
+    "max": 0.0
+  },
+  "full": {
+    "max_abs_diff": 0.0,
+    "mean_abs_diff": 0.0,
+    "rel": 0.0,
+    "grad_ok": true
+  },
+  "pass": false
+}

@@ -1,0 +1,44 @@
+===== xq8_p49_s2s3 =====
+model=glm-5.2-vision dt_s=513.8 out_tokens=32898 finish=stop
+
+flags=10 fully-resolved=4 MUSE=0 CYCLE=5 LOOP=5 NONE=0
+  ⟦CYCLE trace=1 (s2) conf=clear [RESOLVED] span=230ch
+    head: Can we reach $(M1, 0)$ in 3 steps?   Predecessors of $(M1, 0)$:   - $(M0, -2)$ w
+    tail: .   - $(M2, -1)$ with A. (Impossible).   So $(M1, 0)$ is unreachable in 3 steps.
+    basis: The solver opens the alternative of reaching (M1, 0) in 3 steps, explores its predecessors, and explicitly eliminates it as impossible.
+  ⟦CYCLE trace=1 (s2) conf=clear [RESOLVED] span=8994ch
+    head: Maybe involving M0 C?   1. C -> M0 c=1.   2. C -> M0 c=2.   ... c increases.   F
+    tail: ):   B -> M2 c=1.   C -> M0 c=1.   No negative.      So C at start doesn't help.
+    basis: The solver explores the alternative of starting with C, traces the paths, and prunes them because they lead to higher credit values.
+  ⟦CYCLE trace=1 (s2) conf=clear [UNRESOLVED]
+    start-quote: What about A B B C?
+    end-quote:   So it seems I need to use B at step 2 to go to M2.
+    basis: The solver explores alternative sequences such as A B B C, A B A B, and C A B B, then discards the suboptimal ones.
+  ⟦LOOP trace=1 (s2) conf=clear [RESOLVED] span=34199ch
+    head: Let's check all combinations of length 3. Start: $(M0, 0)$  Level 1: - $(M1, 2)$
+    tail: , 5), (M2, 3), (M0, 3).   None of these have c < 0.   So length 3 is impossible.
+    basis: The solver re-lists all reachable states at length 3, a calculation already completed earlier in the trace, adding no new information.
+  ⟦LOOP trace=1 (s2) conf=probable [UNRESOLVED]
+    start-quote: Let's double check the calculation for A B B B.
+    end-quote:   c becomes negative.
+    basis: 
+  ⟦CYCLE trace=2 (s3) conf=clear [UNRESOLVED]
+    start-quote: Path to M2:
+    end-quote:   Minimum $c$ is 1. No negative value reached.
+    basis: The solver explores several alternative paths to M2, calculates their credit values, and prunes the ones that don't yield the minimum credit.
+  ⟦CYCLE trace=2 (s3) conf=clear [UNRESOLVED]
+    start-quote: Let's check if there is any other way to go negative.
+    end-quote:   No, all negative transitions are -1.
+    basis: The solver explores the possibility of a transition decreasing c by more than 1 and discards it.
+  ⟦LOOP trace=2 (s3) conf=clear [UNRESOLVED]
+    start-quote: Let's check if there is a sequence of length 3 I missed.
+    end-quote:   So length 3 is impossible.
+    basis: The solver re-evaluates the minimum credit at step 3, a calculation already completed in the "Step 3 (Length 3)" section, adding no new constraint or information.
+  ⟦LOOP trace=2 (s3) conf=probable [UNRESOLVED]
+    start-quote: Let's double check if there is a path to M2 with lower c at step 2?
+    end-quote:   So min c at step 2 is 1.
+    basis: The solver re-checks the minimum credit at step 2, which was already established in the "Step 2 (Length 2)" section.
+  ⟦LOOP trace=2 (s3) conf=probable [RESOLVED] span=341ch
+    head: Let's double check the calculation one more time. Rules: M0: A(+2), B(+2), C(+1)
+    tail: > M2. c = 1 - 1 = 0. 4. B: M2 -> M2. c = 0 - 1 = -1. Negative reached. Length 4.
+    basis: The solver re-executes the calculation for A, B, B, B, which was already verified earlier.

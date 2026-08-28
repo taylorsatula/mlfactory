@@ -1,0 +1,20 @@
+===== xq8_p130_s0s1 =====
+model=glm-5.2-vision dt_s=283.5 out_tokens=17604 finish=stop
+
+flags=4 fully-resolved=3 MUSE=0 CYCLE=1 LOOP=3 NONE=0
+  ⟦CYCLE trace=1 (s0) conf=probable [RESOLVED] span=659ch
+    head: What if Step 11 HELLO was rejected? Then A would remain false. Step 12 PAUSE rej
+    tail: d (due to T). Step 13 AUTH accepted. So A becomes false. So yes, doesn't matter.
+    basis: The solver opens a grounded alternative branch (HELLO rejected) and traces it through steps 12-15, explicitly concluding the final A value is unchanged.
+  ⟦LOOP trace=1 (s0) conf=clear [RESOLVED] span=34325ch
+    head: Let's re-verify the whole trace carefully.  **Initial:** State: INIT A: F T: F n
+    tail: ted. State READY. Step 17 RESUME: State READY. Rejected.  Everything consistent.
+    basis: The solver re-executes all 17 steps in paraphrased form (using F/T shorthand), confirming the same states and rejections already computed in the main simulation.
+  ⟦LOOP trace=2 (s1) conf=clear [UNRESOLVED]
+    start-quote: Initial: State=INIT, A=F, T=F, n=0
+    end-quote:   Correct, rejected.
+    basis: The solver re-executes all 17 events from the beginning in a "Final Verification" block, reproducing the same state transitions and rejection decisions already established.
+  ⟦LOOP trace=2 (s1) conf=clear [RESOLVED] span=15699ch
+    head: Let's trace again just to be absolutely sure.**  Start: S=INIT, A=F, T=F, n=0  1
+    tail: IVE; requires not A." State is FAULT. So rejected.  Everything seems consistent.
+    basis: A second full re-execution of all 17 steps, adding no new information beyond what the main trace and the first re-verification already produced.

@@ -1,0 +1,72 @@
+===== xq8_p130_s2s3 =====
+model=glm-5.2-vision dt_s=401.7 out_tokens=26108 finish=stop
+
+flags=17 fully-resolved=7 MUSE=0 CYCLE=0 LOOP=17 NONE=0
+  ⟦LOOP trace=1 (s2) conf=clear [UNRESOLVED]
+    start-quote: Let's re-run carefully.
+    end-quote:   So HELLO is rejected.
+    basis: Re-executes events 1–5 already completed in the initial simulation, confirming the same state and rejection without new information.
+  ⟦LOOP trace=1 (s2) conf=probable [UNRESOLVED]
+    start-quote: Let me double check the 'Allowed' lists in the prompt text again.
+    end-quote:   CLOSE: INIT, READY, DONE.
+    basis: Re-reads all seven allowed-state lists that were already used during the initial simulation; adds no new constraint.
+  ⟦LOOP trace=1 (s2) conf=probable [UNRESOLVED]
+    start-quote: Let me just re-read the 'Allowed' lists very carefully to ensure I didn't misread any.
+    end-quote:   CLOSE: INIT, READY, DONE.
+    basis: Second full re-read of the same seven allowed-state lists, repeating what was already listed twice before.
+  ⟦LOOP trace=1 (s2) conf=probable [RESOLVED] span=261ch
+    head: Let's re-verify Event 2. State: FAULT. A=false, T=true, n=1. Event: AUTH. Allowe
+    tail: , go PAUSED. New State: PAUSED. New A: false. New T: true (unchanged). New n: 2.
+    basis: Re-executes Event 2 step-by-step, reproducing the state transition and register values already established in the initial simulation.
+  ⟦LOOP trace=1 (s2) conf=probable [UNRESOLVED]
+    start-quote: Let me check if I missed anything in Event 5?
+    end-quote:   Index: 5.
+    basis: Re-derives the state before Event 5 and re-confirms the HELLO rejection already obtained in the initial run.
+  ⟦LOOP trace=1 (s2) conf=probable [UNRESOLVED]
+    start-quote: Let's do a sanity check on the 'Allowed' lists and state names.
+    end-quote:   RESUME -> INIT (if in INIT/PAUSED/FAULT/DONE)
+    basis: Re-lists all 17 event transitions in shorthand, paraphrasing work already completed in the initial simulation.
+  ⟦LOOP trace=1 (s2) conf=probable [UNRESOLVED]
+    start-quote: One small check.
+    end-quote:   READY is NOT in list. Rejected.
+    basis: Re-checks events 13–17 one by one, reproducing the same state transitions and rejection already obtained.
+  ⟦LOOP trace=1 (s2) conf=clear [RESOLVED] span=199ch
+    head: Calculations for n again. Start 0. 1. +1 = 1 2. +1 = 2 3. +1 = 3 4. +1 = 4 5. 0 
+    tail: 0 11. +1 = 4 12. 0 13. +1 = 5 14. -1 = 4 15. +1 = 5 16. +1 = 6 17. 0 Final n: 6.
+    basis: Re-sums every n increment and decrement already tracked through the initial simulation; produces the same total.
+  ⟦LOOP trace=1 (s2) conf=probable [RESOLVED] span=193ch
+    head: Calculations for A. Start F. 1. F (no change) 2. F (set F) 3. F 4. F (set F) 5. 
+    tail:  F 11. T (set T) 12. T 13. F (set F) 14. F 15. F (set F) 16. F 17. F Final A: F.
+    basis: Re-traces the A register through all 17 events, reproducing the same final value already established.
+  ⟦LOOP trace=1 (s2) conf=probable [RESOLVED] span=165ch
+    head: Calculations for T. Start F. 1. T (set T) 2. T 3. T 4. T (set T) 5. T 6. T 7. T 
+    tail: T) 8. T 9. T 10. T 11. T 12. T 13. T 14. T 15. T (set T) 16. T 17. T Final T: T.
+    basis: Re-traces the T register through all 17 events, reproducing the same final value already established.
+  ⟦LOOP trace=1 (s2) conf=probable [RESOLVED] span=361ch
+    head: Final State: Start INIT. 1. CLOSE -> FAULT. 2. AUTH -> PAUSED. 3. TICKET -> READ
+    tail: . 15. CLOSE -> FAULT. 16. TICKET -> READY. 17. RESUME (Rej). Final State: READY.
+    basis: Re-lists all 17 state transitions in sequence, paraphrasing the initial simulation's state trace.
+  ⟦LOOP trace=1 (s2) conf=probable [UNRESOLVED]
+    start-quote: Let's quickly re-verify Event 5 HELLO rejection condition.
+    end-quote:   Everything seems correct.
+    basis: 
+  ⟦LOOP trace=2 (s3) conf=probable [UNRESOLVED]
+    start-quote: Let me check step 11 HELLO again just in case.
+    end-quote:   So at step 12, A is true.
+    basis: Re-checks steps 11–12 that were already processed in the main simulation, confirming the same A value and acceptance.
+  ⟦LOOP trace=2 (s3) conf=probable [UNRESOLVED]
+    start-quote: One tiny detail: 'n + 1' in step 11 HELLO.
+    end-quote:   So final A is false. Correct.
+    basis: Re-derives n and A at steps 11–13, reproducing values already established in the main simulation.
+  ⟦LOOP trace=2 (s3) conf=probable [RESOLVED] span=135ch
+    head: Double check guards.     HELLO: not A.     AUTH: T.     OPEN: not A.     PAUSE: 
+    tail:  OPEN: not A.     PAUSE: not T and n >= 1.     TICKET: n >= 1.     CLOSE: not A.
+    basis: Re-reads all six guard conditions already used during the main simulation; adds no new constraint.
+  ⟦LOOP trace=2 (s3) conf=probable [RESOLVED] span=270ch
+    head: Double check allowed states.     HELLO: INIT, READY, ACTIVE.     AUTH: INIT, REA
+    tail: D, FAULT, DONE.     TICKET: ACTIVE, PAUSED, FAULT.     CLOSE: INIT, READY, DONE.
+    basis: Re-reads all seven allowed-state lists already used during the main simulation; adds no new constraint.
+  ⟦LOOP trace=2 (s3) conf=probable [UNRESOLVED]
+    start-quote: Let's do a quick pass of the 'First Rejected Event' logic again.
+    end-quote:   FAULT is NOT in list. -> REJECTED. Correct.
+    basis: Re-runs events 1–5 to confirm the first rejection at index 5, reproducing the same state and rejection already obtained.

@@ -1,0 +1,4 @@
+===== xq8_p54_s0s3 =====
+model=glm-5.2-vision dt_s=497.8 out_tokens=31191 finish=stop
+
+!! NO ⟦-ANCHORED FLAG LINES FOUND — prompt format failure
